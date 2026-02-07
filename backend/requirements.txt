@@ -14,3 +14,7 @@ pyotp
 python-multipart
 python-dotenv
 httpx
+python-jose[cryptography]
+passlib[cryptography]
+greenlet
+bcrypt
