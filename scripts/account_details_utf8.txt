@@ -1,0 +1,155 @@
+﻿2026-02-04 19:18:10,009 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-02-04 19:18:10,009 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-04 19:18:10,011 INFO sqlalchemy.engine.Engine select current_schema()
+2026-02-04 19:18:10,011 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-04 19:18:10,016 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-02-04 19:18:10,016 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-04 19:18:10,019 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-04 19:18:10,038 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts.id AS id_1, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status AS status_1, accounts.last_error, accounts.user_id AS user_id_1, accounts.created_at AS created_at_1, accounts.last_login, accounts_1.id AS id_2, accounts_1.username AS username_1, accounts_1.password_encrypted AS password_encrypted_1, accounts_1.seed_2fa AS seed_2fa_1, accounts_1.proxy AS proxy_1, accounts_1.login_method AS login_method_1, accounts_1.cookies AS cookies_1, accounts_1.last_login_state AS last_login_state_1, accounts_1.fingerprint_id AS fingerprint_id_1, accounts_1.is_active AS is_active_1, accounts_1.is_checker AS is_checker_1, accounts_1.status AS status_2, accounts_1.last_error AS last_error_1, accounts_1.user_id AS user_id_2, accounts_1.created_at AS created_at_2, accounts_1.last_login AS last_login_1 
+FROM tasks JOIN accounts ON tasks.account_id = accounts.id LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.task_type = $1::VARCHAR AND tasks.status = $2::VARCHAR ORDER BY tasks.created_at DESC 
+ LIMIT $3::INTEGER
+2026-02-04 19:18:10,038 INFO sqlalchemy.engine.Engine [generated in 0.00024s] ('story', 'failed', 20)
+Analyzing 20 failed story tasks...
+
+--- Task ID: 9754 | Account: SelvionaffViaffIsabella ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@23.95.150.145:6114
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9753 | Account: GalvionaffViaffValencia ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@64.137.96.74:6641
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9752 | Account: ZalviaffViaffEstoria ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@23.229.19.94:8689
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9750 | Account: WavieraffViaffWisteria ---
+  Status: inactive
+  Proxy: socks5://kuyangkayang:asukayang@64.137.96.74:6641
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"This user is inactive so they cannot upload.","status":"fail"}
+
+--- Task ID: 9749 | Account: BelviaffViaffIsadella ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@84.247.60.125:6095
+  Has Password: True
+  Has 2FA Seed: True
+  Error: SOCKSHTTPSConnectionPool(host='i.instagram.com', port=443): Max retries exceeded with url: /rupload_igphoto/1770203597657_0_4634050712 (Caused by NewConnectionError("SOCKSHTTPSConnection(host='i.instagram.com', port=443): Failed to establish a new connection: SOCKS5 authentication failed"))
+
+--- Task ID: 9748 | Account: EstavinaffViaffValerina ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@198.23.239.134:6540
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9747 | Account: LerivaffViaffFelicia ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@216.10.27.159:6837
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9746 | Account: KarvionaffViaffClaribel ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@23.95.150.145:6114
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9745 | Account: VelvionaffViaffElvira ---
+  Status: active
+  Proxy: None
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9744 | Account: MarvionaffViaffLiliana ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@107.172.163.27:6543
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9743 | Account: MerivaffViaffIrelia ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@23.27.208.120:5830
+  Has Password: True
+  Has 2FA Seed: True
+  Error: SOCKSHTTPSConnectionPool(host='i.instagram.com', port=443): Max retries exceeded with url: /rupload_igphoto/1770203517640_0_8588112473 (Caused by NewConnectionError("SOCKSHTTPSConnection(host='i.instagram.com', port=443): Failed to establish a new connection: SOCKS5 authentication failed"))
+
+--- Task ID: 9741 | Account: LavieraffViaffLarencia ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@216.10.27.159:6837
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9740 | Account: NivishaffViaffTheodora ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@84.247.60.125:6095
+  Has Password: True
+  Has 2FA Seed: True
+  Error: SOCKSHTTPSConnectionPool(host='i.instagram.com', port=443): Max retries exceeded with url: /rupload_igphoto/1770203507685_0_7880447765 (Caused by NewConnectionError("SOCKSHTTPSConnection(host='i.instagram.com', port=443): Failed to establish a new connection: SOCKS5 authentication failed"))
+
+--- Task ID: 9739 | Account: AveliaffViaffZerafina ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@84.247.60.125:6095
+  Has Password: True
+  Has 2FA Seed: True
+  Error: SOCKSHTTPSConnectionPool(host='i.instagram.com', port=443): Max retries exceeded with url: /rupload_igphoto/1770203507690_0_5619119448 (Caused by NewConnectionError("SOCKSHTTPSConnection(host='i.instagram.com', port=443): Failed to establish a new connection: SOCKS5 authentication failed"))
+
+--- Task ID: 9737 | Account: ZalviaffViaffMarcellia ---
+  Status: inactive
+  Proxy: socks5://kuyangkayang:asukayang@198.23.239.134:6540
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"This user is inactive so they cannot upload.","status":"fail"}
+
+--- Task ID: 9736 | Account: ZivishaffViaffTheodora ---
+  Status: inactive
+  Proxy: socks5://kuyangkayang:asukayang@23.95.150.145:6114
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"This user is inactive so they cannot upload.","status":"fail"}
+
+--- Task ID: 9735 | Account: OrelviaffViaffFelicia ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@64.137.96.74:6641
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9733 | Account: SilvishaffViaffCalista ---
+  Status: active
+  Proxy: None
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9731 | Account: IsvionaffViaffHanelia ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@107.172.163.27:6543
+  Has Password: True
+  Has 2FA Seed: True
+  Error: {"message":"login_required","status":"fail"}
+
+--- Task ID: 9730 | Account: ZevionaffViaffEstoria ---
+  Status: active
+  Proxy: socks5://kuyangkayang:asukayang@84.247.60.125:6095
+  Has Password: True
+  Has 2FA Seed: True
+  Error: SOCKSHTTPSConnectionPool(host='i.instagram.com', port=443): Max retries exceeded with url: /rupload_igphoto/1770203387620_0_1886894497 (Caused by NewConnectionError("SOCKSHTTPSConnection(host='i.instagram.com', port=443): Failed to establish a new connection: SOCKS5 authentication failed"))
+
+2026-02-04 19:18:10,059 INFO sqlalchemy.engine.Engine ROLLBACK

@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic-settings
+pydantic
+asyncpg  # PostgreSQL async driver (legacy)
+aiomysql  # MySQL async driver (new)
+PyMySQL  # Dependency for aiomysql
+sqlalchemy
+celery
+redis
+tenacity
+instagrapi
+pyotp
+python-multipart
+python-dotenv
+httpx

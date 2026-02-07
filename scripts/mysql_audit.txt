@@ -1,0 +1,75 @@
+
+--- TABLE: users ---
+COL: id | TYPE: int(11) | NULL: NO | EXTRA: auto_increment
+COL: username | TYPE: varchar(255) | NULL: NO | EXTRA: 
+COL: hashed_password | TYPE: varchar(255) | NULL: NO | EXTRA: 
+COL: full_name | TYPE: varchar(255) | NULL: YES | EXTRA: 
+COL: role | TYPE: varchar(50) | NULL: YES | EXTRA: 
+COL: is_active | TYPE: tinyint(1) | NULL: YES | EXTRA: 
+
+--- TABLE: accounts ---
+COL: id | TYPE: int(11) | NULL: NO | EXTRA: auto_increment
+COL: username | TYPE: varchar(255) | NULL: NO | EXTRA: 
+COL: password_encrypted | TYPE: varchar(500) | NULL: YES | EXTRA: 
+COL: seed_2fa | TYPE: varchar(255) | NULL: YES | EXTRA: 
+COL: proxy | TYPE: varchar(500) | NULL: YES | EXTRA: 
+COL: login_method | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: cookies | TYPE: longtext | NULL: YES | EXTRA: 
+COL: last_login_state | TYPE: longtext | NULL: YES | EXTRA: 
+COL: fingerprint_id | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: is_active | TYPE: tinyint(1) | NULL: YES | EXTRA: 
+COL: is_checker | TYPE: tinyint(1) | NULL: YES | EXTRA: 
+COL: status | TYPE: varchar(50) | NULL: YES | EXTRA: 
+COL: last_error | TYPE: varchar(500) | NULL: YES | EXTRA: 
+COL: user_id | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: created_at | TYPE: datetime | NULL: YES | EXTRA: 
+COL: last_login | TYPE: datetime | NULL: YES | EXTRA: 
+
+--- TABLE: fingerprints ---
+COL: id | TYPE: int(11) | NULL: NO | EXTRA: auto_increment
+COL: user_agent | TYPE: varchar(500) | NULL: NO | EXTRA: 
+COL: browser_version | TYPE: varchar(100) | NULL: YES | EXTRA: 
+COL: os_type | TYPE: varchar(100) | NULL: YES | EXTRA: 
+COL: device_memory | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: hardware_concurrency | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: screen_resolution | TYPE: varchar(50) | NULL: YES | EXTRA: 
+COL: timezone | TYPE: varchar(100) | NULL: YES | EXTRA: 
+COL: language | TYPE: varchar(50) | NULL: YES | EXTRA: 
+COL: raw_fingerprint | TYPE: longtext | NULL: YES | EXTRA: 
+COL: user_id | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: created_at | TYPE: datetime | NULL: YES | EXTRA: 
+
+--- TABLE: proxy_templates ---
+COL: id | TYPE: int(11) | NULL: NO | EXTRA: auto_increment
+COL: name | TYPE: varchar(255) | NULL: NO | EXTRA: 
+COL: proxy_string | TYPE: varchar(500) | NULL: NO | EXTRA: 
+COL: is_active | TYPE: tinyint(1) | NULL: YES | EXTRA: 
+COL: user_id | TYPE: int(11) | NULL: YES | EXTRA: 
+
+--- TABLE: tasks ---
+COL: id | TYPE: int(11) | NULL: NO | EXTRA: auto_increment
+COL: account_id | TYPE: int(11) | NULL: NO | EXTRA: 
+COL: batch_id | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: task_type | TYPE: varchar(100) | NULL: NO | EXTRA: 
+COL: config | TYPE: longtext | NULL: NO | EXTRA: 
+COL: status | TYPE: varchar(50) | NULL: YES | EXTRA: 
+COL: result | TYPE: longtext | NULL: YES | EXTRA: 
+COL: error_message | TYPE: text | NULL: YES | EXTRA: 
+COL: created_at | TYPE: datetime | NULL: YES | EXTRA: 
+COL: started_at | TYPE: datetime | NULL: YES | EXTRA: 
+COL: completed_at | TYPE: datetime | NULL: YES | EXTRA: 
+COL: user_id | TYPE: int(11) | NULL: YES | EXTRA: 
+
+--- TABLE: task_batches ---
+COL: id | TYPE: int(11) | NULL: NO | EXTRA: auto_increment
+COL: name | TYPE: varchar(255) | NULL: YES | EXTRA: 
+COL: task_type | TYPE: varchar(100) | NULL: NO | EXTRA: 
+COL: config | TYPE: longtext | NULL: NO | EXTRA: 
+COL: status | TYPE: varchar(50) | NULL: YES | EXTRA: 
+COL: total_tasks | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: completed_tasks | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: failed_tasks | TYPE: int(11) | NULL: YES | EXTRA: 
+COL: created_at | TYPE: datetime | NULL: YES | EXTRA: 
+COL: started_at | TYPE: datetime | NULL: YES | EXTRA: 
+COL: completed_at | TYPE: datetime | NULL: YES | EXTRA: 
+COL: user_id | TYPE: int(11) | NULL: YES | EXTRA: 

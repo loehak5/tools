@@ -1,0 +1,55 @@
+Starting manual debug...
+Testing story upload for VelvionaffViaffElvira...
+Attempting with existing cookies...
+Session check: {'status': 'expired'}
+Attempting upload...
+Upload Failed: login_required
+Attempting full reconnect and login...
+Login Result: {'cookies': {'uuids': {'phone_id': 'e8b4a404-44ca-4456-8aaa-2fa0fea7de17', 'uuid': 'fd9aa68e-4a65-4bb7-8df5-cbf819217031', 'client_session_id': '7a1ca991-65fb-43de-a01c-47cc7f5accda', 'advertising_id': 'd319791b-4673-47cb-bf29-d0cfd75a076d', 'android_device_id': 'android-7a7e8dee2aec229a', 'request_id': 'd7cbe987-4e8e-47f7-877e-1f2c0513fabc', 'tray_session_id': '824c1b1b-c33a-4ba6-930b-14072f82aa4e'}, 'mid': 'aXnotAABAAHyisiSicCG2ndYiCQv', 'ig_u_rur': None, 'ig_www_claim': None, 'authorization_data': {'ds_user_id': '80270704835', 'sessionid': '80270704835%3AFLdt6k6OKrEj8O%3A7%3AAYiPb9C1a5t1Gjy50WgPQ_IN1LuPiWFAOumDRaAP6g'}, 'cookies': {}, 'last_login': 1769597126.6796608, 'device_settings': {'app_version': '323.0.0.37.108', 'android_version': 29, 'android_release': '13', 'dpi': '440dpi', 'resolution': '1080x2340', 'manufacturer': 'Samsung', 'model': 'Galaxy Ultra S23', 'device': 'galaxy_ultra_s23', 'cpu': 'qcom', 'version_code': '582522774'}, 'user_agent': 'Instagram 323.0.0.37.108 Android (29/13; 440dpi; 1080x2340; Samsung; Galaxy Ultra S23; galaxy_ultra_s23; qcom; en_US; 582522774)', 'country': 'US', 'country_code': 1, 'locale': 'en_US', 'timezone_offset': -14400}, 'last_login_state': {'uuids': {'phone_id': 'e8b4a404-44ca-4456-8aaa-2fa0fea7de17', 'uuid': 'fd9aa68e-4a65-4bb7-8df5-cbf819217031', 'client_session_id': '7a1ca991-65fb-43de-a01c-47cc7f5accda', 'advertising_id': 'd319791b-4673-47cb-bf29-d0cfd75a076d', 'android_device_id': 'android-7a7e8dee2aec229a', 'request_id': 'd7cbe987-4e8e-47f7-877e-1f2c0513fabc', 'tray_session_id': '824c1b1b-c33a-4ba6-930b-14072f82aa4e'}, 'mid': 'aXnotAABAAHyisiSicCG2ndYiCQv', 'ig_u_rur': None, 'ig_www_claim': None, 'authorization_data': {'ds_user_id': '80270704835', 'sessionid': '80270704835%3AFLdt6k6OKrEj8O%3A7%3AAYiPb9C1a5t1Gjy50WgPQ_IN1LuPiWFAOumDRaAP6g'}, 'cookies': {}, 'last_login': 1769597126.6796608, 'device_settings': {'app_version': '323.0.0.37.108', 'android_version': 29, 'android_release': '13', 'dpi': '440dpi', 'resolution': '1080x2340', 'manufacturer': 'Samsung', 'model': 'Galaxy Ultra S23', 'device': 'galaxy_ultra_s23', 'cpu': 'qcom', 'version_code': '582522774'}, 'user_agent': 'Instagram 323.0.0.37.108 Android (29/13; 440dpi; 1080x2340; Samsung; Galaxy Ultra S23; galaxy_ultra_s23; qcom; en_US; 582522774)', 'country': 'US', 'country_code': 1, 'locale': 'en_US', 'timezone_offset': -14400}, 'status': 'active'}
+Retrying upload after login...
+Final Debug Error: login_required
+Traceback (most recent call last):
+  File "C:\Users\NAR\Documents\tools-ig\scripts\debug_story_upload_manual.py", line 58, in debug_upload
+    res = await asyncio.to_thread(service.post_story, img_path, "Debug Test")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\AppData\Local\Programs\Python\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\Documents\tools-ig\backend\app\services\instagram_service.py", line 262, in post_story
+    raise e
+  File "C:\Users\NAR\Documents\tools-ig\backend\app\services\instagram_service.py", line 252, in post_story
+    result = self.client.photo_upload_to_story(path, caption, links=links)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\AppData\Local\Programs\Python\Python312\Lib\site-packages\instagrapi\mixins\photo.py", line 402, in photo_upload_to_story
+    upload_id, width, height = self.photo_rupload(path, upload_id, for_story=True)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\AppData\Local\Programs\Python\Python312\Lib\site-packages\instagrapi\mixins\photo.py", line 218, in photo_rupload
+    raise PhotoNotUpload(response.text, response=response, **last_json)
+instagrapi.exceptions.PhotoNotUpload: login_required
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\NAR\Documents\tools-ig\scripts\debug_story_upload_manual.py", line 68, in debug_upload
+    res = await asyncio.to_thread(service.post_story, img_path, "Debug Test (Retried)")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\AppData\Local\Programs\Python\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\Documents\tools-ig\backend\app\services\instagram_service.py", line 262, in post_story
+    raise e
+  File "C:\Users\NAR\Documents\tools-ig\backend\app\services\instagram_service.py", line 252, in post_story
+    result = self.client.photo_upload_to_story(path, caption, links=links)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\AppData\Local\Programs\Python\Python312\Lib\site-packages\instagrapi\mixins\photo.py", line 402, in photo_upload_to_story
+    upload_id, width, height = self.photo_rupload(path, upload_id, for_story=True)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NAR\AppData\Local\Programs\Python\Python312\Lib\site-packages\instagrapi\mixins\photo.py", line 218, in photo_rupload
+    raise PhotoNotUpload(response.text, response=response, **last_json)
+instagrapi.exceptions.PhotoNotUpload: login_required

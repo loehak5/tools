@@ -1,0 +1,12 @@
+COL: id | TYPE: int(11)
+COL: account_id | TYPE: int(11)
+COL: batch_id | TYPE: int(11)
+COL: task_type | TYPE: varchar(100)
+COL: config | TYPE: longtext
+COL: status | TYPE: varchar(50)
+COL: result | TYPE: longtext
+COL: error_message | TYPE: text
+COL: created_at | TYPE: datetime
+COL: started_at | TYPE: datetime
+COL: completed_at | TYPE: datetime
+COL: user_id | TYPE: int(11)
