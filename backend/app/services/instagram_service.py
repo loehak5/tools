@@ -153,6 +153,20 @@ class InstagramService:
             updates["last_login_state"] = new_settings
             updates["status"] = "active"
             
+            # Threads Detection
+            try:
+                user_id = self.client.user_id
+                user_info = self.client.user_info_v1(user_id)
+                threads_id = user_info.get("threads_profile_id")
+                if threads_id and str(threads_id) != "0":
+                    updates["threads_profile_id"] = str(threads_id)
+                    updates["has_threads"] = True
+                    print(f"Threads detected for {self.account.username}: {threads_id}")
+                else:
+                    updates["has_threads"] = False
+            except Exception as e:
+                print(f"Failed to detect Threads for {self.account.username}: {e}")
+
             # Post-login warmup
             self.warmup()
             
@@ -199,6 +213,18 @@ class InstagramService:
             self.client.get_timeline_feed()
             updates["status"] = "active"
             print(f"Session valid for {self.account.username}")
+            
+            # Threads Detection during check
+            try:
+                user_info = self.client.user_info_v1(self.client.user_id)
+                threads_id = user_info.get("threads_profile_id")
+                if threads_id and str(threads_id) != "0":
+                    updates["threads_profile_id"] = str(threads_id)
+                    updates["has_threads"] = True
+                else:
+                    updates["has_threads"] = False
+            except: pass
+
             return updates
         except LoginRequired:
             updates["status"] = "expired"
@@ -226,12 +252,18 @@ class InstagramService:
             print(f"Warm-up failed for {self.account.username}: {e}")
             return False
 
-    def post_photo(self, path: str, caption: str):
-        return self.client.photo_upload(path, caption)
+    def post_photo(self, path: str, caption: str, share_to_threads: bool = False):
+        extra_data = {}
+        if share_to_threads:
+            extra_data["share_to_threads"] = True
+        return self.client.photo_upload(path, caption, extra_data=extra_data)
         
-    def post_reel(self, path: str, caption: str):
+    def post_reel(self, path: str, caption: str, share_to_threads: bool = False):
         """Upload a video as a Reel."""
-        return self.client.clip_upload(path, caption)
+        extra_data = {}
+        if share_to_threads:
+            extra_data["share_to_threads"] = True
+        return self.client.clip_upload(path, caption, extra_data=extra_data)
 
     def post_story(self, path: str, caption: str = "", link: str = None):
         """Upload a photo or video as a Story, optionally with a link."""
@@ -263,3 +295,13 @@ class InstagramService:
         
     def like_media(self, media_id: str):
         return self.client.media_like(media_id)
+
+    def share_to_threads(self, media_id: str):
+        """Share an existing Instagram post to Threads."""
+        # Using instagrapi's internal share method if available, 
+        # or a custom implementation if needed.
+        # Based on research, the private API uses 'share_to_threads' flag during upload,
+        # but for existing media we might need a different endpoint.
+        # For now, we will focus on cross-posting during upload.
+        print(f"Request to share media {media_id} to Threads (Not yet implemented for separate action)")
+        pass

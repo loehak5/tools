@@ -159,16 +159,18 @@ async def execute_task(task_id: int):
                     if task.task_type == "post":
                         media_path = get_absolute_media_path(params.get("media_path", ""))
                         caption = params.get("caption", "")
+                        share_to_threads = params.get("share_to_threads", False)
                         if media_path and os.path.exists(media_path):
-                            await asyncio.to_thread(service.post_photo, media_path, caption)
+                            await asyncio.to_thread(service.post_photo, media_path, caption, share_to_threads=share_to_threads)
                         else:
                             raise ValueError(f"Media file not found: {media_path} (original: {params.get('media_path')})")
 
                     elif task.task_type == "reels":
                         media_path = get_absolute_media_path(params.get("media_path", ""))
                         caption = params.get("caption", "")
+                        share_to_threads = params.get("share_to_threads", False)
                         if media_path and os.path.exists(media_path):
-                            await asyncio.to_thread(service.post_reel, media_path, caption)
+                            await asyncio.to_thread(service.post_reel, media_path, caption, share_to_threads=share_to_threads)
                         else:
                             raise ValueError(f"Media file not found: {media_path} (original: {params.get('media_path')})")
 

@@ -16,6 +16,7 @@ class TaskCreatePost(BaseModel):
     account_id: int
     scheduled_at: datetime
     caption: str = ""
+    share_to_threads: bool = False
     execute_now: bool = False
     batch_id: Optional[int] = None
 
@@ -52,6 +53,7 @@ class TaskCreateReels(BaseModel):
     account_id: int
     scheduled_at: datetime
     caption: str = ""
+    share_to_threads: bool = False
     execute_now: bool = False
     batch_id: Optional[int] = None
 

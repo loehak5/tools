@@ -90,6 +90,8 @@ async def create_tables():
             Column('is_checker', Boolean, default=False),
             Column('status', String(50), default='offline'),
             Column('last_error', String(500)),
+            Column('threads_profile_id', String(255)),
+            Column('has_threads', Boolean, default=False),
             Column('user_id', Integer, ForeignKey('users.id')),
             Column('created_at', DateTime(timezone=True), server_default=func.now()),
             Column('last_login', DateTime(timezone=True)),

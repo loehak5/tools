@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Image, Heart, UserPlus, Eye, ArrowLeft, Calendar, Upload, X, Clock, User, AlertCircle, Loader2, Shuffle, Zap, CheckSquare, Square, Users, Activity, Video, Play, Link } from 'lucide-react';
+import { Image, Heart, UserPlus, Eye, ArrowLeft, Calendar, Upload, X, Clock, User, AlertCircle, Loader2, Shuffle, Zap, CheckSquare, Square, Users, Activity, Video, Play } from 'lucide-react';
 import api from '../api/client';
 
 type SchedulerMenu = 'main' | 'post' | 'like' | 'follow' | 'view' | 'reels' | 'story';
@@ -17,6 +17,7 @@ interface Account {
     id: number;
     username: string;
     status: string;
+    has_threads?: boolean;
 }
 
 interface TaskStats {
@@ -447,18 +448,52 @@ const ExecutionModeSelector = ({
     );
 };
 
-// Schedule Post Image Form (Single Account)
-const SchedulePostForm = ({ onBack, accounts, onSuccess }: { onBack: () => void; accounts: Account[]; onSuccess: () => void }) => {
+// Selection Mode Toggle Component
+const SelectionModeToggle = ({ isMultiAccount, setMultiAccount }: { isMultiAccount: boolean; setMultiAccount: (v: boolean) => void }) => {
+    return (
+        <div className="flex p-1 bg-gray-800 rounded-xl border border-gray-700 mb-6">
+            <button
+                type="button"
+                onClick={() => setMultiAccount(false)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${!isMultiAccount
+                    ? 'bg-gray-700 text-white shadow-lg border border-gray-600'
+                    : 'text-gray-400 hover:text-gray-300'
+                    }`}
+            >
+                <User className="w-4 h-4" />
+                Single Account
+            </button>
+            <button
+                type="button"
+                onClick={() => setMultiAccount(true)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${isMultiAccount
+                    ? 'bg-gray-700 text-white shadow-lg border border-gray-600'
+                    : 'text-gray-400 hover:text-gray-300'
+                    }`}
+            >
+                <Users className="w-4 h-4" />
+                Multi Account
+            </button>
+        </div>
+    );
+};
+
+// Schedule Post Image Form (Single/Multi Account)
+const SchedulePostForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: () => void; accounts: Account[]; onSuccess: () => void; taskStats: Record<number, TaskStats> }) => {
+    const [isMultiAccount, setMultiAccount] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
+    const [selectedAccounts, setSelectedAccounts] = useState<number[]>([]);
     const [caption, setCaption] = useState('');
     const [scheduledAt, setScheduledAt] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [successCount, setSuccessCount] = useState(0);
     const [mode, setMode] = useState<'schedule' | 'random' | 'now'>('schedule');
     const [minMinutes, setMinMinutes] = useState(5);
     const [maxMinutes, setMaxMinutes] = useState(60);
+    const [shareToThreads, setShareToThreads] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -478,8 +513,10 @@ const SchedulePostForm = ({ onBack, accounts, onSuccess }: { onBack: () => void;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedAccount || !selectedFile) {
-            setError('Please select account and upload image');
+        const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
+
+        if (activeSelectedAccounts.length === 0 || !selectedFile) {
+            setError('Please select account(s) and upload image');
             return;
         }
         if (mode === 'schedule' && !scheduledAt) {
@@ -489,38 +526,53 @@ const SchedulePostForm = ({ onBack, accounts, onSuccess }: { onBack: () => void;
 
         setLoading(true);
         setError('');
+        setSuccessCount(0);
 
         try {
-            let finalScheduledAt: string;
-            if (mode === 'now') {
-                finalScheduledAt = new Date().toISOString();
-            } else if (mode === 'random' && !scheduledAt) {
-                const randomDate = generateRandomSchedule(minMinutes, maxMinutes);
-                finalScheduledAt = randomDate.toISOString();
-            } else {
-                finalScheduledAt = new Date(scheduledAt).toISOString();
+            // Pre-generate unique random times for all accounts
+            const randomSchedules = mode === 'random'
+                ? generateUniqueRandomSchedules(activeSelectedAccounts.length, minMinutes, maxMinutes)
+                : [];
+
+            let succeeded = 0;
+            for (let i = 0; i < activeSelectedAccounts.length; i++) {
+                const accountId = activeSelectedAccounts[i];
+                let finalScheduledAt: string;
+                if (mode === 'now') {
+                    finalScheduledAt = new Date().toISOString();
+                } else if (mode === 'random') {
+                    finalScheduledAt = randomSchedules[i].toISOString();
+                } else {
+                    finalScheduledAt = new Date(scheduledAt).toISOString();
+                }
+
+                const formData = new FormData();
+                formData.append('account_id', accountId.toString());
+                formData.append('scheduled_at', finalScheduledAt);
+                formData.append('caption', caption);
+                formData.append('image', selectedFile);
+                formData.append('share_to_threads', shareToThreads ? 'true' : 'false');
+                formData.append('execute_now', mode === 'now' ? 'true' : 'false');
+
+                try {
+                    await api.post('/tasks/post', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    succeeded++;
+                    setSuccessCount(succeeded);
+                } catch (err) {
+                    console.error(`Failed to post for account ${accountId}:`, err);
+                }
             }
 
-            const formData = new FormData();
-            formData.append('account_id', selectedAccount.toString());
-            formData.append('scheduled_at', finalScheduledAt);
-            formData.append('caption', caption);
-            formData.append('image', selectedFile);
-            formData.append('execute_now', mode === 'now' ? 'true' : 'false');
-
-            await api.post('/tasks/post', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            onSuccess();
-            onBack();
+            if (succeeded === activeSelectedAccounts.length) {
+                onSuccess();
+                onBack();
+            } else {
+                setError(`${succeeded}/${activeSelectedAccounts.length} tasks created successfully`);
+            }
         } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'response' in err) {
-                const axiosErr = err as { response?: { data?: { detail?: string } } };
-                setError(axiosErr.response?.data?.detail || 'Failed to schedule post');
-            } else {
-                setError('Failed to schedule post');
-            }
+            setError('Failed to schedule post');
         } finally {
             setLoading(false);
         }
@@ -539,6 +591,8 @@ const SchedulePostForm = ({ onBack, accounts, onSuccess }: { onBack: () => void;
                     Schedule Post Image
                 </h2>
 
+                <SelectionModeToggle isMultiAccount={isMultiAccount} setMultiAccount={setMultiAccount} />
+
                 {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-center">
                         <AlertCircle className="w-5 h-5 mr-2" />
@@ -548,25 +602,34 @@ const SchedulePostForm = ({ onBack, accounts, onSuccess }: { onBack: () => void;
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Account Selection */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            <User className="w-4 h-4 inline mr-2" />
-                            Select Account
-                        </label>
-                        <select
-                            value={selectedAccount || ''}
-                            onChange={(e) => setSelectedAccount(Number(e.target.value))}
-                            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
-                            required
-                        >
-                            <option value="">Choose an account...</option>
-                            {accounts.filter(a => a.status === 'active').map(account => (
-                                <option key={account.id} value={account.id}>
-                                    @{account.username}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {!isMultiAccount ? (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <User className="w-4 h-4 inline mr-2" />
+                                Select Account
+                            </label>
+                            <select
+                                value={selectedAccount || ''}
+                                onChange={(e) => setSelectedAccount(Number(e.target.value))}
+                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                                required={!isMultiAccount}
+                            >
+                                <option value="">Choose an account...</option>
+                                {accounts.filter(a => a.status === 'active').map(account => (
+                                    <option key={account.id} value={account.id}>
+                                        @{account.username}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <MultiAccountSelector
+                            accounts={accounts}
+                            selectedAccounts={selectedAccounts}
+                            setSelectedAccounts={setSelectedAccounts}
+                            taskStats={taskStats}
+                        />
+                    )}
 
                     {/* Image Upload */}
                     <div>
@@ -627,20 +690,43 @@ const SchedulePostForm = ({ onBack, accounts, onSuccess }: { onBack: () => void;
                         maxMinutes={maxMinutes}
                         setMaxMinutes={setMaxMinutes}
                         onRandomize={handleRandomize}
+                        isMultiAccount={isMultiAccount}
                     />
+
+                    {/* Share to Threads Toggle */}
+                    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400">
+                                <Activity className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="text-white font-medium text-sm">Share to Threads</h3>
+                                <p className="text-[10px] text-gray-500">Cross-post this image to your Threads account</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShareToThreads(!shareToThreads)}
+                            className={`w-10 h-5 rounded-full transition-colors relative ${shareToThreads ? 'bg-indigo-500' : 'bg-gray-700'
+                                }`}
+                        >
+                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${shareToThreads ? 'left-5.5' : 'left-0.5'
+                                }`} />
+                        </button>
+                    </div>
 
                     {/* Submit */}
                     <button
                         type="submit"
-                        disabled={loading}
-                        className="w-full py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center"
+                        disabled={loading || (isMultiAccount ? selectedAccounts.length === 0 : !selectedAccount)}
+                        className={`w-full py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center`}
                     >
                         {loading ? (
-                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
+                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> {isMultiAccount ? `Creating ${successCount}/${selectedAccounts.length}...` : 'Processing...'}</>
                         ) : mode === 'now' ? (
-                            <><Zap className="w-5 h-5 mr-2" /> Post Now</>
+                            <><Zap className="w-5 h-5 mr-2" /> Post Now {isMultiAccount && `(${selectedAccounts.length} accounts)`}</>
                         ) : (
-                            <><Calendar className="w-5 h-5 mr-2" /> Schedule Post</>
+                            <><Calendar className="w-5 h-5 mr-2" /> Schedule Post {isMultiAccount && `(${selectedAccounts.length} accounts)`}</>
                         )}
                     </button>
                 </form>
@@ -649,8 +735,10 @@ const SchedulePostForm = ({ onBack, accounts, onSuccess }: { onBack: () => void;
     );
 };
 
-// Schedule Like Form (Multi-Account)
+// Schedule Like Form (Single/Multi Account)
 const ScheduleLikeForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: () => void; accounts: Account[]; onSuccess: () => void; taskStats: Record<number, TaskStats> }) => {
+    const [isMultiAccount, setMultiAccount] = useState(true);
+    const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
     const [selectedAccounts, setSelectedAccounts] = useState<number[]>([]);
     const [mediaUrl, setMediaUrl] = useState('');
     const [scheduledAt, setScheduledAt] = useState('');
@@ -668,7 +756,9 @@ const ScheduleLikeForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedAccounts.length === 0 || !mediaUrl) {
+        const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
+
+        if (activeSelectedAccounts.length === 0 || !mediaUrl) {
             setError('Please select at least one account and enter post URL');
             return;
         }
@@ -684,11 +774,11 @@ const ScheduleLikeForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
         try {
             // Pre-generate unique random times for all accounts
             const randomSchedules = mode === 'random'
-                ? generateUniqueRandomSchedules(selectedAccounts.length, minMinutes, maxMinutes)
+                ? generateUniqueRandomSchedules(activeSelectedAccounts.length, minMinutes, maxMinutes)
                 : [];
 
             const results = await Promise.allSettled(
-                selectedAccounts.map(async (accountId, index) => {
+                activeSelectedAccounts.map(async (accountId, index) => {
                     let finalScheduledAt: string;
                     if (mode === 'now') {
                         finalScheduledAt = new Date().toISOString();
@@ -711,11 +801,11 @@ const ScheduleLikeForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
             const succeeded = results.filter(r => r.status === 'fulfilled').length;
             setSuccessCount(succeeded);
 
-            if (succeeded === selectedAccounts.length) {
+            if (succeeded === activeSelectedAccounts.length) {
                 onSuccess();
                 onBack();
             } else {
-                setError(`${succeeded}/${selectedAccounts.length} tasks created successfully`);
+                setError(`${succeeded}/${activeSelectedAccounts.length} tasks created successfully`);
             }
         } catch {
             setError('Failed to schedule likes');
@@ -735,8 +825,9 @@ const ScheduleLikeForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center">
                     <Heart className="w-6 h-6 mr-3 text-red-400" />
                     Schedule Like
-                    <span className="ml-2 px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-lg">Multi-Account</span>
                 </h2>
+
+                <SelectionModeToggle isMultiAccount={isMultiAccount} setMultiAccount={setMultiAccount} />
 
                 {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-center">
@@ -746,13 +837,35 @@ const ScheduleLikeForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Multi-Account Selection */}
-                    <MultiAccountSelector
-                        accounts={accounts}
-                        selectedAccounts={selectedAccounts}
-                        setSelectedAccounts={setSelectedAccounts}
-                        taskStats={taskStats}
-                    />
+                    {/* Account Selection */}
+                    {!isMultiAccount ? (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <User className="w-4 h-4 inline mr-2" />
+                                Select Account
+                            </label>
+                            <select
+                                value={selectedAccount || ''}
+                                onChange={(e) => setSelectedAccount(Number(e.target.value))}
+                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                                required={!isMultiAccount}
+                            >
+                                <option value="">Choose an account...</option>
+                                {accounts.filter(a => a.status === 'active').map(account => (
+                                    <option key={account.id} value={account.id}>
+                                        @{account.username}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <MultiAccountSelector
+                            accounts={accounts}
+                            selectedAccounts={selectedAccounts}
+                            setSelectedAccounts={setSelectedAccounts}
+                            taskStats={taskStats}
+                        />
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">Post URL</label>
@@ -777,20 +890,20 @@ const ScheduleLikeForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
                         maxMinutes={maxMinutes}
                         setMaxMinutes={setMaxMinutes}
                         onRandomize={handleRandomize}
-                        isMultiAccount={true}
+                        isMultiAccount={isMultiAccount}
                     />
 
                     <button
                         type="submit"
-                        disabled={loading || selectedAccounts.length === 0}
+                        disabled={loading || (isMultiAccount ? selectedAccounts.length === 0 : !selectedAccount)}
                         className="w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-medium rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center"
                     >
                         {loading ? (
-                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating {successCount}/{selectedAccounts.length}...</>
+                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating {successCount}/{isMultiAccount ? selectedAccounts.length : 1}...</>
                         ) : mode === 'now' ? (
-                            <><Zap className="w-5 h-5 mr-2" /> Like Now ({selectedAccounts.length} accounts)</>
+                            <><Zap className="w-5 h-5 mr-2" /> Like Now ({isMultiAccount ? selectedAccounts.length : 1} accounts)</>
                         ) : (
-                            <><Heart className="w-5 h-5 mr-2" /> Schedule Like ({selectedAccounts.length} accounts)</>
+                            <><Heart className="w-5 h-5 mr-2" /> Schedule Like ({isMultiAccount ? selectedAccounts.length : 1} accounts)</>
                         )}
                     </button>
                 </form>
@@ -799,8 +912,10 @@ const ScheduleLikeForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
     );
 };
 
-// Schedule Follow Form (Multi-Account)
+// Schedule Follow Form (Single/Multi Account)
 const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: () => void; accounts: Account[]; onSuccess: () => void; taskStats: Record<number, TaskStats> }) => {
+    const [isMultiAccount, setMultiAccount] = useState(true);
+    const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
     const [selectedAccounts, setSelectedAccounts] = useState<number[]>([]);
     const [targetUsername, setTargetUsername] = useState('');
     const [scheduledAt, setScheduledAt] = useState('');
@@ -819,9 +934,10 @@ const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const targets = targetUsername.split(/[\n,]+/).map(t => t.trim().replace('@', '')).filter(t => t);
+        const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
 
-        if (selectedAccounts.length === 0 || targets.length === 0) {
-            setError('Please select at least one account and enter target username(s)');
+        if (activeSelectedAccounts.length === 0 || targets.length === 0) {
+            setError('Please select account(s) and enter target username(s)');
             return;
         }
         if (mode === 'schedule' && !scheduledAt) {
@@ -833,7 +949,7 @@ const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack
         setError('');
         setSuccessCount(0);
 
-        const totalTasksCount = selectedAccounts.length * targets.length;
+        const totalTasksCount = activeSelectedAccounts.length * targets.length;
 
         try {
             // Pre-generate unique random times for all accounts and targets
@@ -844,7 +960,7 @@ const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack
             let succeeded = 0;
             let taskIndex = 0;
 
-            for (const accountId of selectedAccounts) {
+            for (const accountId of activeSelectedAccounts) {
                 for (const target of targets) {
                     let finalScheduledAt: string;
                     if (mode === 'now') {
@@ -896,8 +1012,9 @@ const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center">
                     <UserPlus className="w-6 h-6 mr-3 text-blue-400" />
                     Schedule Follow
-                    <span className="ml-2 px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-lg">Multi-Account</span>
                 </h2>
+
+                <SelectionModeToggle isMultiAccount={isMultiAccount} setMultiAccount={setMultiAccount} />
 
                 {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-center">
@@ -907,13 +1024,35 @@ const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Multi-Account Selection */}
-                    <MultiAccountSelector
-                        accounts={accounts}
-                        selectedAccounts={selectedAccounts}
-                        setSelectedAccounts={setSelectedAccounts}
-                        taskStats={taskStats}
-                    />
+                    {/* Account Selection */}
+                    {!isMultiAccount ? (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <User className="w-4 h-4 inline mr-2" />
+                                Select Account
+                            </label>
+                            <select
+                                value={selectedAccount || ''}
+                                onChange={(e) => setSelectedAccount(Number(e.target.value))}
+                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                                required={!isMultiAccount}
+                            >
+                                <option value="">Choose an account...</option>
+                                {accounts.filter(a => a.status === 'active').map(account => (
+                                    <option key={account.id} value={account.id}>
+                                        @{account.username}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <MultiAccountSelector
+                            accounts={accounts}
+                            selectedAccounts={selectedAccounts}
+                            setSelectedAccounts={setSelectedAccounts}
+                            taskStats={taskStats}
+                        />
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">Target Username(s)</label>
@@ -941,20 +1080,20 @@ const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack
                         maxMinutes={maxMinutes}
                         setMaxMinutes={setMaxMinutes}
                         onRandomize={handleRandomize}
-                        isMultiAccount={true}
+                        isMultiAccount={isMultiAccount}
                     />
 
                     <button
                         type="submit"
-                        disabled={loading || selectedAccounts.length === 0}
+                        disabled={loading || (isMultiAccount ? selectedAccounts.length === 0 : !selectedAccount)}
                         className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center"
                     >
                         {loading ? (
-                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating {successCount}/{selectedAccounts.length}...</>
+                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating {successCount}/{activeSelectedAccounts.length * (targetUsername.split(/[\n,]+/).filter(t => t).length)}...</>
                         ) : mode === 'now' ? (
-                            <><Zap className="w-5 h-5 mr-2" /> Follow Now ({selectedAccounts.length} accounts)</>
+                            <><Zap className="w-5 h-5 mr-2" /> Follow Now ({activeSelectedAccounts.length} accounts)</>
                         ) : (
-                            <><UserPlus className="w-5 h-5 mr-2" /> Schedule Follow ({selectedAccounts.length} accounts)</>
+                            <><UserPlus className="w-5 h-5 mr-2" /> Schedule Follow ({activeSelectedAccounts.length} accounts)</>
                         )}
                     </button>
                 </form>
@@ -963,8 +1102,10 @@ const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack
     );
 };
 
-// Schedule View Form (Multi-Account)
+// Schedule View Form (Single/Multi Account)
 const ScheduleViewForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: () => void; accounts: Account[]; onSuccess: () => void; taskStats: Record<number, TaskStats> }) => {
+    const [isMultiAccount, setMultiAccount] = useState(true);
+    const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
     const [selectedAccounts, setSelectedAccounts] = useState<number[]>([]);
     const [storyUrl, setStoryUrl] = useState('');
     const [scheduledAt, setScheduledAt] = useState('');
@@ -982,7 +1123,9 @@ const ScheduleViewForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedAccounts.length === 0 || !storyUrl) {
+        const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
+
+        if (activeSelectedAccounts.length === 0 || !storyUrl) {
             setError('Please select at least one account and enter story URL');
             return;
         }
@@ -998,11 +1141,11 @@ const ScheduleViewForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
         try {
             // Pre-generate unique random times for all accounts
             const randomSchedules = mode === 'random'
-                ? generateUniqueRandomSchedules(selectedAccounts.length, minMinutes, maxMinutes)
+                ? generateUniqueRandomSchedules(activeSelectedAccounts.length, minMinutes, maxMinutes)
                 : [];
 
             const results = await Promise.allSettled(
-                selectedAccounts.map(async (accountId, index) => {
+                activeSelectedAccounts.map(async (accountId, index) => {
                     let finalScheduledAt: string;
                     if (mode === 'now') {
                         finalScheduledAt = new Date().toISOString();
@@ -1025,11 +1168,11 @@ const ScheduleViewForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
             const succeeded = results.filter(r => r.status === 'fulfilled').length;
             setSuccessCount(succeeded);
 
-            if (succeeded === selectedAccounts.length) {
+            if (succeeded === activeSelectedAccounts.length) {
                 onSuccess();
                 onBack();
             } else {
-                setError(`${succeeded}/${selectedAccounts.length} tasks created successfully`);
+                setError(`${succeeded}/${activeSelectedAccounts.length} tasks created successfully`);
             }
         } catch {
             setError('Failed to schedule views');
@@ -1049,8 +1192,9 @@ const ScheduleViewForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center">
                     <Eye className="w-6 h-6 mr-3 text-purple-400" />
                     Schedule View
-                    <span className="ml-2 px-2 py-0.5 bg-purple-500/20 text-purple-400 text-xs rounded-lg">Multi-Account</span>
                 </h2>
+
+                <SelectionModeToggle isMultiAccount={isMultiAccount} setMultiAccount={setMultiAccount} />
 
                 {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-center">
@@ -1060,13 +1204,35 @@ const ScheduleViewForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Multi-Account Selection */}
-                    <MultiAccountSelector
-                        accounts={accounts}
-                        selectedAccounts={selectedAccounts}
-                        setSelectedAccounts={setSelectedAccounts}
-                        taskStats={taskStats}
-                    />
+                    {/* Account Selection */}
+                    {!isMultiAccount ? (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <User className="w-4 h-4 inline mr-2" />
+                                Select Account
+                            </label>
+                            <select
+                                value={selectedAccount || ''}
+                                onChange={(e) => setSelectedAccount(Number(e.target.value))}
+                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                                required={!isMultiAccount}
+                            >
+                                <option value="">Choose an account...</option>
+                                {accounts.filter(a => a.status === 'active').map(account => (
+                                    <option key={account.id} value={account.id}>
+                                        @{account.username}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <MultiAccountSelector
+                            accounts={accounts}
+                            selectedAccounts={selectedAccounts}
+                            setSelectedAccounts={setSelectedAccounts}
+                            taskStats={taskStats}
+                        />
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">Story/Reel URL</label>
@@ -1091,20 +1257,20 @@ const ScheduleViewForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
                         maxMinutes={maxMinutes}
                         setMaxMinutes={setMaxMinutes}
                         onRandomize={handleRandomize}
-                        isMultiAccount={true}
+                        isMultiAccount={isMultiAccount}
                     />
 
                     <button
                         type="submit"
-                        disabled={loading || selectedAccounts.length === 0}
+                        disabled={loading || (isMultiAccount ? selectedAccounts.length === 0 : !selectedAccount)}
                         className="w-full py-3 bg-gradient-to-r from-purple-500 to-violet-500 text-white font-medium rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center"
                     >
                         {loading ? (
-                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating {successCount}/{selectedAccounts.length}...</>
+                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating {successCount}/{isMultiAccount ? selectedAccounts.length : 1}...</>
                         ) : mode === 'now' ? (
-                            <><Zap className="w-5 h-5 mr-2" /> View Now ({selectedAccounts.length} accounts)</>
+                            <><Zap className="w-5 h-5 mr-2" /> View Now ({isMultiAccount ? selectedAccounts.length : 1} accounts)</>
                         ) : (
-                            <><Eye className="w-5 h-5 mr-2" /> Schedule View ({selectedAccounts.length} accounts)</>
+                            <><Eye className="w-5 h-5 mr-2" /> Schedule View ({isMultiAccount ? selectedAccounts.length : 1} accounts)</>
                         )}
                     </button>
                 </form>
@@ -1113,17 +1279,21 @@ const ScheduleViewForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: 
     );
 };
 
-const ScheduleReelsForm = ({ onBack, accounts, onSuccess }: { onBack: () => void; accounts: Account[]; onSuccess: () => void }) => {
+const ScheduleReelsForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: () => void; accounts: Account[]; onSuccess: () => void; taskStats: Record<number, TaskStats> }) => {
+    const [isMultiAccount, setMultiAccount] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
+    const [selectedAccounts, setSelectedAccounts] = useState<number[]>([]);
     const [caption, setCaption] = useState('');
     const [scheduledAt, setScheduledAt] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [successCount, setSuccessCount] = useState(0);
     const [mode, setMode] = useState<'schedule' | 'random' | 'now'>('schedule');
     const [minMinutes, setMinMinutes] = useState(5);
     const [maxMinutes, setMaxMinutes] = useState(60);
+    const [shareToThreads, setShareToThreads] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1151,8 +1321,10 @@ const ScheduleReelsForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedAccount || !selectedFile) {
-            setError('Please select account and upload video');
+        const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
+
+        if (activeSelectedAccounts.length === 0 || !selectedFile) {
+            setError('Please select account(s) and upload video');
             return;
         }
         if (mode === 'schedule' && !scheduledAt) {
@@ -1162,31 +1334,47 @@ const ScheduleReelsForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
 
         setLoading(true);
         setError('');
+        setSuccessCount(0);
 
         try {
-            let finalScheduledAt: string;
-            if (mode === 'now') {
-                finalScheduledAt = new Date().toISOString();
-            } else if (mode === 'random' && !scheduledAt) {
-                const randomDate = generateRandomSchedule(minMinutes, maxMinutes);
-                finalScheduledAt = randomDate.toISOString();
+            const randomSchedules = mode === 'random'
+                ? generateUniqueRandomSchedules(activeSelectedAccounts.length, minMinutes, maxMinutes)
+                : [];
+
+            const results = await Promise.allSettled(
+                activeSelectedAccounts.map(async (accountId, index) => {
+                    let finalScheduledAt: string;
+                    if (mode === 'now') {
+                        finalScheduledAt = new Date().toISOString();
+                    } else if (mode === 'random') {
+                        finalScheduledAt = randomSchedules[index].toISOString();
+                    } else {
+                        finalScheduledAt = new Date(scheduledAt).toISOString();
+                    }
+
+                    const formData = new FormData();
+                    formData.append('account_id', accountId.toString());
+                    formData.append('scheduled_at', finalScheduledAt);
+                    formData.append('caption', caption);
+                    formData.append('video', selectedFile);
+                    formData.append('share_to_threads', shareToThreads ? 'true' : 'false');
+                    formData.append('execute_now', mode === 'now' ? 'true' : 'false');
+
+                    return api.post('/tasks/reels', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                })
+            );
+
+            const succeeded = results.filter(r => r.status === 'fulfilled').length;
+            setSuccessCount(succeeded);
+
+            if (succeeded === activeSelectedAccounts.length) {
+                onSuccess();
+                onBack();
             } else {
-                finalScheduledAt = new Date(scheduledAt).toISOString();
+                setError(`${succeeded}/${activeSelectedAccounts.length} tasks created successfully`);
             }
-
-            const formData = new FormData();
-            formData.append('account_id', selectedAccount.toString());
-            formData.append('scheduled_at', finalScheduledAt);
-            formData.append('caption', caption);
-            formData.append('video', selectedFile);
-            formData.append('execute_now', mode === 'now' ? 'true' : 'false');
-
-            await api.post('/tasks/reels', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            onSuccess();
-            onBack();
         } catch (err: unknown) {
             if (err && typeof err === 'object' && 'response' in err) {
                 const axiosErr = err as { response?: { data?: { detail?: string } } };
@@ -1198,6 +1386,8 @@ const ScheduleReelsForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
             setLoading(false);
         }
     };
+
+    const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
 
     return (
         <div className="space-y-6">
@@ -1211,6 +1401,8 @@ const ScheduleReelsForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
                     <Video className="w-6 h-6 mr-3 text-indigo-400" />
                     Schedule Reels
                 </h2>
+
+                <SelectionModeToggle isMultiAccount={isMultiAccount} setMultiAccount={setMultiAccount} />
 
                 {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-center">
@@ -1232,26 +1424,36 @@ const ScheduleReelsForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
                             <li>Size: Max <b>10MB</b></li>
                         </ul>
                     </div>
+
                     {/* Account Selection */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            <User className="w-4 h-4 inline mr-2" />
-                            Select Account
-                        </label>
-                        <select
-                            value={selectedAccount || ''}
-                            onChange={(e) => setSelectedAccount(Number(e.target.value))}
-                            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
-                            required
-                        >
-                            <option value="">Choose an account...</option>
-                            {accounts.filter(a => a.status === 'active').map(account => (
-                                <option key={account.id} value={account.id}>
-                                    @{account.username}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {!isMultiAccount ? (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <User className="w-4 h-4 inline mr-2" />
+                                Select Account
+                            </label>
+                            <select
+                                value={selectedAccount || ''}
+                                onChange={(e) => setSelectedAccount(Number(e.target.value))}
+                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                                required={!isMultiAccount}
+                            >
+                                <option value="">Choose an account...</option>
+                                {accounts.filter(a => a.status === 'active').map(account => (
+                                    <option key={account.id} value={account.id}>
+                                        @{account.username}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <MultiAccountSelector
+                            accounts={accounts}
+                            selectedAccounts={selectedAccounts}
+                            setSelectedAccounts={setSelectedAccounts}
+                            taskStats={taskStats}
+                        />
+                    )}
 
                     {/* Video Upload */}
                     <div>
@@ -1311,19 +1513,43 @@ const ScheduleReelsForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
                         maxMinutes={maxMinutes}
                         setMaxMinutes={setMaxMinutes}
                         onRandomize={handleRandomize}
+                        isMultiAccount={isMultiAccount}
                     />
+
+                    {/* Share to Threads Toggle */}
+                    <div className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400">
+                                <Activity className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="text-white font-medium text-sm">Share to Threads</h3>
+                                <p className="text-[10px] text-gray-500">Cross-post this reel to your Threads account</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShareToThreads(!shareToThreads)}
+                            className={`w-10 h-5 rounded-full transition-colors relative ${shareToThreads ? 'bg-indigo-500' : 'bg-gray-700'
+                                }`}
+                        >
+                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${shareToThreads ? 'left-5.5' : 'left-0.5'
+                                }`} />
+                        </button>
+                    </div>
+
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || activeSelectedAccounts.length === 0}
                         className="w-full py-3 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-medium rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center"
                     >
                         {loading ? (
-                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
+                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating {successCount}/{activeSelectedAccounts.length}...</>
                         ) : mode === 'now' ? (
-                            <><Zap className="w-5 h-5 mr-2" /> Post Reels Now</>
+                            <><Zap className="w-5 h-5 mr-2" /> Post Reels Now ({activeSelectedAccounts.length} accounts)</>
                         ) : (
-                            <><Calendar className="w-5 h-5 mr-2" /> Schedule Reels</>
+                            <><Calendar className="w-5 h-5 mr-2" /> Schedule Reels ({activeSelectedAccounts.length} accounts)</>
                         )}
                     </button>
                 </form>
@@ -1332,8 +1558,10 @@ const ScheduleReelsForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
     );
 };
 
-const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void; accounts: Account[]; onSuccess: () => void }) => {
+const ScheduleStoryForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack: () => void; accounts: Account[]; onSuccess: () => void; taskStats: Record<number, TaskStats> }) => {
+    const [isMultiAccount, setMultiAccount] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
+    const [selectedAccounts, setSelectedAccounts] = useState<number[]>([]);
     const [caption, setCaption] = useState('');
     const [link, setLink] = useState('');
     const [scheduledAt, setScheduledAt] = useState('');
@@ -1341,6 +1569,7 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
     const [preview, setPreview] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [successCount, setSuccessCount] = useState(0);
     const [mode, setMode] = useState<'schedule' | 'random' | 'now'>('schedule');
     const [minMinutes, setMinMinutes] = useState(5);
     const [maxMinutes, setMaxMinutes] = useState(60);
@@ -1363,8 +1592,10 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedAccount || !selectedFile) {
-            setError('Please select account and upload media');
+        const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
+
+        if (activeSelectedAccounts.length === 0 || !selectedFile) {
+            setError('Please select account(s) and upload media');
             return;
         }
         if (mode === 'schedule' && !scheduledAt) {
@@ -1374,32 +1605,47 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
 
         setLoading(true);
         setError('');
+        setSuccessCount(0);
 
         try {
-            let finalScheduledAt: string;
-            if (mode === 'now') {
-                finalScheduledAt = new Date().toISOString();
-            } else if (mode === 'random' && !scheduledAt) {
-                const randomDate = generateRandomSchedule(minMinutes, maxMinutes);
-                finalScheduledAt = randomDate.toISOString();
+            const randomSchedules = mode === 'random'
+                ? generateUniqueRandomSchedules(activeSelectedAccounts.length, minMinutes, maxMinutes)
+                : [];
+
+            const results = await Promise.allSettled(
+                activeSelectedAccounts.map(async (accountId, index) => {
+                    let finalScheduledAt: string;
+                    if (mode === 'now') {
+                        finalScheduledAt = new Date().toISOString();
+                    } else if (mode === 'random') {
+                        finalScheduledAt = randomSchedules[index].toISOString();
+                    } else {
+                        finalScheduledAt = new Date(scheduledAt).toISOString();
+                    }
+
+                    const formData = new FormData();
+                    formData.append('account_id', accountId.toString());
+                    formData.append('scheduled_at', finalScheduledAt);
+                    formData.append('caption', caption);
+                    formData.append('link', link);
+                    formData.append('media', selectedFile);
+                    formData.append('execute_now', mode === 'now' ? 'true' : 'false');
+
+                    return api.post('/tasks/story', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                })
+            );
+
+            const succeeded = results.filter(r => r.status === 'fulfilled').length;
+            setSuccessCount(succeeded);
+
+            if (succeeded === activeSelectedAccounts.length) {
+                onSuccess();
+                onBack();
             } else {
-                finalScheduledAt = new Date(scheduledAt).toISOString();
+                setError(`${succeeded}/${activeSelectedAccounts.length} tasks created successfully`);
             }
-
-            const formData = new FormData();
-            formData.append('account_id', selectedAccount.toString());
-            formData.append('scheduled_at', finalScheduledAt);
-            formData.append('caption', caption);
-            formData.append('link', link);
-            formData.append('media', selectedFile);
-            formData.append('execute_now', mode === 'now' ? 'true' : 'false');
-
-            await api.post('/tasks/story', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            onSuccess();
-            onBack();
         } catch (err: unknown) {
             if (err && typeof err === 'object' && 'response' in err) {
                 const axiosErr = err as { response?: { data?: { detail?: string } } };
@@ -1413,6 +1659,7 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
     };
 
     const isVideo = selectedFile?.type.startsWith('video/');
+    const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
 
     return (
         <div className="space-y-6">
@@ -1426,6 +1673,8 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
                     <Play className="w-6 h-6 mr-3 text-amber-400" />
                     Schedule Story
                 </h2>
+
+                <SelectionModeToggle isMultiAccount={isMultiAccount} setMultiAccount={setMultiAccount} />
 
                 {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-center">
@@ -1447,26 +1696,36 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
                             <li>Size: Max <b>10MB</b></li>
                         </ul>
                     </div>
+
                     {/* Account Selection */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            <User className="w-4 h-4 inline mr-2" />
-                            Select Account
-                        </label>
-                        <select
-                            value={selectedAccount || ''}
-                            onChange={(e) => setSelectedAccount(Number(e.target.value))}
-                            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
-                            required
-                        >
-                            <option value="">Choose an account...</option>
-                            {accounts.filter(a => a.status === 'active').map(account => (
-                                <option key={account.id} value={account.id}>
-                                    @{account.username}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {!isMultiAccount ? (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <User className="w-4 h-4 inline mr-2" />
+                                Select Account
+                            </label>
+                            <select
+                                value={selectedAccount || ''}
+                                onChange={(e) => setSelectedAccount(Number(e.target.value))}
+                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                                required={!isMultiAccount}
+                            >
+                                <option value="">Choose an account...</option>
+                                {accounts.filter(a => a.status === 'active').map(account => (
+                                    <option key={account.id} value={account.id}>
+                                        @{account.username}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <MultiAccountSelector
+                            accounts={accounts}
+                            selectedAccounts={selectedAccounts}
+                            setSelectedAccounts={setSelectedAccounts}
+                            taskStats={taskStats}
+                        />
+                    )}
 
                     {/* Media Upload */}
                     <div>
@@ -1486,7 +1745,7 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
                                 {isVideo ? (
                                     <video src={preview} controls className="w-full max-h-64 rounded-xl" />
                                 ) : (
-                                    <img src={preview} alt="Preview" className="w-full max-h-64 object-cover rounded-xl" />
+                                    <img src={preview} alt="Story preview" className="w-full max-h-64 rounded-xl object-contain bg-black" />
                                 )}
                                 <button
                                     type="button"
@@ -1500,38 +1759,35 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="w-full p-8 border-2 border-dashed border-gray-700 rounded-xl hover:border-indigo-500 transition-colors"
+                                className="w-full p-8 border-2 border-dashed border-gray-700 rounded-xl hover:border-amber-500 transition-colors"
                             >
                                 <Upload className="w-8 h-8 mx-auto text-gray-500 mb-2" />
-                                <p className="text-gray-400">Click to upload photo or video</p>
+                                <p className="text-gray-400">Click to upload story media</p>
                             </button>
                         )}
                     </div>
 
                     {/* Link */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            <Link className="w-4 h-4 inline mr-2" />
-                            Story Link (optional)
-                        </label>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Story Link (Optional)</label>
                         <input
                             type="url"
                             value={link}
                             onChange={(e) => setLink(e.target.value)}
-                            placeholder="https://example.com"
+                            placeholder="https://..."
                             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
                         />
                     </div>
 
                     {/* Caption */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Caption (optional)</label>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Caption/Sticker Text (Optional)</label>
                         <textarea
                             value={caption}
                             onChange={(e) => setCaption(e.target.value)}
                             rows={3}
-                            placeholder="Write your story caption here..."
-                            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
+                            placeholder="Write story text here..."
+                            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none text-sm"
                         />
                     </div>
 
@@ -1545,19 +1801,20 @@ const ScheduleStoryForm = ({ onBack, accounts, onSuccess }: { onBack: () => void
                         maxMinutes={maxMinutes}
                         setMaxMinutes={setMaxMinutes}
                         onRandomize={handleRandomize}
+                        isMultiAccount={isMultiAccount}
                     />
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || activeSelectedAccounts.length === 0}
                         className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center"
                     >
                         {loading ? (
-                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
+                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating {successCount}/{activeSelectedAccounts.length}...</>
                         ) : mode === 'now' ? (
-                            <><Zap className="w-5 h-5 mr-2" /> Post Story Now</>
+                            <><Zap className="w-5 h-5 mr-2" /> Post Story Now ({activeSelectedAccounts.length} accounts)</>
                         ) : (
-                            <><Calendar className="w-5 h-5 mr-2" /> Schedule Story</>
+                            <><Play className="w-5 h-5 mr-2" /> Schedule Story ({activeSelectedAccounts.length} accounts)</>
                         )}
                     </button>
                 </form>
@@ -1594,12 +1851,12 @@ const Scheduler = () => {
         fetchInitialData(); // Refresh stats
     };
 
-    if (activeMenu === 'post') return <SchedulePostForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} />;
+    if (activeMenu === 'post') return <SchedulePostForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} taskStats={taskStats} />;
     if (activeMenu === 'like') return <ScheduleLikeForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} taskStats={taskStats} />;
     if (activeMenu === 'follow') return <ScheduleFollowForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} taskStats={taskStats} />;
     if (activeMenu === 'view') return <ScheduleViewForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} taskStats={taskStats} />;
-    if (activeMenu === 'reels') return <ScheduleReelsForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} />;
-    if (activeMenu === 'story') return <ScheduleStoryForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} />;
+    if (activeMenu === 'reels') return <ScheduleReelsForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} taskStats={taskStats} />;
+    if (activeMenu === 'story') return <ScheduleStoryForm onBack={handleBack} accounts={accounts} onSuccess={handleSuccess} taskStats={taskStats} />;
 
     return (
         <div className="space-y-8">

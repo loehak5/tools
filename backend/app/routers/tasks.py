@@ -171,6 +171,7 @@ async def create_post_task(
     account_id: int = Form(...),
     scheduled_at: str = Form(...),
     caption: str = Form(""),
+    share_to_threads: str = Form("false"),
     execute_now: str = Form("false"),
     batch_id: Optional[int] = Form(None),
     image: UploadFile = File(...),
@@ -204,7 +205,7 @@ async def create_post_task(
     task = Task(
         account_id=account_id,
         task_type="post",
-        params={"media_path": filename, "caption": caption},
+        params={"media_path": filename, "caption": caption, "share_to_threads": share_to_threads.lower() == "true"},
         scheduled_at=scheduled_datetime,
         status="pending",
         batch_id=batch_id,
@@ -226,6 +227,7 @@ async def create_reels_task(
     account_id: int = Form(...),
     scheduled_at: str = Form(...),
     caption: str = Form(""),
+    share_to_threads: str = Form("false"),
     execute_now: str = Form("false"),
     batch_id: Optional[int] = Form(None),
     video: UploadFile = File(...),
@@ -265,7 +267,7 @@ async def create_reels_task(
     task = Task(
         account_id=account_id,
         task_type="reels",
-        params={"media_path": filename, "caption": caption},
+        params={"media_path": filename, "caption": caption, "share_to_threads": share_to_threads.lower() == "true"},
         scheduled_at=scheduled_datetime,
         status="pending",
         batch_id=batch_id,

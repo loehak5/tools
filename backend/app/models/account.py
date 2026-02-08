@@ -45,6 +45,10 @@ class Account(Base):
     status = Column(String, default="offline") # offline, active, banned, challenge
     last_error = Column(String, nullable=True)  # Store last login error reason
     
+    # Threads integration
+    threads_profile_id = Column(String, nullable=True) # ID as string to avoid precision issues
+    has_threads = Column(Boolean, default=False)
+    
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Initially nullable for migration
     user = relationship("User")
     
