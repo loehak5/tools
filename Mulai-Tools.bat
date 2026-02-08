@@ -23,7 +23,7 @@ if %errorlevel% neq 0 (
 :: --- BAGIAN 2: SETUP BACKEND (PYTHON) ---
 echo.
 echo [2/4] Menyiapkan Backend Python...
-cd tools-ig
+cd backend
 
 :: Install library python jika ada yang baru
 pip install -r requirements.txt --quiet --disable-pip-version-check
@@ -31,7 +31,7 @@ pip install -r requirements.txt --quiet --disable-pip-version-check
 :: Jalankan Python di JENDELA BARU (agar tidak memblokir script)
 :: "start" akan membuka CMD baru berjudul "Backend Server"
 echo     -> Menjalankan Python Service...
-start "Backend Server Instatool" cmd /k "python tools-ig.py"
+start "Backend Server Instatool" cmd /k "python3 -m uvicorn app.main:app --port 8000 --host 127.0.0.1"
 
 
 :: --- BAGIAN 3: SETUP FRONTEND (NODE JS) ---
