@@ -250,7 +250,14 @@ async def get_dashboard_stats(
         plan_name = sub.plan.name
         expiry_date = sub.end_date.isoformat() if sub.end_date else None
         
-    # Addons
+        # Addons
+        stmt_addons = select(SubscriptionAddon).where(
+            SubscriptionAddon.user_id == current_user.id,
+            SubscriptionAddon.is_active == True
+        )
+        addons_result = await db.execute(stmt_addons)
+        addons = addons_result.scalars().all()
+
         for addon in addons:
             if addon.addon_type == "quota":
                 if addon.sub_type == "account":
