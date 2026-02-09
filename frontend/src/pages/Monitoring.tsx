@@ -21,6 +21,26 @@ const formatDateForInput = (date: Date): string => {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
+// Helper: Format time display in local timezone (simple approach)
+const formatLocalTime = (utcString: string): string => {
+    console.log('[formatLocalTime] Input UTC:', utcString);
+    // FIX: Backend sends timestamps without 'Z' suffix - browser interprets as local time!
+    const utcStringWithZ = utcString.endsWith('Z') ? utcString : `${utcString}Z`;
+    const date = new Date(utcStringWithZ);
+    console.log('[formatLocalTime] Date object:', date);
+    console.log('[formatLocalTime] getHours():', date.getHours(), 'getUTCHours():', date.getUTCHours());
+
+    const day = date.getDate();
+    const month = date.toLocaleDateString('id-ID', { month: 'short' });
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    const result = `${day} ${month} ${year}, ${hours}.${minutes}`;
+    console.log('[formatLocalTime] Output:', result);
+    return result;
+};
+
 // Status Badge Component
 // Status Badge Component
 const StatusBadge = ({ status }: { status: string }) => {
@@ -591,12 +611,7 @@ const Monitoring = () => {
                                         <div className="flex items-center justify-between pt-2 border-t border-gray-800/50 mt-auto">
                                             <div className="flex items-center text-[10px] text-gray-500 font-medium">
                                                 <Clock className="w-3 h-3 mr-1.5 opacity-40" />
-                                                <span>{new Date(task.scheduled_at).toLocaleDateString(undefined, {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}</span>
+                                                <span title={`UTC: ${task.scheduled_at}`}>{formatLocalTime(task.scheduled_at)}</span>
                                             </div>
 
                                             <div className="flex items-center gap-2">

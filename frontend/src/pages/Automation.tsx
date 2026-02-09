@@ -32,6 +32,11 @@ const generateUniqueRandomSchedules = (count: number, minMinutes: number, maxMin
     const minMs = minMinutes * 60 * 1000;
     const now = Date.now();
 
+    console.log(`[DEBUG] Generating ${count} random schedules`);
+    console.log(`[DEBUG] Now (timestamp):`, now);
+    console.log(`[DEBUG] Now (local):`, new Date(now).toLocaleString());
+    console.log(`[DEBUG] Range: ${minMinutes}-${maxMinutes} minutes`);
+
     if (count < 50) {
         // For less than 50 accounts, ensure unique times (at least 1 second apart)
         const usedTimes = new Set<number>();
@@ -45,7 +50,11 @@ const generateUniqueRandomSchedules = (count: number, minMinutes: number, maxMin
                 attempts++;
             } while (usedTimes.has(randomMs) && attempts < 1000);
             usedTimes.add(randomMs);
-            schedules.push(new Date(now + randomMs));
+            const scheduledDate = new Date(now + randomMs);
+            schedules.push(scheduledDate);
+            if (i < 3) {  // Log first 3 for debugging
+                console.log(`[DEBUG] Schedule ${i}: Local=${scheduledDate.toLocaleString()}, UTC=${scheduledDate.toISOString()}`);
+            }
         }
     } else {
         // For 50+ accounts, just generate random times (may have duplicates)
