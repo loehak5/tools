@@ -540,38 +540,43 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             </div>
             <div class="addons-grid">
                 <div class="addon-category">
-                    <h4>STABLE PROXIES</h4>
+                    <h4>STATIS RESIDENSIAL PROXY</h4>
                     <div class="addon-list">
                         <div class="addon-item" onclick="buyAddon('proxy', 'shared', 15)">
-                            <div class="addon-info"><span class="addon-label">Shared Bundle</span><span
-                                    class="addon-price">150k</span></div>
-                            <div class="addon-desc">15 Residential Static IPs</div>
+                            <div class="addon-info"><span class="addon-label">Shared Bundle (15 IP)</span><span
+                                    class="addon-price">112.5k/bln</span></div>
+                            <div class="addon-desc">15 Shared Static IPs · Rp 7.500/IP</div>
                         </div>
                         <div class="addon-item" onclick="buyAddon('proxy', 'private', 20)">
-                            <div class="addon-info"><span class="addon-label">Private Elite</span><span
-                                    class="addon-price">450k</span></div>
-                            <div class="addon-desc">20 Private Residential IPs</div>
+                            <div class="addon-info"><span class="addon-label">Private Elite (20 IP)</span><span
+                                    class="addon-price">360k/bln</span></div>
+                            <div class="addon-desc">20 Private Static IPs · Rp 18.000/IP</div>
                         </div>
                         <div class="addon-item" onclick="buyAddon('proxy', 'dedicated', 25)">
-                            <div class="addon-info"><span class="addon-label">Dedicated VIP</span><span
-                                    class="addon-price">1.1M</span></div>
-                            <div class="addon-desc">25 Dedicated Data Center IPs</div>
+                            <div class="addon-info"><span class="addon-label">Dedicated VIP (25 IP)</span><span
+                                    class="addon-price">925k/bln</span></div>
+                            <div class="addon-desc">25 Dedicated Data Center IPs · Rp 37.000/IP</div>
+                        </div>
+                        <div class="addon-item" onclick="showCustomOrderModal()">
+                            <div class="addon-info"><span class="addon-label">Custom Order</span><span
+                                    class="addon-price">Custom</span></div>
+                            <div class="addon-desc">Shared / Private / Dedicated · Min. 10 IP</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="addon-category">
-                    <h4>QUOTA TOP-UPS</h4>
+                    <h4>LAYANAN KUOTA</h4>
                     <div class="addon-list">
                         <div class="addon-item" onclick="buyAddon('quota', 'proxy', 100)">
-                            <div class="addon-info"><span class="addon-label">Proxy Refill (100u)</span><span
+                            <div class="addon-info"><span class="addon-label">Kuota Proxy (100 IP)</span><span
                                     class="addon-price">50k</span></div>
-                            <div class="addon-desc">500 requests per IP unit</div>
+                            <div class="addon-desc">Rp 500 per IP · 100 unit</div>
                         </div>
                         <div class="addon-item" onclick="buyAddon('quota', 'account', 100)">
-                            <div class="addon-info"><span class="addon-label">IG Account (100u)</span><span
+                            <div class="addon-info"><span class="addon-label">Kuota Akun IG (100u)</span><span
                                     class="addon-price">100k</span></div>
-                            <div class="addon-desc">1,000 extra actions per account</div>
+                            <div class="addon-desc">Rp 1.000 per akun · 100 unit</div>
                         </div>
                     </div>
                 </div>
@@ -580,9 +585,9 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                     <h4>SPECIAL FEATURES</h4>
                     <div class="addon-list">
                         <div class="addon-item" onclick="buyAddon('cross_threads', null, 1)">
-                            <div class="addon-info"><span class="addon-label">Cross Threads (Promo)</span><span
+                            <div class="addon-info"><span class="addon-label">Cross Posting Threads</span><span
                                     class="addon-price">100k - 200k</span></div>
-                            <div class="addon-desc">Advanced cross-posting modules</div>
+                            <div class="addon-desc">Basic: 100k (1x promo) · Pro: 200k (prorated)</div>
                         </div>
                     </div>
                 </div>
@@ -766,6 +771,16 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             }
         }
 
+        function showCustomOrderModal() {
+            showModal('info', 'Custom Proxy Order',
+                'Pilih tipe proxy dan tentukan jumlah IP:\n\n' +
+                '• Shared: Rp 7.500/IP\n' +
+                '• Private: Rp 18.000/IP\n' +
+                '• Dedicated: Rp 37.000/IP\n\n' +
+                'Minimal pemesanan: 10 IP\n' +
+                'Hubungi admin untuk custom order.');
+        }
+
         function showModal(type, title, message) {
             const modal = document.getElementById('restrictionModal');
             const icon = document.getElementById('modalIcon');
@@ -776,6 +791,10 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 icon.innerHTML = '🛡️';
                 icon.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))';
                 icon.style.border = '1px solid rgba(239,68,68,0.3)';
+            } else if (type === 'info') {
+                icon.innerHTML = 'ℹ️';
+                icon.style.background = 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.1))';
+                icon.style.border = '1px solid rgba(99,102,241,0.3)';
             } else {
                 icon.innerHTML = '⚠️';
                 icon.style.background = 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1))';

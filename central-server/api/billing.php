@@ -70,42 +70,58 @@ function calculate_addon_price($tier, $addon_type, $sub_type = null, $quantity =
         return -1; // Not allowed
     }
 
-    // Rule A: Basic Tier Promo (Cross Posting) - 100k flat
+    // ===== CROSS POSTING / CROSS THREADS =====
+
+    // Basic Tier: Promo sekali beli 100k flat (sesuai masa aktif tier)
     if ($tier === 'basic' && ($addon_type === 'cross_posting' || $addon_type === 'cross_threads')) {
         return 100000.00;
     }
 
-    // Rule B: Pro Tier Cross Posting - 200k (Prorated)
+    // Pro Tier: 200k/30 hari, prorated jika beli di pertengahan
     if ($tier === 'pro' && ($addon_type === 'cross_posting' || $addon_type === 'cross_threads')) {
         $base_price = 200000.00;
-        // Logic: bought mid-cycle, price is prorated.
-        $prorated = ($base_price / 30) * $remaining_days;
+        $base_days = 30;
+        if ($remaining_days >= $base_days) {
+            return $base_price; // Full price if bought at start
+        }
+        // Prorated if mid-cycle
+        $prorated = ($base_price / $base_days) * $remaining_days;
         return round(max($prorated, 0));
     }
 
-    // Rule: Proxy Services (Static Residential)
+    // Advanced & Supreme: cross posting sudah termasuk di tier
+    if (in_array($tier, ['advanced', 'supreme']) && ($addon_type === 'cross_posting' || $addon_type === 'cross_threads')) {
+        return -2; // Already included in tier
+    }
+
+    // ===== LAYANAN PROXY (Statis Residensial) =====
     if ($addon_type === 'proxy') {
-        // Unit costs matched to landing page card prices:
-        // Shared: 150k / 15 IPs = 10k/IP
-        // Private: 450k / 20 IPs = 22.5k/IP
-        // Dedicated: 1.1M / 25 IPs = 44k/IP
+        // Per-IP unit prices per bulan:
+        // Shared:    Rp 7.500/IP  (bundle 15 IP = 112.5k)
+        // Private:   Rp 18.000/IP (bundle 20 IP = 360k)
+        // Dedicated: Rp 37.000/IP (bundle 25 IP = 925k)
         $unit_costs = [
-            'shared' => 10000.00,
-            'private' => 22500.00,
-            'dedicated' => 44000.00
+            'shared' => 7500.00,
+            'private' => 18000.00,
+            'dedicated' => 37000.00
         ];
+
+        // Custom order: minimum 10 units
+        if ($sub_type === 'custom' || !isset($unit_costs[$sub_type])) {
+            return 0; // Handled separately or invalid
+        }
 
         $price = ($unit_costs[$sub_type] ?? 0) * $quantity;
         return $price;
     }
 
-    // Rule: Layanan Kuota
+    // ===== LAYANAN KUOTA =====
     if ($addon_type === 'quota') {
         if ($sub_type === 'proxy') {
-            return 500.00 * $quantity; // 500 per unit
+            return 500.00 * $quantity; // Rp 500 per IP
         }
         if ($sub_type === 'account') {
-            return 1000.00 * $quantity; // 1k per unit
+            return 1000.00 * $quantity; // Rp 1.000 per akun IG
         }
     }
 
@@ -248,8 +264,29 @@ switch ($action) {
             $rem_days = (strtotime($sub['end_date']) - time()) / (24 * 3600);
             $price = calculate_addon_price($sub['plan_id'], $addon_type, $sub_type, $qty, $rem_days);
 
-            if ($price < 0) {
-                echo json_encode(['status' => 'error', 'message' => 'Add-on not allowed for your plan']);
+            if ($price == -1) {
+                echo json_encode(['status' => 'error', 'message' => 'Add-on tidak tersedia untuk paket Anda.']);
+                break;
+            }
+
+            if ($price == -2) {
+                echo json_encode(['status' => 'error', 'message' => 'Fitur ini sudah termasuk dalam paket Anda.']);
+                break;
+            }
+
+            // Basic tier: Cross Posting hanya sekali beli
+            if ($sub['plan_id'] === 'basic' && ($addon_type === 'cross_posting' || $addon_type === 'cross_threads')) {
+                $checkStmt = $db->prepare("SELECT COUNT(*) as cnt FROM subscription_addons WHERE user_id = ? AND addon_type IN ('cross_posting', 'cross_threads')");
+                $checkStmt->execute([$_SESSION['user_id']]);
+                $existing = $checkStmt->fetch();
+                if ($existing && $existing['cnt'] > 0) {
+                    echo json_encode(['status' => 'error', 'message' => 'Promo Cross Posting untuk Basic hanya dapat dibeli 1x.']);
+                    break;
+                }
+            }
+
+            if ($price <= 0) {
+                echo json_encode(['status' => 'error', 'message' => 'Harga add-on tidak valid.']);
                 break;
             }
 
