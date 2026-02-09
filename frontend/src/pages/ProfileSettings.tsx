@@ -144,10 +144,18 @@ const ProfileSettings = () => {
                             </div>
 
                             <div className="pt-4 border-t border-gray-800/50">
-                                <div className="flex items-center space-x-2 mb-6">
-                                    <Key className="w-4 h-4 text-indigo-400" />
-                                    <h3 className="text-white font-bold">Change Password</h3>
-                                    <span className="text-[10px] text-gray-500 font-medium">(Leave blank to keep current)</span>
+                                <div className="flex flex-col mb-6">
+                                    <div className="flex items-center space-x-2">
+                                        <Key className="w-4 h-4 text-indigo-400" />
+                                        <h3 className="text-white font-bold">Change Password</h3>
+                                        <span className="text-[10px] text-gray-500 font-medium">(Leave blank to keep current)</span>
+                                    </div>
+                                    {!user?.is_password_set && (
+                                        <div className="mt-2 inline-flex items-center space-x-2 text-amber-500 animate-pulse">
+                                            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                            <span className="text-[10px] font-black uppercase tracking-wider">Segera buat kata sandi mandiri untuk keamanan akun Anda!</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
