@@ -47,6 +47,76 @@ async def login_for_access_token(
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
+import hmac
+import hashlib
+@router.get("/auth/sso-token")
+async def get_sso_token(current_user: User = Depends(get_current_user)):
+    """Generate a portable HMAC SSO token for the central server."""
+    timestamp = str(int(time.time()))
+    secret = "your-fallback-secret-key-change-it-in-prod" 
+    
+    message = f"{current_user.username}:{timestamp}"
+    signature = hmac.new(
+        secret.encode(),
+        message.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    
+    sso_token = f"{current_user.username}:{timestamp}:{signature}"
+    return {"sso_token": sso_token}
+
+@router.post("/auth/sync", response_model=Token)
+async def sync_login(
+    payload: Dict[str, str],
+    db: AsyncSession = Depends(get_db)
+):
+    """Verify a sync token from the central server and issue a local JWT."""
+    token = payload.get("token")
+    if not token:
+        raise HTTPException(status_code=400, detail="Sync token missing")
+    
+    parts = token.split(":")
+    if len(parts) != 3:
+        raise HTTPException(status_code=400, detail="Invalid token format")
+    
+    username, timestamp, signature = parts
+    secret = "your-fallback-secret-key-change-it-in-prod"
+    
+    # 1. Verify Age (5 mins max)
+    if time.time() - int(timestamp) > 300:
+        raise HTTPException(status_code=400, detail="Sync token expired")
+    
+    # 2. Verify Signature
+    message = f"{username}:{timestamp}"
+    expected_sig = hmac.new(
+        secret.encode(),
+        message.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    
+    if signature != expected_sig:
+        raise HTTPException(status_code=400, detail="Sync signature mismatch")
+    
+    # 3. Get or Create User
+    result = await db.execute(select(User).where(User.username == username))
+    user = result.scalars().first()
+    
+    if not user:
+        user = User(
+            username=username,
+            hashed_password=get_password_hash("sso-managed"),
+            full_name=username,
+            role="operator",
+            is_active=True
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+    
+    access_token = create_access_token(subject=user.username)
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
 @router.get("/users", response_model=List[UserResponse])
 async def list_users(
     db: AsyncSession = Depends(get_db),

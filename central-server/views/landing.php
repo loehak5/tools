@@ -1,0 +1,565 @@
+<?php
+// /instatools/central-server/views/landing.php
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /');
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instatools - Elite Automation Access</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-glow: rgba(129, 140, 248, 0.4);
+            --secondary: #c084fc;
+            --accent: #22d3ee;
+            --bg: #030712;
+            --card-bg: rgba(30, 41, 59, 0.5);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1e1b4b, var(--bg));
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* Nav */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 60px;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .user-status {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 20px;
+            border-radius: 99px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+
+        .logout-link {
+            color: #f87171;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .hero h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+        }
+
+        .hero p {
+            color: var(--text-dim);
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Pricing Grid */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .plan-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 40px;
+            border: 1px solid var(--card-border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(129, 140, 248, 0.5);
+            box-shadow: 0 20px 40px -20px var(--primary-glow);
+        }
+
+        .plan-card.highlight {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.7));
+            border: 2px solid var(--primary);
+        }
+
+        .plan-card.highlight::before {
+            content: "BEST VALUE";
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background: var(--primary);
+            color: #030712;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 4px 40px;
+            transform: rotate(45deg);
+        }
+
+        .plan-header {
+            margin-bottom: 30px;
+        }
+
+        .plan-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .currency {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        .plan-duration {
+            font-size: 1rem;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 40px;
+            flex-grow: 1;
+        }
+
+        .plan-features li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+        }
+
+        .plan-features li svg {
+            color: #10b981;
+            flex-shrink: 0;
+        }
+
+        .plan-features li.off {
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        .plan-features li.off svg {
+            color: #64748b;
+        }
+
+        .purchase-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            border: none;
+            background: #fff;
+            color: #030712;
+            font-weight: 700;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .highlight .purchase-btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: #fff;
+        }
+
+        .purchase-btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        /* Add-ons Section */
+        .addons-section {
+            margin-top: 100px;
+            padding: 60px;
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 48px;
+            border: 1px solid var(--card-border);
+        }
+
+        .addons-header {
+            margin-bottom: 40px;
+        }
+
+        .addons-header h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .addons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+        }
+
+        .addon-category h4 {
+            color: var(--primary);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .addon-list {
+            list-style: none;
+        }
+
+        .addon-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .addon-item:hover {
+            border-color: var(--card-border);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .addon-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .addon-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .addon-price {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .addon-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 2.5rem;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .addons-section {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <nav>
+            <div class="logo">INSTATOOLS</div>
+            <div class="user-status">
+                <span>Account Control Center</span>
+                <span style="opacity: 0.3">|</span>
+                <a href="/logout" class="logout-link">Exit Console</a>
+            </div>
+        </nav>
+
+        <header class="hero">
+            <h2>Powering the next generation <br> of Instagram automation.</h2>
+            <p>Select a specialized tier to unlock high-frequency botting pipelines and elite residential proxies.</p>
+        </header>
+
+        <div class="pricing-grid">
+            <!-- Prematur -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-name">Prematur</div>
+                    <div class="plan-price"><span class="currency">Rp</span>50.000<span class="plan-duration">/24
+                            JAM</span></div>
+                </div>
+                <ul class="plan-features">
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 100 Akun IG</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Full Features</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 10 Proxy Slots</li>
+                    <li class="off"><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 8V5c0-.6-.4-1-1-1s-1 .4-1 1v3H5c-.6 0-1 .4-1 1s.4 1 1 1h3v3c0 .6.4 1 1 1s1-.4 1-1v-3h3c.6 0 1-.4 1-1s-.4-1-1-1h-3z" />
+                        </svg> NO Addons allowed</li>
+                </ul>
+                <button class="purchase-btn" onclick="buy('prematur')">Activate Pass</button>
+            </div>
+
+            <!-- Starter -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-name">Starter</div>
+                    <div class="plan-price"><span class="currency">Rp</span>60.000<span class="plan-duration">/7
+                            HARI</span></div>
+                </div>
+                <ul class="plan-features">
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 100 Akun IG</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Post / Like / Reels</li>
+                    <li class="off"><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 8V5c0-.6-.4-1-1-1s-1 .4-1 1v3H5c-.6 0-1 .4-1 1s.4 1 1 1h3v3c0 .6.4 1 1 1s1-.4 1-1v-3h3c.6 0 1-.4 1-1s-.4-1-1-1h-3z" />
+                        </svg> NO Addons allowed</li>
+                </ul>
+                <button class="purchase-btn" onclick="buy('starter')">Get Started</button>
+            </div>
+
+            <!-- Basic -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-name">Basic</div>
+                    <div class="plan-price"><span class="currency">Rp</span>100.000<span class="plan-duration">/7
+                            HARI</span></div>
+                </div>
+                <ul class="plan-features">
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 50 Akun IG</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Story Support</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Addon Support</li>
+                </ul>
+                <button class="purchase-btn" onclick="buy('basic')">Choose Basic</button>
+            </div>
+
+            <!-- Pro -->
+            <div class="plan-card highlight">
+                <div class="plan-header">
+                    <div class="plan-name">Pro</div>
+                    <div class="plan-price"><span class="currency">Rp</span>300.000<span class="plan-duration">/30
+                            HARI</span></div>
+                </div>
+                <ul class="plan-features">
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 300 Akun IG</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Full Bot Features</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 15 Proxy Slots</li>
+                </ul>
+                <button class="purchase-btn" onclick="buy('pro')">Go Pro</button>
+            </div>
+
+            <!-- Advanced -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-name">Advanced</div>
+                    <div class="plan-price"><span class="currency">Rp</span>650.000<span class="plan-duration">/30
+                            HARI</span></div>
+                </div>
+                <ul class="plan-features">
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 500 Akun IG</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Cross Threads Post</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 30 Proxy Slots</li>
+                </ul>
+                <button class="purchase-btn" onclick="buy('advanced')">Unlock Advanced</button>
+            </div>
+
+            <!-- Supreme -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <div class="plan-name">Supreme</div>
+                    <div class="plan-price"><span class="currency">Rp</span>1.8JT<span class="plan-duration">/60
+                            HARI</span></div>
+                </div>
+                <ul class="plan-features">
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> 1500 Akun IG</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> UNLIMITED Proxies</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> VIP Direct Line</li>
+                </ul>
+                <button class="purchase-btn" onclick="buy('supreme')">Elite Access</button>
+            </div>
+        </div>
+
+        <section class="addons-section">
+            <div class="addons-header">
+                <h3>Add-on Marketplace</h3>
+                <p style="color: var(--text-dim)">Scale your automation with high-performance independent modules.</p>
+            </div>
+            <div class="addons-grid">
+                <div class="addon-category">
+                    <h4>STABLE PROXIES</h4>
+                    <div class="addon-list">
+                        <div class="addon-item">
+                            <div class="addon-info"><span class="addon-label">Shared Bundle</span><span
+                                    class="addon-price">150k</span></div>
+                            <div class="addon-desc">15 Residential Static IPs</div>
+                        </div>
+                        <div class="addon-item">
+                            <div class="addon-info"><span class="addon-label">Private Elite</span><span
+                                    class="addon-price">450k</span></div>
+                            <div class="addon-desc">20 Private Residential IPs</div>
+                        </div>
+                        <div class="addon-item">
+                            <div class="addon-info"><span class="addon-label">Dedicated VIP</span><span
+                                    class="addon-price">1.1M</span></div>
+                            <div class="addon-desc">25 Dedicated Data Center IPs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="addon-category">
+                    <h4>QUOTA TOP-UPS</h4>
+                    <div class="addon-list">
+                        <div class="addon-item">
+                            <div class="addon-info"><span class="addon-label">Proxy Refill</span><span
+                                    class="addon-price">500<sup>/unit</sup></span></div>
+                            <div class="addon-desc">500 requests per IP unit</div>
+                        </div>
+                        <div class="addon-item">
+                            <div class="addon-info"><span class="addon-label">IG Account Quota</span><span
+                                    class="addon-price">1k<sup>/unit</sup></span></div>
+                            <div class="addon-desc">1,000 extra actions per account</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="addon-category">
+                    <h4>SPECIAL FEATURES</h4>
+                    <div class="addon-list">
+                        <div class="addon-item">
+                            <div class="addon-info"><span class="addon-label">Cross Threads (Basic)</span><span
+                                    class="addon-price">100k</span></div>
+                            <div class="addon-desc">Special promo for new Basic users</div>
+                        </div>
+                        <div class="addon-item">
+                            <div class="addon-info"><span class="addon-label">Cross Threads (Pro)</span><span
+                                    class="addon-price">200k</span></div>
+                            <div class="addon-desc">Advanced cross-posting modules</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function buy(id) {
+            console.log("Purchasing:", id);
+            alert("Redirecting to Elite Secure Gateway for " + id.toUpperCase() + "...");
+        }
+    </script>
+</body>
+
+</html>

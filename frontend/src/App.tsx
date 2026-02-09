@@ -8,6 +8,7 @@ import Automation from './pages/Automation';
 import Monitoring from './pages/Monitoring';
 import Reports from './pages/Reports';
 import Login from './pages/Login';
+import SSORedirect from './pages/SSORedirect';
 import AdminPanel from './pages/AdminPanel';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -18,6 +19,7 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/login" element={<Login />} />
+                    <Route path="/sso-handshake" element={<SSORedirect />} />
 
                     <Route path="/" element={
                         <ProtectedRoute>

@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom';
+import RestrictionModal from './common/RestrictionModal';
 
 const Layout = () => {
+    const [restriction, setRestriction] = useState<{ isOpen: boolean; feature: string }>({
+        isOpen: false,
+        feature: ''
+    });
+
+    useEffect(() => {
+        const handleRestriction = (e: any) => {
+            setRestriction({
+                isOpen: true,
+                feature: e.detail?.feature || 'unknown'
+            });
+        };
+
+        window.addEventListener('ig:restriction', handleRestriction);
+        return () => window.removeEventListener('ig:restriction', handleRestriction);
+    }, []);
+
     return (
         <div className="flex h-screen bg-gray-950 text-white overflow-hidden font-sans antialiased text-sm">
             <Sidebar />
@@ -12,6 +30,12 @@ const Layout = () => {
                     <Outlet />
                 </div>
             </main>
+
+            <RestrictionModal
+                isOpen={restriction.isOpen}
+                onClose={() => setRestriction({ ...restriction, isOpen: false })}
+                feature={restriction.feature}
+            />
         </div>
 
     );
