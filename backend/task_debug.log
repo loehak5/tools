@@ -4648,3 +4648,10 @@ Traceback (most recent call last):
     if account.status == "active" and account.cookies:
                                       ^^^^^^^^^^^^^^^
 AttributeError: 'Account' object has no attribute 'session'
+Starting execution for Task 148
+Task 148 failed: 'Account' object has no attribute 'session'
+Traceback (most recent call last):
+  File "C:\Users\NAR\Documents\Project-instatool\instatools\backend\app\services\task_executor.py", line 107, in execute_task
+    if account.status == "active" and account.cookies:
+                                      ^^^^^^^^^^^^^^^
+AttributeError: 'Account' object has no attribute 'session'

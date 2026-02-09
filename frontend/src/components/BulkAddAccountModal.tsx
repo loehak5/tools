@@ -96,16 +96,26 @@ const BulkAddAccountModal = ({ isOpen, onClose, onJobStarted }: BulkAddAccountMo
 
                     return {
                         username: item.username,
-                        password: item.password,
-                        seed_2fa: item.seed_2fa,
+                        password: item.password || '',
+                        seed_2fa: item.seed_2fa || '',
                         cookies: cookies,
-                        proxy: item.proxy,
+                        proxy: item.proxy || '',
                         login_method: cookies ? 3 : (item.seed_2fa ? 2 : 1)
                     };
                 }).filter(acc => acc.username);
+            } else if (json.username && json.cookies) {
+                // Single account JSON export
+                return [{
+                    username: json.username,
+                    cookies: json.cookies,
+                    password: json.password || '',
+                    seed_2fa: json.seed_2fa || '',
+                    proxy: json.proxy || '',
+                    login_method: 3
+                }];
             }
         } catch (e) {
-            // Not JSON, fall back to text parsing
+            // Not JSON or single JSON object, fall back to text parsing
         }
 
         const lines = text.trim().split('\n').filter(line => line.trim());
@@ -113,20 +123,81 @@ const BulkAddAccountModal = ({ isOpen, onClose, onJobStarted }: BulkAddAccountMo
 
         for (const line of lines) {
             const parts = line.trim().split(':');
+
+            // Format 1: username:password
+            // Format 2: username:password:2fa
+            // Format 3: username:cookie_json
+            // Format 4: username:password:cookie_json
+
             if (parts.length >= 2) {
-                const account: ParsedAccount = {
-                    username: parts[0].trim(),
-                    password: parts[1].trim(),
-                    login_method: 1 // Password
-                };
-                if (parts.length >= 3 && parts[2].trim()) {
-                    account.seed_2fa = parts[2].trim();
-                    account.login_method = 2; // 2FA
+                const username = parts[0].trim();
+                const secondPart = parts[1].trim();
+
+                // Check if second part is a cookie JSON
+                let isCookie = false;
+                try {
+                    const potentialCookies = JSON.parse(secondPart);
+                    if (typeof potentialCookies === 'object') {
+                        accounts.push({
+                            username,
+                            cookies: potentialCookies,
+                            login_method: 3
+                        });
+                        isCookie = true;
+                    }
+                } catch (e) { }
+
+                if (!isCookie) {
+                    if (parts.length === 2) {
+                        accounts.push({
+                            username,
+                            password: secondPart,
+                            login_method: 1
+                        });
+                    } else if (parts.length >= 3) {
+                        const thirdPart = parts[2].trim();
+
+                        // Check if third part is cookie JSON
+                        try {
+                            const potentialCookies = JSON.parse(thirdPart);
+                            if (typeof potentialCookies === 'object') {
+                                accounts.push({
+                                    username,
+                                    password: secondPart,
+                                    cookies: potentialCookies,
+                                    login_method: 3
+                                });
+                                isCookie = true;
+                            }
+                        } catch (e) { }
+
+                        if (!isCookie) {
+                            accounts.push({
+                                username,
+                                password: secondPart,
+                                seed_2fa: thirdPart,
+                                login_method: 2
+                            });
+                        }
+                    }
                 }
-                accounts.push(account);
             }
         }
         return accounts;
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target?.result as string;
+            if (content) {
+                handleTextChange(content);
+            }
+        };
+        reader.readAsText(file);
     };
 
     const handleTextChange = (text: string) => {
@@ -291,25 +362,55 @@ const BulkAddAccountModal = ({ isOpen, onClose, onJobStarted }: BulkAddAccountMo
                 <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 mb-4">
                     <div className="flex items-start space-x-3">
                         <FileText className="w-5 h-5 text-gray-400 mt-0.5" />
-                        <div>
+                        <div className="flex-1">
                             <p className="text-sm text-gray-300 font-medium">Supported Format</p>
-                            <p className="text-xs text-gray-500 mt-1 font-mono">
-                                username:password<br />
-                                username:password:2fa_seed
-                            </p>
+                            <div className="grid grid-cols-2 gap-4 mt-2">
+                                <div>
+                                    <p className="text-[10px] text-gray-500 uppercase font-bold">Standard</p>
+                                    <p className="text-xs text-gray-400 font-mono">
+                                        user:pass<br />
+                                        user:pass:2fa
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-indigo-400 uppercase font-bold">Cookie Method</p>
+                                    <p className="text-xs text-indigo-300/70 font-mono">
+                                        user:{"{json_cookies}"}<br />
+                                        .JSON / .TXT Upload
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Input Area */}
                 <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-400 mb-2">
-                        Account Credentials (one per line)
-                    </label>
+                    <div className="flex justify-between items-center mb-2">
+                        <label className="block text-xs font-medium text-gray-400">
+                            Account Credentials (one per line)
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="file"
+                                accept=".txt,.json"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                                id="cookie-file-upload"
+                            />
+                            <label
+                                htmlFor="cookie-file-upload"
+                                className="text-[10px] bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 px-2 py-1 rounded cursor-pointer border border-indigo-500/30 transition-colors flex items-center gap-1"
+                            >
+                                <Upload className="w-3 h-3" />
+                                Import .TXT / .JSON
+                            </label>
+                        </div>
+                    </div>
                     <textarea
                         value={inputText}
                         onChange={(e) => handleTextChange(e.target.value)}
-                        placeholder="username1:password1&#10;username2:password2:ABCD1234SEED&#10;username3:password3"
+                        placeholder="username1:password1&#10;username2:password2:ABCD1234SEED&#10;username3:{'sessionid': '...'}"
                         className="w-full h-32 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none placeholder-gray-600"
                         disabled={loading || jobStatus !== null}
                     />
@@ -512,8 +613,11 @@ const BulkAddAccountModal = ({ isOpen, onClose, onJobStarted }: BulkAddAccountMo
                             {parsedAccounts.slice(0, 20).map((acc, idx) => (
                                 <div key={idx} className="flex items-center justify-between text-xs">
                                     <span className="text-white font-medium">@{acc.username}</span>
-                                    <span className={`px-2 py-0.5 rounded ${acc.login_method === 2 ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                                        {acc.login_method === 2 ? '2FA' : 'Password'}
+                                    <span className={`px-2 py-0.5 rounded ${acc.login_method === 3 ? 'bg-indigo-500/10 text-indigo-400' :
+                                            acc.login_method === 2 ? 'bg-purple-500/10 text-purple-400' :
+                                                'bg-blue-500/10 text-blue-400'
+                                        }`}>
+                                        {acc.login_method === 3 ? 'Cookie' : acc.login_method === 2 ? '2FA' : 'Password'}
                                     </span>
                                 </div>
                             ))}

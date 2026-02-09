@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Activity, Heart, UserPlus, Eye, Image, Upload, X, Calendar, Shuffle, Zap, Loader2, AlertCircle, CheckCircle, Info, CheckSquare, Square, Camera, RotateCcw } from 'lucide-react';
+import { Activity, Heart, UserPlus, Eye, Image, Upload, X, Calendar, Shuffle, Zap, Loader2, AlertCircle, CheckCircle, Info, CheckSquare, Square, Camera, RotateCcw, Video } from 'lucide-react';
 import api from '../api/client';
 
-type ActionType = 'like' | 'follow' | 'view' | 'post' | 'story';
+type ActionType = 'like' | 'follow' | 'view' | 'post' | 'story' | 'reels';
 type ExecutionMode = 'now' | 'schedule' | 'random';
-type FilterType = 'all' | 'like' | 'follow' | 'view' | 'post' | 'story' | 'new';
+type FilterType = 'all' | 'like' | 'follow' | 'view' | 'post' | 'story' | 'reels' | 'new';
 
 interface Account {
     id: number;
@@ -20,6 +20,7 @@ interface ActionStats {
     view: number;
     post: number;
     story: number;
+    reels: number;
     total: number;
 }
 
@@ -98,6 +99,7 @@ const Automation = () => {
     const [scheduledAt, setScheduledAt] = useState('');
     const [minMinutes, setMinMinutes] = useState(1);
     const [maxMinutes, setMaxMinutes] = useState(30);
+    const [shareToThreads, setShareToThreads] = useState(false);
 
     // Submission state
     const [submitting, setSubmitting] = useState(false);
@@ -120,8 +122,8 @@ const Automation = () => {
         }
 
         const sorted = [...filteredAccounts].sort((a, b) => {
-            const statsA = actionStats[a.id] || { like: 0, follow: 0, view: 0, post: 0, story: 0, total: 0 };
-            const statsB = actionStats[b.id] || { like: 0, follow: 0, view: 0, post: 0, story: 0, total: 0 };
+            const statsA = actionStats[a.id] || { like: 0, follow: 0, view: 0, post: 0, story: 0, reels: 0, total: 0 };
+            const statsB = actionStats[b.id] || { like: 0, follow: 0, view: 0, post: 0, story: 0, reels: 0, total: 0 };
 
             if (priority === 'lower_follow') return statsA.follow - statsB.follow;
             if (priority === 'higher_follow') return statsB.follow - statsA.follow;
@@ -202,7 +204,7 @@ const Automation = () => {
     const activeAccounts = accounts.filter(acc => acc.status === 'active');
     const filteredAccounts = activeAccounts.filter(acc => {
         const matchesSearch = acc.username.toLowerCase().includes(searchQuery.toLowerCase());
-        const stats = actionStats[acc.id] || { like: 0, follow: 0, view: 0, post: 0, story: 0, total: 0 };
+        const stats = actionStats[acc.id] || { like: 0, follow: 0, view: 0, post: 0, story: 0, reels: 0, total: 0 };
 
         let matchesFilter = true;
         if (filterType === 'like') matchesFilter = stats.like > 0;
@@ -210,6 +212,7 @@ const Automation = () => {
         else if (filterType === 'view') matchesFilter = stats.view > 0;
         else if (filterType === 'post') matchesFilter = stats.post > 0;
         else if (filterType === 'story') matchesFilter = stats.story > 0;
+        else if (filterType === 'reels') matchesFilter = stats.reels > 0;
         else if (filterType === 'new') matchesFilter = stats.total === 0;
 
         return matchesSearch && matchesFilter;
@@ -275,6 +278,11 @@ const Automation = () => {
 
         if (actionType === 'story' && !selectedFile) {
             setError('Upload media (gambar/video) untuk Story');
+            return;
+        }
+
+        if (actionType === 'reels' && !selectedFile) {
+            setError('Upload video untuk Reels');
             return;
         }
 
@@ -381,6 +389,7 @@ const Automation = () => {
                         formData.append('scheduled_at', finalScheduledAt);
                         formData.append('caption', caption);
                         formData.append('image', selectedFile!);
+                        formData.append('share_to_threads', shareToThreads ? 'true' : 'false');
                         formData.append('execute_now', executionMode === 'now' ? 'true' : 'false');
                         if (batchId) formData.append('batch_id', batchId.toString());
 
@@ -398,6 +407,19 @@ const Automation = () => {
                         if (batchId) formData.append('batch_id', batchId.toString());
 
                         await api.post('/tasks/story', formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+                    } else if (actionType === 'reels') {
+                        const formData = new FormData();
+                        formData.append('account_id', accountId.toString());
+                        formData.append('scheduled_at', finalScheduledAt);
+                        formData.append('caption', caption);
+                        formData.append('video', selectedFile!);
+                        formData.append('share_to_threads', shareToThreads ? 'true' : 'false');
+                        formData.append('execute_now', executionMode === 'now' ? 'true' : 'false');
+                        if (batchId) formData.append('batch_id', batchId.toString());
+
+                        await api.post('/tasks/reels', formData, {
                             headers: { 'Content-Type': 'multipart/form-data' }
                         });
                     }
@@ -482,6 +504,7 @@ const Automation = () => {
                                 <option value="view">Sudah View</option>
                                 <option value="post">Sudah Post</option>
                                 <option value="story">Sudah Story</option>
+                                <option value="reels">Sudah Reels</option>
                                 <option value="new">Belum Ada Aksi</option>
                             </select>
                             <input
@@ -524,6 +547,7 @@ const Automation = () => {
                                     <th className="px-4 py-3 font-medium text-center"><Eye className="w-3 h-3 inline mr-1 text-purple-400" /> View</th>
                                     <th className="px-4 py-3 font-medium text-center"><Image className="w-3 h-3 inline mr-1 text-pink-400" /> Post</th>
                                     <th className="px-4 py-3 font-medium text-center"><Camera className="w-3 h-3 inline mr-1 text-orange-400" /> Story</th>
+                                    <th className="px-4 py-3 font-medium text-center"><Video className="w-3 h-3 inline mr-1 text-indigo-400" /> Reels</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800">
@@ -605,6 +629,11 @@ const Automation = () => {
                                             <td className="px-4 py-3 text-center">
                                                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-orange-500/10 text-orange-400 font-bold text-xs">
                                                     {actionStats[account.id]?.story || 0}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 font-bold text-xs">
+                                                    {actionStats[account.id]?.reels || 0}
                                                 </span>
                                             </td>
                                         </tr>
@@ -782,6 +811,16 @@ const Automation = () => {
                                 <Camera className="w-4 h-4" />
                                 Story
                             </button>
+                            <button
+                                onClick={() => setActionType('reels')}
+                                className={`py-3 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center gap-2 ${actionType === 'reels'
+                                    ? 'bg-indigo-500/20 border-indigo-500 text-indigo-400'
+                                    : 'border-gray-700 text-gray-400 hover:border-gray-600'
+                                    }`}
+                            >
+                                <Video className="w-4 h-4" />
+                                Reels
+                            </button>
                         </div>
                     </div>
 
@@ -832,6 +871,7 @@ const Automation = () => {
                             {actionType === 'view' && 'URL Story/Reel'}
                             {actionType === 'story' && 'Upload Story'}
                             {actionType === 'post' && 'Upload Gambar'}
+                            {actionType === 'reels' && 'Upload Reels'}
                         </h3>
 
                         {(actionType === 'like' || actionType === 'view' || actionType === 'story') && (
@@ -866,13 +906,13 @@ const Automation = () => {
                             </div>
                         )}
 
-                        {(actionType === 'post' || actionType === 'story') && (
+                        {(actionType === 'post' || actionType === 'story' || actionType === 'reels') && (
                             <div className="space-y-3">
                                 <input
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleFileSelect}
-                                    accept={actionType === 'story' ? "image/*,video/*" : "image/*"}
+                                    accept={actionType === 'story' ? "image/*,video/*" : actionType === 'reels' ? "video/*" : "image/*"}
                                     className="hidden"
                                 />
                                 {preview ? (
@@ -907,6 +947,26 @@ const Automation = () => {
                                     placeholder="Tulis caption di sini..."
                                     className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none text-sm"
                                 />
+                            </div>
+                        )}
+
+                        {/* Share to Threads Toggle - Only for Post and Reels */}
+                        {(actionType === 'post' || actionType === 'reels') && (
+                            <div className="mt-4 pt-4 border-t border-gray-800 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Activity className="w-4 h-4 text-indigo-400" />
+                                    <div>
+                                        <p className="text-xs font-medium text-white">Share to Threads</p>
+                                        <p className="text-[10px] text-gray-500">Cross-post ke Threads</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShareToThreads(!shareToThreads)}
+                                    className={`w-10 h-5 rounded-full transition-colors relative ${shareToThreads ? 'bg-indigo-500' : 'bg-gray-700'}`}
+                                >
+                                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${shareToThreads ? 'left-5.5' : 'left-0.5'}`} />
+                                </button>
                             </div>
                         )}
                     </div>

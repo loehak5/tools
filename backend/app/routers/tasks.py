@@ -81,7 +81,7 @@ async def get_action_stats_by_account(
         count = row.count
         
         if account_id not in stats:
-            stats[account_id] = {"like": 0, "follow": 0, "view": 0, "post": 0, "total": 0}
+            stats[account_id] = {"like": 0, "follow": 0, "view": 0, "post": 0, "story": 0, "reels": 0, "total": 0}
         
         stats[account_id][task_type] = count
         stats[account_id]["total"] += count
