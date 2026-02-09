@@ -457,13 +457,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> Addon Support</li>
                 </ul>
-                <?php
-                list($restricted, $label) = isPlanRestricted('basic', 100000, $currentSub);
-                ?>
-                <button class="purchase-btn" onclick="buy('basic')" <?= $restricted ? 'disabled' : '' ?>
-                    style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
-                    <?= $restricted ? $label : 'Choose Basic' ?>
-                </button>
+                <button class="purchase-btn" onclick="buy('basic')">Choose Basic</button>
             </div>
 
             <!-- Pro -->
@@ -487,13 +481,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> 15 Proxy Slots</li>
                 </ul>
-                <?php
-                list($restricted, $label) = isPlanRestricted('pro', 300000, $currentSub);
-                ?>
-                <button class="purchase-btn" onclick="buy('pro')" <?= $restricted ? 'disabled' : '' ?>
-                    style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
-                    <?= $restricted ? $label : 'Go Pro' ?>
-                </button>
+                <button class="purchase-btn" onclick="buy('pro')">Go Pro</button>
             </div>
 
             <!-- Advanced -->
@@ -517,13 +505,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> 30 Proxy Slots</li>
                 </ul>
-                <?php
-                list($restricted, $label) = isPlanRestricted('advanced', 650000, $currentSub);
-                ?>
-                <button class="purchase-btn" onclick="buy('advanced')" <?= $restricted ? 'disabled' : '' ?>
-                    style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
-                    <?= $restricted ? $label : 'Unlock Advanced' ?>
-                </button>
+                <button class="purchase-btn" onclick="buy('advanced')">Unlock Advanced</button>
             </div>
 
             <!-- Supreme -->
@@ -547,13 +529,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> VIP Direct Line</li>
                 </ul>
-                <?php
-                list($restricted, $label) = isPlanRestricted('supreme', 1800000, $currentSub);
-                ?>
-                <button class="purchase-btn" onclick="buy('supreme')" <?= $restricted ? 'disabled' : '' ?>
-                    style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
-                    <?= $restricted ? $label : 'Elite Access' ?>
-                </button>
+                <button class="purchase-btn" onclick="buy('supreme')">Elite Access</button>
             </div>
         </div>
 
