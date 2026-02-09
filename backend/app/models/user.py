@@ -9,5 +9,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     full_name = Column(String)
     avatar = Column(String, nullable=True)
+    email = Column(String, unique=True, index=True, nullable=True)
+    google_id = Column(String, unique=True, index=True, nullable=True)
     role = Column(String, default="operator")  # roles: admin, operator
     is_active = Column(Boolean, default=True)

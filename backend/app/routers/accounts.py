@@ -21,6 +21,14 @@ from app.routers.deps import get_current_user, check_role
 from instagrapi.exceptions import ChallengeRequired, TwoFactorRequired
 from fastapi.security import OAuth2PasswordRequestForm
 from app.middleware.auth_check import require_active_subscription
+from app.schemas.user import GoogleLogin
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import requests
+import string
+import secrets
+from datetime import timedelta
+from app.core.config import settings
 
 # In-memory storage for bulk import jobs (for progress tracking)
 bulk_import_jobs: Dict[str, Dict[str, Any]] = {}
@@ -42,6 +50,87 @@ async def login_for_access_token(
         )
     access_token = create_access_token(subject=user.username)
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/auth/google", response_model=Token)
+async def login_google(
+    login_data: GoogleLogin,
+    db: AsyncSession = Depends(get_db)
+):
+    """Login or Register with Google."""
+    try:
+        # Verify Google Token
+        id_info = id_token.verify_oauth2_token(
+            login_data.token, 
+            google_requests.Request(), 
+            audience=None  
+        )
+        
+        email = id_info.get("email")
+        google_id = id_info.get("sub")
+        name = id_info.get("name")
+        picture = id_info.get("picture")
+        
+        if not email:
+            raise HTTPException(status_code=400, detail="Google token missing email")
+
+        # Check if user exists by google_id or email
+        stmt = select(User).where(
+            (User.google_id == google_id) | (User.email == email)
+        )
+        result = await db.execute(stmt)
+        user = result.scalars().first()
+
+        if user:
+            # Update google_id if missing (linking account)
+            if not user.google_id:
+                user.google_id = google_id
+                db.add(user)
+                await db.commit()
+                await db.refresh(user)
+        else:
+            # Register new user
+            # Generate random password
+            alphabet = string.ascii_letters + string.digits
+            password = "".join(secrets.choice(alphabet) for i in range(16))
+            hashed_password = get_password_hash(password)
+            
+            # Generate username from email (ensure uniqueness)
+            base_username = email.split("@")[0]
+            username = base_username
+            counter = 1
+            while True:
+                stmt_check = select(User).where(User.username == username)
+                if not (await db.execute(stmt_check)).scalars().first():
+                    break
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            user = User(
+                username=username,
+                email=email,
+                google_id=google_id,
+                full_name=name,
+                avatar=picture,
+                hashed_password=hashed_password,
+                role="operator",
+                is_active=True
+            )
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+
+        # Create access token
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            subject=user.username, expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid Google Token: {str(e)}")
+    except Exception as e:
+        print(f"Google Login Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Google Login Failed: {str(e)}")
 
 @router.get("/auth/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):
