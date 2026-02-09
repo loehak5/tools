@@ -51,6 +51,8 @@ const BulkAddAccountModal = ({ isOpen, onClose, onJobStarted }: BulkAddAccountMo
     const [parsedAccounts, setParsedAccounts] = useState<ParsedAccount[]>([]);
     const [parseError, setParseError] = useState<string | null>(null);
 
+    const [isDragging, setIsDragging] = useState(false);
+
     // Staggered login options
     const [staggeredLogin, setStaggeredLogin] = useState(true);
     const [minDelay, setMinDelay] = useState(30);
@@ -186,18 +188,52 @@ const BulkAddAccountModal = ({ isOpen, onClose, onJobStarted }: BulkAddAccountMo
         return accounts;
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const handleFiles = async (files: FileList | File[]) => {
+        let combinedContent = inputText.trim() ? inputText + '\n' : '';
+        const fileArray = Array.from(files);
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const content = event.target?.result as string;
-            if (content) {
-                handleTextChange(content);
+        for (const file of fileArray) {
+            if (file.name.toLowerCase().endsWith('.txt') || file.name.toLowerCase().endsWith('.json')) {
+                try {
+                    const content = await file.text();
+                    combinedContent += content.trim() + '\n';
+                } catch (err) {
+                    console.error(`Failed to read file ${file.name}:`, err);
+                }
             }
-        };
-        reader.readAsText(file);
+        }
+
+        if (combinedContent) {
+            handleTextChange(combinedContent);
+        }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            handleFiles(e.target.files);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleFiles(e.dataTransfer.files);
+        }
     };
 
     const handleTextChange = (text: string) => {
@@ -397,23 +433,41 @@ const BulkAddAccountModal = ({ isOpen, onClose, onJobStarted }: BulkAddAccountMo
                                 onChange={handleFileUpload}
                                 className="hidden"
                                 id="cookie-file-upload"
+                                multiple
                             />
                             <label
                                 htmlFor="cookie-file-upload"
                                 className="text-[10px] bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 px-2 py-1 rounded cursor-pointer border border-indigo-500/30 transition-colors flex items-center gap-1"
                             >
                                 <Upload className="w-3 h-3" />
-                                Import .TXT / .JSON
+                                Import Multiple .TXT / .JSON
                             </label>
                         </div>
                     </div>
-                    <textarea
-                        value={inputText}
-                        onChange={(e) => handleTextChange(e.target.value)}
-                        placeholder="username1:password1&#10;username2:password2:ABCD1234SEED&#10;username3:{'sessionid': '...'}"
-                        className="w-full h-32 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none placeholder-gray-600"
-                        disabled={loading || jobStatus !== null}
-                    />
+                    <div
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`relative group rounded-xl transition-all duration-200 ${isDragging
+                            ? 'ring-2 ring-indigo-500 bg-indigo-500/5'
+                            : 'bg-gray-800'
+                            }`}
+                    >
+                        {isDragging && (
+                            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-indigo-600/20 backdrop-blur-[2px] rounded-xl border-2 border-dashed border-indigo-500 pointer-events-none">
+                                <Upload className="w-8 h-8 text-indigo-400 mb-2 animate-bounce" />
+                                <p className="text-white font-bold text-sm">Drop your account files here</p>
+                                <p className="text-indigo-300 text-xs">.TXT or .JSON supported</p>
+                            </div>
+                        )}
+                        <textarea
+                            value={inputText}
+                            onChange={(e) => handleTextChange(e.target.value)}
+                            placeholder="username1:password1&#10;username2:password2:ABCD1234SEED&#10;username3:{'sessionid': '...'}"
+                            className="w-full h-40 bg-transparent border border-gray-700 rounded-xl px-4 py-3 text-white font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none placeholder-gray-600 transition-colors"
+                            disabled={loading || jobStatus !== null}
+                        />
+                    </div>
                 </div>
 
                 {/* Common Proxy */}
@@ -614,8 +668,8 @@ const BulkAddAccountModal = ({ isOpen, onClose, onJobStarted }: BulkAddAccountMo
                                 <div key={idx} className="flex items-center justify-between text-xs">
                                     <span className="text-white font-medium">@{acc.username}</span>
                                     <span className={`px-2 py-0.5 rounded ${acc.login_method === 3 ? 'bg-indigo-500/10 text-indigo-400' :
-                                            acc.login_method === 2 ? 'bg-purple-500/10 text-purple-400' :
-                                                'bg-blue-500/10 text-blue-400'
+                                        acc.login_method === 2 ? 'bg-purple-500/10 text-purple-400' :
+                                            'bg-blue-500/10 text-blue-400'
                                         }`}>
                                         {acc.login_method === 3 ? 'Cookie' : acc.login_method === 2 ? '2FA' : 'Password'}
                                     </span>
