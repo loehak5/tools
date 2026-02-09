@@ -4,6 +4,7 @@ import api from '../api/client';
 interface User {
     id: number;
     username: string;
+    email: string | null;
     full_name: string | null;
     avatar: string | null;
     role: string;

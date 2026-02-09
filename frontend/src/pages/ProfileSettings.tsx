@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
-import { User, Mail, Shield, Save, Key, Camera, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Mail, Save, Key, Camera, CheckCircle, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const ProfileSettings = () => {
@@ -12,6 +12,8 @@ const ProfileSettings = () => {
         password: '',
         confirm_password: ''
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
@@ -87,11 +89,7 @@ const ProfileSettings = () => {
                     <div className="bg-gray-900/30 border border-gray-800/50 rounded-3xl p-6 space-y-4">
                         <div className="flex items-center space-x-3 text-gray-400">
                             <Mail className="w-4 h-4" />
-                            <span className="text-xs font-medium">{user?.username}@instatools.io</span>
-                        </div>
-                        <div className="flex items-center space-x-3 text-gray-400">
-                            <Shield className="w-4 h-4" />
-                            <span className="text-xs font-medium">Account ID: #{user?.id}</span>
+                            <span className="text-xs font-medium">{user?.email || (user?.username + '@instatools.io')}</span>
                         </div>
                     </div>
                 </div>
@@ -155,25 +153,43 @@ const ProfileSettings = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">New Password</label>
-                                        <input
-                                            type="password"
-                                            name="password"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            className="w-full bg-gray-950/50 border border-gray-800 text-white text-sm rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 block p-4 transition-all duration-200 outline-none"
-                                            placeholder="••••••••"
-                                        />
+                                        <div className="relative group">
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                name="password"
+                                                value={formData.password}
+                                                onChange={handleChange}
+                                                className="w-full bg-gray-950/50 border border-gray-800 text-white text-sm rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 block p-4 pr-12 transition-all duration-200 outline-none"
+                                                placeholder="••••••••"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute inset-y-0 right-0 px-4 flex items-center text-gray-500 hover:text-indigo-400 transition-all duration-200 z-10"
+                                            >
+                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Confirm New Password</label>
-                                        <input
-                                            type="password"
-                                            name="confirm_password"
-                                            value={formData.confirm_password}
-                                            onChange={handleChange}
-                                            className="w-full bg-gray-950/50 border border-gray-800 text-white text-sm rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 block p-4 transition-all duration-200 outline-none"
-                                            placeholder="••••••••"
-                                        />
+                                        <div className="relative group">
+                                            <input
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                name="confirm_password"
+                                                value={formData.confirm_password}
+                                                onChange={handleChange}
+                                                className="w-full bg-gray-950/50 border border-gray-800 text-white text-sm rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 block p-4 pr-12 transition-all duration-200 outline-none"
+                                                placeholder="••••••••"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute inset-y-0 right-0 px-4 flex items-center text-gray-500 hover:text-indigo-400 transition-all duration-200 z-10"
+                                            >
+                                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
