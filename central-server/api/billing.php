@@ -135,23 +135,26 @@ $action = $_GET['action'] ?? '';
 
 switch ($action) {
     case 'create_upgrade_invoice':
+    case 'create_invoice':
         if (!isset($_SESSION['user_id'])) {
             echo json_encode(['status' => 'error', 'message' => 'Authentication required']);
             break;
         }
 
-        $new_plan_id = $_POST['new_plan_id'] ?? '';
+        $new_plan_id = ($_POST['new_plan_id'] ?? ($_POST['plan_id'] ?? ''));
         if (!$new_plan_id) {
-            echo json_encode(['status' => 'error', 'message' => 'New Plan ID required']);
+            echo json_encode(['status' => 'error', 'message' => 'Plan ID required']);
             break;
         }
 
         try {
             $db = Database::getConnection();
+            $now = time();
+            $now_str = date('Y-m-d H:i:s', $now);
 
-            // 1. Get current subscription
-            $stmt = $db->prepare("SELECT s.*, p.price_idr, p.duration_days FROM subscriptions s JOIN subscription_plans p ON s.plan_id = p.id WHERE s.user_id = ? AND s.status = 'active' AND s.end_date > NOW()");
-            $stmt->execute([$_SESSION['user_id']]);
+            // 1. Get current active subscription (Latest and longest)
+            $stmt = $db->prepare("SELECT s.*, p.price_idr, p.duration_days, p.name as plan_name FROM subscriptions s JOIN subscription_plans p ON s.plan_id = p.id WHERE s.user_id = ? AND s.status = 'active' AND s.end_date > ? ORDER BY s.end_date DESC LIMIT 1");
+            $stmt->execute([$_SESSION['user_id'], $now_str]);
             $current_sub = $stmt->fetch();
 
             // 2. Get new plan details
@@ -164,16 +167,51 @@ switch ($action) {
                 break;
             }
 
-            $cost = $new_plan['price_idr'];
+            // --- STRICT RESTRICTIONS ---
             if ($current_sub) {
-                $rem_days = (strtotime($current_sub['end_date']) - time()) / (24 * 3600);
+                $rem_seconds = strtotime($current_sub['end_date']) - $now;
+                $rem_days = $rem_seconds / (24 * 3600);
+                $rem_hours = $rem_seconds / 3600;
+
+                $new_price = (float) $new_plan['price_idr'];
+                $curr_price = (float) $current_sub['price_idr'];
+
+                // Rule A: Downgrade Protection
+                if ($new_price < $curr_price) {
+                    echo json_encode(['status' => 'error', 'message' => 'Downgrade dilarang. Tunggu paket ' . $current_sub['plan_name'] . ' anda habis masa aktifnya.']);
+                    break;
+                }
+
+                // Rule B: Same-Tier Repurchase Restriction
+                if ($new_plan['id'] == $current_sub['plan_id']) {
+                    if (strtolower($new_plan['name']) === 'prematur') {
+                        if ($rem_hours > 1) {
+                            echo json_encode(['status' => 'error', 'message' => 'Paket Prematur hanya dapat dibeli ulang 1 jam sebelum habis. Sisa: ' . round($rem_hours, 1) . ' jam.']);
+                            break;
+                        }
+                    } else {
+                        if ($rem_days > 3) {
+                            echo json_encode(['status' => 'error', 'message' => 'Paket ini hanya dapat dibeli ulang 3 hari sebelum habis. Sisa: ' . round($rem_days, 1) . ' hari.']);
+                            break;
+                        }
+                    }
+                }
+            }
+            // ---------------------------
+
+            $cost = $new_plan['price_idr'];
+            $prefix = "INV";
+
+            // If it's an explicit upgrade request or price is higher, we can use UPG logic
+            if ($action === 'create_upgrade_invoice' && $current_sub && (float) $new_plan['price_idr'] > (float) $current_sub['price_idr']) {
                 $cost = calculate_upgrade_cost($current_sub['price_idr'], $current_sub['duration_days'], $rem_days, $new_plan['price_idr']);
+                $prefix = "UPG";
             }
 
-            // Create unique external ID: UPG-user_id-plan_id-timestamp
-            $external_id = "UPG-" . $_SESSION['user_id'] . "-" . $new_plan_id . "-" . time();
+            // Create unique external ID
+            $external_id = $prefix . "-" . $_SESSION['user_id'] . "-" . $new_plan_id . "-" . time();
             $email = $_SESSION['email'] ?? 'customer@example.com';
-            $description = "Upgrade to: " . $new_plan['name'];
+            $description = ($prefix === 'UPG' ? "Upgrade to: " : "Subscription: ") . $new_plan['name'];
 
             $res = create_xendit_invoice($external_id, $cost, $email, $description);
             echo json_encode($res);
@@ -225,41 +263,6 @@ switch ($action) {
         }
         break;
 
-    case 'create_invoice':
-        if (!isset($_SESSION['user_id'])) {
-            echo json_encode(['status' => 'error', 'message' => 'Authentication required']);
-            break;
-        }
-
-        $plan_id = $_POST['plan_id'] ?? '';
-        if (!$plan_id) {
-            echo json_encode(['status' => 'error', 'message' => 'Plan ID required']);
-            break;
-        }
-
-        try {
-            $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT * FROM subscription_plans WHERE id = ? AND is_active = 1");
-            $stmt->execute([$plan_id]);
-            $plan = $stmt->fetch();
-
-            if (!$plan) {
-                echo json_encode(['status' => 'error', 'message' => 'Invalid or inactive plan']);
-                break;
-            }
-
-            // Create a unique external ID: user_id:plan_id:timestamp
-            $external_id = "INV-" . $_SESSION['user_id'] . "-" . $plan_id . "-" . time();
-            $amount = $plan['price_idr'];
-            $email = $_SESSION['email'] ?? 'customer@example.com'; // Try to get email from session
-            $description = "Subscription: " . $plan['name'];
-
-            $res = create_xendit_invoice($external_id, $amount, $email, $description);
-            echo json_encode($res);
-        } catch (Exception $e) {
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-        }
-        break;
 
     default:
         echo json_encode(['status' => 'error', 'message' => 'Invalid action']);

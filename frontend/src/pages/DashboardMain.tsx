@@ -146,6 +146,46 @@ const WelcomeCard = ({ user, stats, onEditProfile }: any) => {
     );
 };
 
+const ExpiryAlertModal = ({ alert, onClose }: { alert: any; onClose: () => void }) => {
+    if (!alert) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-gray-900 border border-indigo-500/30 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl shadow-indigo-500/20 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+
+                <div className="relative z-10 text-center">
+                    <div className="w-20 h-20 bg-indigo-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/30 group-hover:scale-110 transition-transform duration-500">
+                        <Clock className="w-10 h-10 text-indigo-400" />
+                    </div>
+
+                    <h3 className="text-2xl font-black text-white mb-3">Masa Aktif Hampir Habis!</h3>
+                    <p className="text-gray-400 font-medium leading-relaxed mb-8">
+                        {alert.message} Segera perpanjang paket Anda untuk menghindari penghentian otomatisasi.
+                    </p>
+
+                    <div className="space-y-3">
+                        <a
+                            href="http://instatools.web.id/billing"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/20 active:scale-95 text-center uppercase tracking-widest text-sm"
+                        >
+                            Perpanjang Sekarang
+                        </a>
+                        <button
+                            onClick={onClose}
+                            className="block w-full bg-gray-800 hover:bg-gray-700 text-gray-400 font-bold py-3 rounded-2xl transition-colors text-sm"
+                        >
+                            Nanti Saja
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const StatCard = ({ title, value, icon: Icon, color, subtitle, loading }: any) => (
     <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 p-6 rounded-3xl relative overflow-hidden group hover:border-gray-700 transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
@@ -173,6 +213,34 @@ const Dashboard = () => {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [timePeriod, setTimePeriod] = useState<'today' | 'yesterday' | '7days'>('today');
+    const [activeAlert, setActiveAlert] = useState<any>(null);
+
+    const checkAndShowAlert = (alert: any) => {
+        if (!alert || !alert.show) return;
+
+        const now = Date.now();
+        const lastAlert = localStorage.getItem('last_expiry_alert_time');
+        const lastAlertType = localStorage.getItem('last_expiry_alert_type');
+
+        let shouldShow = false;
+
+        if (!lastAlert || lastAlertType !== alert.type) {
+            shouldShow = true;
+        } else {
+            const diffMs = now - parseInt(lastAlert);
+            if (alert.type === 'hourly') {
+                if (diffMs >= 3600000) shouldShow = true; // 1 hour
+            } else {
+                if (diffMs >= 86400000) shouldShow = true; // 24 hours
+            }
+        }
+
+        if (shouldShow) {
+            setActiveAlert(alert);
+            localStorage.setItem('last_expiry_alert_time', now.toString());
+            localStorage.setItem('last_expiry_alert_type', alert.type);
+        }
+    };
 
     const fetchStats = async () => {
         try {
@@ -180,6 +248,9 @@ const Dashboard = () => {
                 params: { period: timePeriod }
             });
             setStats(response.data);
+            if (response.data.expiry_alert) {
+                checkAndShowAlert(response.data.expiry_alert);
+            }
         } catch (err) {
             console.error('Error fetching dashboard stats:', err);
         } finally {
@@ -241,6 +312,11 @@ const Dashboard = () => {
                 user={user}
                 stats={stats}
                 onEditProfile={() => navigate('/profile')}
+            />
+
+            <ExpiryAlertModal
+                alert={activeAlert}
+                onClose={() => setActiveAlert(null)}
             />
 
             {/* Top Stats Grid */}

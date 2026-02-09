@@ -4,6 +4,47 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: /');
     exit;
 }
+
+require_once __DIR__ . '/../config/database.php';
+$db = Database::getConnection();
+
+// Fetch current active subscription
+$stmt = $db->prepare("SELECT s.*, p.price_idr, p.name as plan_name FROM subscriptions s JOIN subscription_plans p ON s.plan_id = p.id WHERE s.user_id = ? AND s.status = 'active' AND s.end_date > NOW() ORDER BY s.end_date DESC LIMIT 1");
+$stmt->execute([$_SESSION['user_id']]);
+$currentSub = $stmt->fetch();
+
+function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
+{
+    if (!$currentSub)
+        return [false, ""];
+
+    $remSeconds = strtotime($currentSub['end_date']) - time();
+    $remDays = $remSeconds / (24 * 3600);
+    $remHours = $remSeconds / 3600;
+
+    $newPrice = (float) $newPlanPrice;
+    $currPrice = (float) $currentSub['price_idr'];
+
+    // Rule A: Downgrade
+    if ($newPrice < $currPrice) {
+        return [true, "Downgrade Locked"];
+    }
+
+    // Rule B: Same-Tier Cooldown
+    if ($newPlanId === $currentSub['plan_id']) {
+        if (strtolower($currentSub['plan_name']) === 'prematur') {
+            if ($remHours > 1)
+                return [true, "Cooldown (" . round($remHours, 1) . "h)"];
+        } else {
+            if ($remDays > 3)
+                return [true, "Cooldown (" . round($remDays, 1) . "d)"];
+        }
+        return [false, "Renew Plan"]; // It's same tier but within renewal window
+    }
+
+    // It's an upgrade
+    return [false, "Upgrade Now"];
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -416,7 +457,12 @@ if (!isset($_SESSION['user_id'])) {
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> Addon Support</li>
                 </ul>
-                <button class="purchase-btn" onclick="buy('basic')">Choose Basic</button>
+                <?php
+                list($restricted, $label) = isPlanRestricted('basic', 100000, $currentSub);
+                ?>
+                <button class="purchase-btn" onclick="buy('basic')" <?= $restricted ? 'disabled' : '' ?> style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
+                    <?= $restricted ? $label : 'Choose Basic' ?>
+                </button>
             </div>
 
             <!-- Pro -->
@@ -440,7 +486,12 @@ if (!isset($_SESSION['user_id'])) {
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> 15 Proxy Slots</li>
                 </ul>
-                <button class="purchase-btn" onclick="buy('pro')">Go Pro</button>
+                <?php
+                list($restricted, $label) = isPlanRestricted('pro', 300000, $currentSub);
+                ?>
+                <button class="purchase-btn" onclick="buy('pro')" <?= $restricted ? 'disabled' : '' ?> style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
+                    <?= $restricted ? $label : 'Go Pro' ?>
+                </button>
             </div>
 
             <!-- Advanced -->
@@ -464,7 +515,12 @@ if (!isset($_SESSION['user_id'])) {
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> 30 Proxy Slots</li>
                 </ul>
-                <button class="purchase-btn" onclick="buy('advanced')">Unlock Advanced</button>
+                <?php
+                list($restricted, $label) = isPlanRestricted('advanced', 650000, $currentSub);
+                ?>
+                <button class="purchase-btn" onclick="buy('advanced')" <?= $restricted ? 'disabled' : '' ?> style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
+                    <?= $restricted ? $label : 'Unlock Advanced' ?>
+                </button>
             </div>
 
             <!-- Supreme -->
@@ -488,7 +544,12 @@ if (!isset($_SESSION['user_id'])) {
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> VIP Direct Line</li>
                 </ul>
-                <button class="purchase-btn" onclick="buy('supreme')">Elite Access</button>
+                <?php
+                list($restricted, $label) = isPlanRestricted('supreme', 1800000, $currentSub);
+                ?>
+                <button class="purchase-btn" onclick="buy('supreme')" <?= $restricted ? 'disabled' : '' ?> style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
+                    <?= $restricted ? $label : 'Elite Access' ?>
+                </button>
             </div>
         </div>
 

@@ -265,6 +265,35 @@ async def get_dashboard_stats(
                 elif addon.sub_type == "proxy":
                     proxy_limit += addon.quantity
 
+    # --- EXPIRY ALERT LOGIC ---
+    expiry_alert = None
+    if sub and sub.end_date:
+        now_tz = datetime.now(sub.end_date.tzinfo)
+        remaining = sub.end_date - now_tz
+        rem_seconds = remaining.total_seconds()
+        rem_days = rem_seconds / (24 * 3600)
+        rem_hours = rem_seconds / 3600
+
+        is_prematur = plan_name.lower() == "prematur"
+
+        if is_prematur:
+            if 0 < rem_hours <= 3:
+                expiry_alert = {
+                    "show": True,
+                    "type": "hourly",
+                    "message": f"Masa aktif paket Prematur anda tinggal {round(rem_hours, 1)} jam lagi!",
+                    "rem_hours": round(rem_hours, 1)
+                }
+        else:
+            if 0 < rem_days <= 3:
+                expiry_alert = {
+                    "show": True,
+                    "type": "daily",
+                    "message": f"Masa aktif langganan anda tinggal {round(rem_days)} hari lagi!",
+                    "rem_days": round(rem_days)
+                }
+    # ---------------------------
+
     # 9. Admin Specific Stats
     admin_stats = {}
     if current_user.role == "admin":
@@ -315,6 +344,7 @@ async def get_dashboard_stats(
             "expiry": expiry_date,
             "status": "active" if sub else "inactive"
         },
+        "expiry_alert": expiry_alert,
         "schedules": schedules,
         "activity_stats": activity_stats,
         "period": period,
