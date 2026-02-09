@@ -614,6 +614,40 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
         </section>
     </div>
 
+    <!-- Restriction Modal -->
+    <div id="restrictionModal"
+        style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; padding:24px; background:rgba(3,7,18,0.85); backdrop-filter:blur(12px);">
+        <div id="modalContent"
+            style="background:linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.98)); border:1px solid rgba(129,140,248,0.2); border-radius:28px; padding:40px 36px 32px; max-width:440px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(129,140,248,0.1); position:relative; animation:modalIn 0.3s ease-out;">
+            <div id="modalIcon"
+                style="width:64px; height:64px; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:28px;">
+            </div>
+            <h3 id="modalTitle"
+                style="color:#f8fafc; font-size:1.35rem; font-weight:700; text-align:center; margin-bottom:12px; font-family:'Outfit',sans-serif;">
+            </h3>
+            <p id="modalMessage"
+                style="color:#94a3b8; font-size:0.95rem; text-align:center; line-height:1.7; margin-bottom:32px; white-space:pre-line;">
+            </p>
+            <button onclick="closeModal()"
+                style="display:block; width:100%; padding:14px; border-radius:16px; border:1px solid rgba(129,140,248,0.3); background:rgba(129,140,248,0.1); color:#818cf8; font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.2s; text-transform:uppercase; letter-spacing:1.5px; font-family:'Outfit',sans-serif;"
+                onmouseover="this.style.background='rgba(129,140,248,0.2)'; this.style.borderColor='rgba(129,140,248,0.5)'"
+                onmouseout="this.style.background='rgba(129,140,248,0.1)'; this.style.borderColor='rgba(129,140,248,0.3)'">Mengerti</button>
+        </div>
+    </div>
+    <style>
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+    </style>
+
     <script>
         // =============================================
         // SUBSCRIPTION DATA (injected by server-side PHP)
@@ -685,8 +719,8 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             // ========== CLIENT-SIDE RESTRICTION CHECK ==========
             const restriction = checkPurchaseRestriction(id);
             if (!restriction.allowed) {
-                alert("⛔ " + restriction.reason);
-                return; // Block immediately, do NOT call the API
+                showModal('restriction', 'Akses Ditolak', restriction.reason);
+                return;
             }
             // ===================================================
 
@@ -710,13 +744,13 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 if (data.status === 'success') {
                     window.location.href = data.data.invoice_url;
                 } else {
-                    alert("Error: " + (data.message || 'Gagal membuat invoice'));
+                    showModal('error', 'Transaksi Gagal', data.message || 'Gagal membuat invoice.');
                     btn.innerText = originalText;
                     btn.disabled = false;
                 }
             } catch (err) {
                 console.error(err);
-                alert("Gagal menghubungi server pembayar.");
+                showModal('error', 'Koneksi Gagal', 'Gagal menghubungi server pembayar. Coba lagi nanti.');
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
@@ -744,17 +778,52 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 if (data.status === 'success') {
                     window.location.href = data.data.invoice_url;
                 } else {
-                    alert("Error: " + (data.message || 'Gagal membuat invoice addon'));
+                    showModal('error', 'Transaksi Gagal', data.message || 'Gagal membuat invoice addon.');
                     item.style.opacity = "1";
                     item.style.pointerEvents = "auto";
                 }
             } catch (err) {
                 console.error(err);
-                alert("Gagal menghubungi server pembayar.");
+                showModal('error', 'Koneksi Gagal', 'Gagal menghubungi server pembayar. Coba lagi nanti.');
                 item.style.opacity = "1";
                 item.style.pointerEvents = "auto";
             }
         }
+
+        function showModal(type, title, message) {
+            const modal = document.getElementById('restrictionModal');
+            const icon = document.getElementById('modalIcon');
+            const titleEl = document.getElementById('modalTitle');
+            const msgEl = document.getElementById('modalMessage');
+
+            if (type === 'restriction') {
+                icon.innerHTML = '🛡️';
+                icon.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))';
+                icon.style.border = '1px solid rgba(239,68,68,0.3)';
+            } else {
+                icon.innerHTML = '⚠️';
+                icon.style.background = 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1))';
+                icon.style.border = '1px solid rgba(245,158,11,0.3)';
+            }
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            modal.style.display = 'flex';
+
+            // Close on backdrop click
+            modal.onclick = function (e) {
+                if (e.target === modal) closeModal();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('restrictionModal').style.display = 'none';
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeModal();
+        });
     </script>
 </body>
 
