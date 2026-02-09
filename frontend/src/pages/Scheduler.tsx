@@ -939,10 +939,11 @@ const ScheduleFollowForm = ({ onBack, accounts, onSuccess, taskStats }: { onBack
         setScheduledAt(formatDateForInput(randomDate));
     };
 
+    const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const targets = targetUsername.split(/[\n,]+/).map(t => t.trim().replace('@', '')).filter(t => t);
-        const activeSelectedAccounts = isMultiAccount ? selectedAccounts : (selectedAccount ? [selectedAccount] : []);
 
         if (activeSelectedAccounts.length === 0 || targets.length === 0) {
             setError('Please select account(s) and enter target username(s)');
