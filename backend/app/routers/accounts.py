@@ -81,12 +81,13 @@ async def login_google(
         user = result.scalars().first()
 
         if user:
-            # Update google_id if missing (linking account)
-            if not user.google_id:
-                user.google_id = google_id
-                db.add(user)
-                await db.commit()
-                await db.refresh(user)
+            # Update google_id or email if missing (linking account)
+            user.google_id = google_id
+            user.email = email
+            user.avatar = picture
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
         else:
             # Register new user
             # Generate random password
@@ -94,7 +95,7 @@ async def login_google(
             password = "".join(secrets.choice(alphabet) for i in range(16))
             hashed_password = get_password_hash(password)
             
-            # Generate username from email (ensure uniqueness)
+            # Generate clean username from email (ensure uniqueness)
             base_username = email.split("@")[0]
             username = base_username
             counter = 1
@@ -184,26 +185,40 @@ async def sync_login(
         raise HTTPException(status_code=400, detail="Sync token missing")
     
     parts = token.split(":")
-    if len(parts) != 3:
+    if len(parts) != 2:
+        # Fallback for old token format if necessary, but we are upgrading both
         raise HTTPException(status_code=400, detail="Invalid token format")
     
-    username, timestamp, signature = parts
+    b64_payload, signature = parts
     secret = "your-fallback-secret-key-change-it-in-prod"
     
-    # 1. Verify Age (5 mins max)
-    if time.time() - int(timestamp) > 300:
-        raise HTTPException(status_code=400, detail="Sync token expired")
-    
-    # 2. Verify Signature
-    message = f"{username}:{timestamp}"
-    expected_sig = hmac.new(
-        secret.encode(),
-        message.encode(),
-        hashlib.sha256
-    ).hexdigest()
-    
-    if signature != expected_sig:
-        raise HTTPException(status_code=400, detail="Sync signature mismatch")
+    # 1. Verify Signature
+    import base64
+    import json
+    try:
+        json_payload = base64.b64decode(b64_payload).decode()
+        expected_sig = hmac.new(
+            secret.encode(),
+            json_payload.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if signature != expected_sig:
+            raise HTTPException(status_code=400, detail="Sync signature mismatch")
+        
+        data = json.loads(json_payload)
+        username = data.get('u')
+        email = data.get('e')
+        full_name = data.get('n')
+        avatar = data.get('a')
+        timestamp = data.get('t')
+
+        # 2. Verify Age (5 mins max)
+        if time.time() - int(timestamp) > 300:
+            raise HTTPException(status_code=400, detail="Sync token expired")
+            
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Token decoding failed: {str(e)}")
     
     # 3. Get or Create User
     result = await db.execute(select(User).where(User.username == username))
@@ -212,14 +227,23 @@ async def sync_login(
     if not user:
         user = User(
             username=username,
+            email=email,
+            full_name=full_name,
+            avatar=avatar,
             hashed_password=get_password_hash("sso-managed"),
-            full_name=username,
             role="operator",
             is_active=True
         )
         db.add(user)
-        await db.commit()
-        await db.refresh(user)
+    else:
+        # Update existing user metadata if changed
+        user.email = email
+        user.full_name = full_name
+        user.avatar = avatar
+        db.add(user)
+    
+    await db.commit()
+    await db.refresh(user)
     
     access_token = create_access_token(subject=user.username)
     return {"access_token": access_token, "token_type": "bearer"}

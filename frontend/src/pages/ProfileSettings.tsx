@@ -66,7 +66,7 @@ const ProfileSettings = () => {
                                 <div className="w-32 h-32 rounded-3xl bg-gradient-to-tr from-indigo-600 to-purple-600 p-1 shadow-2xl shadow-indigo-500/20 mx-auto">
                                     <div className="w-full h-full rounded-3xl bg-gray-950 flex items-center justify-center overflow-hidden">
                                         {formData.avatar ? (
-                                            <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
+                                            <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                         ) : (
                                             <User className="w-16 h-16 text-indigo-400" />
                                         )}

@@ -42,7 +42,7 @@ const WelcomeCard = ({ user, stats, onEditProfile }: any) => {
                         <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 p-0.5 shadow-xl shadow-indigo-500/20 group-hover/photo:scale-105 transition-transform duration-300">
                             <div className="w-full h-full rounded-2xl bg-gray-900 flex items-center justify-center overflow-hidden">
                                 {user?.avatar ? (
-                                    <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+                                    <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                 ) : (
                                     <Users className="w-10 h-10 text-indigo-400" />
                                 )}

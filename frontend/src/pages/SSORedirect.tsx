@@ -32,7 +32,13 @@ const SSORedirect = () => {
                     try {
                         const url = new URL(returnTo);
                         const centralOrigin = url.origin;
-                        window.location.href = `${centralOrigin}/?error=sso_failed&msg=${encodeURIComponent(errorMessage)}`;
+
+                        // If it's a standard auth failure, keep it clean
+                        if (errorMessage.includes('authenticated') || errorMessage.includes('401')) {
+                            window.location.href = centralOrigin;
+                        } else {
+                            window.location.href = `${centralOrigin}/?error=sso_failed&msg=${encodeURIComponent(errorMessage)}`;
+                        }
                     } catch (e) {
                         window.location.href = '/login';
                     }

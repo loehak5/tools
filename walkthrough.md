@@ -5,6 +5,17 @@ I have successfully implemented the MVP for your scalable Instagram Automation S
 ## Features Implemented
 - **3 Login Methods**: Username/Password, 2FA, and Cookies.
 - **Unique Fingerprinting**: Each account generates and persists a unique device fingerprint (UserAgent, Device Settings).
+- **SSO Redirect Cleanup**: Improved the SSO handshake error handling in `SSORedirect.tsx`.
+    - Prevented "Not authenticated" error messages from appearing in the URL when redirecting back to the central server.
+    - Users are now gracefully redirected back to the clean origin URL if their local session is expired or missing.
+- **Central Server Google Login**: Fixed functionality on the central server.
+    - Updated `central-server/views/login.php` with the correct Google Client ID.
+    - Fixed SQL error `1364` by adding a dummy `hashed_password` when auto-registering users via Google.
+- **Auto-Login Fix**: Added CORS headers to `central-server/api/auth.php`.
+    - Allows the local dashboard to securely check the central session during the login process.
+    - Resolves the issue where the "Sync & Login Automatically" button was missing.
+
+### Frontend Dashboard Enhancements
 - **Dashboard**: A premium dark-mode UI to view stats and manage accounts.
 - **Scalable Architecture**: Dockerized setup with Redis for background tasks (ready for thousands of accounts).
 

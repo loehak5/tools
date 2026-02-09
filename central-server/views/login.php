@@ -205,8 +205,9 @@
                 <span>Or continue with</span>
             </div>
 
-            <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID" data-callback="handleGoogleResponse"
-                data-auto_prompt="true">
+            <div id="g_id_onload"
+                data-client_id="826952988399-b1tqd1vc3v7miel3sjqmojmgsbetc17a.apps.googleusercontent.com"
+                data-callback="handleGoogleResponse" data-auto_prompt="true">
             </div>
 
             <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-size="large"
@@ -218,7 +219,7 @@
 
     <script>
         // --- Zero-Click SSO Handshake ---
-        window.onload = function() {
+        window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('error')) {
                 console.warn("⚠️ SSO Handshake failed:", urlParams.get('msg'));
@@ -230,7 +231,7 @@
 
             console.log("🔍 Looking for local session...");
             const backendUrls = [
-                'http://127.0.0.1:8000/health', 
+                'http://127.0.0.1:8000/health',
                 'http://localhost:8000/health',
                 'http://localhost:5001/health'
             ];
@@ -242,7 +243,7 @@
                     try {
                         const controller = new AbortController();
                         setTimeout(() => controller.abort(), 800);
-                        
+
                         const res = await fetch(url, { signal: controller.signal });
                         if (res.ok) {
                             const data = await res.json();
@@ -254,7 +255,7 @@
                                 return;
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
                 console.log("ℹ️ Auto-login backend not reachable.");
             };

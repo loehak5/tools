@@ -4,6 +4,19 @@ session_start();
 
 require_once __DIR__ . '/../config/database.php';
 
+// Enable CORS for the local dashboard
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (preg_match('/^http:\/\/localhost:5173|^http:\/\/127.0.0.1:5173/', $origin)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header("Access-Control-Allow-Credentials: true");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
+
 header('Content-Type: application/json');
 
 function verify_google_token($token)
@@ -35,26 +48,46 @@ switch ($action) {
         $payload = verify_google_token($token);
         if ($payload) {
             $email = $payload['email'];
+            $google_id = $payload['sub'];
             $name = $payload['name'] ?? explode('@', $email)[0];
+            $picture = $payload['picture'] ?? null;
 
             try {
                 $db = Database::getConnection();
-                $stmt = $db->prepare("SELECT id FROM users WHERE username = ?");
-                $stmt->execute([$email]);
+
+                // 1. Check if user already exists by google_id or email
+                $stmt = $db->prepare("SELECT id, username FROM users WHERE google_id = ? OR email = ?");
+                $stmt->execute([$google_id, $email]);
                 $user = $stmt->fetch();
 
                 if ($user) {
                     $user_id = $user['id'];
+                    $username = $user['username'];
+                    // Update email or google_id if they were missing (account linking)
+                    $stmt = $db->prepare("UPDATE users SET google_id = ?, email = ?, avatar = ? WHERE id = ?");
+                    $stmt->execute([$google_id, $email, $picture, $user_id]);
                 } else {
                     // Create user if not exists
-                    $stmt = $db->prepare("INSERT INTO users (username, full_name, role, is_active) VALUES (?, ?, 'operator', 1)");
-                    $stmt->execute([$email, $name]);
+                    $dummy_pass = bin2hex(random_bytes(16));
+                    $hashed_pass = password_hash($dummy_pass, PASSWORD_DEFAULT);
+
+                    // Generate clean username from email
+                    $username = explode('@', $email)[0];
+                    // Uniqueness check for username
+                    $check_stmt = $db->prepare("SELECT id FROM users WHERE username = ?");
+                    $check_stmt->execute([$username]);
+                    if ($check_stmt->fetch()) {
+                        $username .= rand(100, 999);
+                    }
+
+                    $stmt = $db->prepare("INSERT INTO users (username, email, google_id, full_name, avatar, hashed_password, role, is_active) VALUES (?, ?, ?, ?, ?, ?, 'operator', 1)");
+                    $stmt->execute([$username, $email, $google_id, $name, $picture, $hashed_pass]);
                     $user_id = $db->lastInsertId();
                 }
 
                 // Set Session
                 $_SESSION['user_id'] = $user_id;
-                $_SESSION['username'] = $email;
+                $_SESSION['username'] = $username;
 
                 // Start session or return token
                 echo json_encode([
@@ -147,8 +180,10 @@ switch ($action) {
 
             if (!$user) {
                 // Auto-create user if it exists in local app but not central
-                $stmt = $db->prepare("INSERT INTO users (username, full_name, role, is_active) VALUES (?, ?, 'operator', 1)");
-                $stmt->execute([$username, $username]); // simplified name
+                $dummy_pass = bin2hex(random_bytes(16));
+                $hashed_pass = password_hash($dummy_pass, PASSWORD_DEFAULT);
+                $stmt = $db->prepare("INSERT INTO users (username, full_name, hashed_password, role, is_active) VALUES (?, ?, ?, 'operator', 1)");
+                $stmt->execute([$username, $username, $hashed_pass]); // simplified name
                 $user_id = $db->lastInsertId();
             } else {
                 $user_id = $user['id'];
@@ -177,12 +212,42 @@ switch ($action) {
             echo json_encode(['status' => 'error', 'message' => 'Not logged in']);
             break;
         }
-        $username = $_SESSION['username'] ?? 'unknown';
-        $timestamp = time();
-        $secret = "your-fallback-secret-key-change-it-in-prod";
-        $message = "$username:$timestamp";
-        $signature = hash_hmac('sha256', $message, $secret);
-        echo json_encode(['status' => 'success', 'token' => "$username:$timestamp:$signature"]);
+
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT username, email, full_name, avatar FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['user_id']]);
+            $user = $stmt->fetch();
+
+            if (!$user) {
+                echo json_encode(['status' => 'error', 'message' => 'User not found']);
+                break;
+            }
+
+            $username = $user['username'];
+            $email = $user['email'] ?? '';
+            $name = $user['full_name'] ?? '';
+            $avatar = $user['avatar'] ?? '';
+            $timestamp = time();
+            $secret = "your-fallback-secret-key-change-it-in-prod";
+
+            // Build expanded payload
+            $payload = [
+                'u' => $username,
+                'e' => $email,
+                'n' => $name,
+                'a' => $avatar,
+                't' => $timestamp
+            ];
+            $json_payload = json_encode($payload);
+            $signature = hash_hmac('sha256', $json_payload, $secret);
+
+            // Token is now b64_payload:signature
+            $token = base64_encode($json_payload) . ":" . $signature;
+            echo json_encode(['status' => 'success', 'token' => $token]);
+        } catch (Exception $e) {
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
         break;
 
     default:
