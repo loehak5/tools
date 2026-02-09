@@ -13,3 +13,4 @@ class User(Base):
     google_id = Column(String, unique=True, index=True, nullable=True)
     role = Column(String, default="operator")  # roles: admin, operator
     is_active = Column(Boolean, default=True)
+    is_password_set = Column(Boolean, default=False)

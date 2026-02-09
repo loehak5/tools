@@ -8,6 +8,7 @@ interface User {
     full_name: string | null;
     avatar: string | null;
     role: string;
+    is_password_set: boolean;
 }
 
 interface AuthContextType {

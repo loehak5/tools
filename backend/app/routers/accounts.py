@@ -150,6 +150,7 @@ async def update_user_me(
         current_user.avatar = user_in.avatar
     if user_in.password is not None:
         current_user.hashed_password = get_password_hash(user_in.password)
+        current_user.is_password_set = True
     
     db.add(current_user)
     await db.commit()

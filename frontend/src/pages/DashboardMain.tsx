@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Users, Activity, Clock, TrendingUp, ShieldCheck, LogIn, Globe, Wifi, Play, Video, Eye, MoreVertical } from 'lucide-react';
+import { Users, Activity, Clock, TrendingUp, ShieldCheck, LogIn, Globe, Wifi, Play, Video, Eye, MoreVertical, AlertTriangle, ArrowRight } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Label
@@ -112,8 +112,36 @@ const WelcomeCard = ({ user, stats, onEditProfile }: any) => {
                         </div>
                     </div>
                 </div>
-
             </div>
+
+            {/* Security Warning for Google Login users who haven't set a manual password */}
+            {!user?.is_password_set && (
+                <div className="mt-8 animate-in slide-in-from-top-4 duration-500">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 group/alert relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl -mr-16 -mt-16 group-hover/alert:bg-amber-500/10 transition-colors"></div>
+
+                        <div className="flex items-center space-x-5 relative z-10">
+                            <div className="p-4 bg-amber-500 rounded-2xl shadow-lg shadow-amber-500/20">
+                                <AlertTriangle className="w-8 h-8 text-black" />
+                            </div>
+                            <div>
+                                <h4 className="text-white font-black text-lg">Amankan Akun Anda!</h4>
+                                <p className="text-amber-400/70 text-sm font-medium leading-relaxed max-w-md">
+                                    Anda login menggunakan Google. Untuk keamanan maksimal dan akses penuh dari mana saja, segera buat kata sandi mandiri di halaman profil.
+                                </p>
+                            </div>
+                        </div>
+
+                        <Link
+                            to="/profile"
+                            className="relative z-10 flex items-center space-x-2 bg-amber-500 hover:bg-amber-400 text-black px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/20 group-hover/alert:scale-105 active:scale-95"
+                        >
+                            <span>Buat Sandi Sekarang</span>
+                            <ArrowRight className="w-4 h-4" />
+                        </Link>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

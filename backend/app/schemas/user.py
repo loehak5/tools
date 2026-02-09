@@ -8,6 +8,7 @@ class UserBase(BaseModel):
     avatar: Optional[str] = None
     role: Optional[str] = "operator"
     is_active: Optional[bool] = True
+    is_password_set: bool = False
 
 class UserCreate(UserBase):
     password: str
