@@ -7,8 +7,8 @@ class TaskBatch(Base):
     __tablename__ = "task_batches"
     
     id = Column(Integer, primary_key=True, index=True)
-    task_type = Column(String, nullable=False)
-    status = Column(String, default="pending") # pending, running, completed, failed
+    task_type = Column(String(50), nullable=False)
+    status = Column(String(20), default="pending") # pending, running, completed, failed
     
     total_count = Column(Integer, default=0)
     success_count = Column(Integer, default=0)

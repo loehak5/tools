@@ -7,14 +7,14 @@ class Fingerprint(Base):
     __tablename__ = "fingerprints"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_agent = Column(String, nullable=False)
-    browser_version = Column(String)
-    os_type = Column(String)
+    user_agent = Column(String(512), nullable=False)
+    browser_version = Column(String(50))
+    os_type = Column(String(50))
     device_memory = Column(Integer)
     hardware_concurrency = Column(Integer)
-    screen_resolution = Column(String)
-    timezone = Column(String)
-    language = Column(String)
+    screen_resolution = Column(String(50))
+    timezone = Column(String(100))
+    language = Column(String(50))
     raw_fingerprint = Column(JSON) # Store full fingerprint data
     
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Initially nullable for migration
@@ -28,10 +28,10 @@ class Account(Base):
     __tablename__ = "accounts"
     
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
-    password_encrypted = Column(String, nullable=True)
-    seed_2fa = Column(String, nullable=True) # For 2FA
-    proxy = Column(String, nullable=True)
+    username = Column(String(100), unique=True, index=True, nullable=False)
+    password_encrypted = Column(String(512), nullable=True)
+    seed_2fa = Column(String(100), nullable=True) # For 2FA
+    proxy = Column(String(255), nullable=True)
     
     login_method = Column(Integer, default=1) # 1=Pass, 2=2FA, 3=Cookies
     cookies = Column(JSON, nullable=True) # Store session cookies
@@ -42,11 +42,11 @@ class Account(Base):
     
     is_active = Column(Boolean, default=True)
     is_checker = Column(Boolean, default=False)
-    status = Column(String, default="offline") # offline, active, banned, challenge
-    last_error = Column(String, nullable=True)  # Store last login error reason
+    status = Column(String(50), default="offline") # offline, active, banned, challenge
+    last_error = Column(String(512), nullable=True)  # Store last login error reason
     
     # Threads integration
-    threads_profile_id = Column(String, nullable=True) # ID as string to avoid precision issues
+    threads_profile_id = Column(String(100), nullable=True) # ID as string to avoid precision issues
     has_threads = Column(Boolean, default=False)
     
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Initially nullable for migration

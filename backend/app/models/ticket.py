@@ -20,9 +20,9 @@ class Ticket(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    subject = Column(String, index=True)
-    status = Column(String, default=TicketStatus.OPEN)
-    priority = Column(String, default=TicketPriority.MEDIUM)
+    subject = Column(String(255), index=True)
+    status = Column(String(20), default=TicketStatus.OPEN)
+    priority = Column(String(20), default=TicketPriority.MEDIUM)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -35,7 +35,7 @@ class TicketMessage(Base):
     id = Column(Integer, primary_key=True, index=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
-    message = Column(String)
+    message = Column(String(1000))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     ticket = relationship("Ticket", back_populates="messages")

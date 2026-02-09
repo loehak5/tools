@@ -20,13 +20,13 @@ class Task(Base):
         return "unknown"
 
     
-    task_type = Column(String, nullable=False) # post, like, follow, ensure_active
+    task_type = Column(String(50), nullable=False) # post, like, follow, ensure_active
     params = Column(JSON, nullable=True) # e.g. { "media_path": "...", "caption": "..." }
     
     scheduled_at = Column(DateTime(timezone=True), nullable=False)
     executed_at = Column(DateTime(timezone=True), nullable=True)
     
-    status = Column(String, default="pending") # pending, running, completed, failed
+    status = Column(String(20), default="pending") # pending, running, completed, failed
     error_message = Column(Text, nullable=True)
     
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)

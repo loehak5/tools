@@ -5,12 +5,12 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    full_name = Column(String)
-    avatar = Column(String, nullable=True)
-    email = Column(String, unique=True, index=True, nullable=True)
-    google_id = Column(String, unique=True, index=True, nullable=True)
-    role = Column(String, default="operator")  # roles: admin, operator
+    username = Column(String(100), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(512), nullable=False)
+    full_name = Column(String(100))
+    avatar = Column(String(255), nullable=True)
+    email = Column(String(100), unique=True, index=True, nullable=True)
+    google_id = Column(String(100), unique=True, index=True, nullable=True)
+    role = Column(String(20), default="operator")  # roles: admin, operator
     is_active = Column(Boolean, default=True)
     is_password_set = Column(Boolean, default=False)

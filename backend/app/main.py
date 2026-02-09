@@ -41,11 +41,38 @@ async def startup():
     
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(2))
     async def init_db():
+        from sqlalchemy import text, inspect
         try:
             async with engine.begin() as conn:
+                # 1. Create all missing tables
                 await conn.run_sync(Base.metadata.create_all)
+                
+                # 2. Check for and add missing columns in existing tables (MySQL migration)
+                def get_table_columns(connection, table_name):
+                    inspector = inspect(connection)
+                    return [c['name'] for c in inspector.get_columns(table_name)]
+                
+                # Sync users table
+                users_cols = await conn.run_sync(lambda connection: get_table_columns(connection, "users"))
+                
+                if "is_password_set" not in users_cols:
+                    await conn.execute(text("ALTER TABLE users ADD COLUMN is_password_set BOOLEAN DEFAULT FALSE"))
+                    print("✅ Migration: Added is_password_set to users table")
+                
+                # Sync accounts table (defensive check)
+                accounts_cols = await conn.run_sync(lambda connection: get_table_columns(connection, "accounts"))
+                if "last_error" not in accounts_cols:
+                    await conn.execute(text("ALTER TABLE accounts ADD COLUMN last_error VARCHAR(512)"))
+                    print("✅ Migration: Added last_error to accounts table")
+                
+                # Sync proxies table (defensive check)
+                proxies_cols = await conn.run_sync(lambda connection: get_table_columns(connection, "proxy_templates"))
+                if "user_id" not in proxies_cols:
+                    await conn.execute(text("ALTER TABLE proxy_templates ADD COLUMN user_id INTEGER, ADD CONSTRAINT fk_proxy_user FOREIGN KEY (user_id) REFERENCES users (id)"))
+                    print("✅ Migration: Added user_id to proxy_templates table")
+
         except Exception as e:
-            print(f"DB Init failed, retrying... Error: {e}")
+            print(f"DB Init/Migration failed, retrying... Error: {e}")
             raise e
             
     await init_db()
