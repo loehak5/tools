@@ -460,7 +460,8 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 <?php
                 list($restricted, $label) = isPlanRestricted('basic', 100000, $currentSub);
                 ?>
-                <button class="purchase-btn" onclick="buy('basic')" <?= $restricted ? 'disabled' : '' ?> style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
+                <button class="purchase-btn" onclick="buy('basic')" <?= $restricted ? 'disabled' : '' ?>
+                    style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
                     <?= $restricted ? $label : 'Choose Basic' ?>
                 </button>
             </div>
@@ -489,7 +490,8 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 <?php
                 list($restricted, $label) = isPlanRestricted('pro', 300000, $currentSub);
                 ?>
-                <button class="purchase-btn" onclick="buy('pro')" <?= $restricted ? 'disabled' : '' ?> style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
+                <button class="purchase-btn" onclick="buy('pro')" <?= $restricted ? 'disabled' : '' ?>
+                    style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
                     <?= $restricted ? $label : 'Go Pro' ?>
                 </button>
             </div>
@@ -518,7 +520,8 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 <?php
                 list($restricted, $label) = isPlanRestricted('advanced', 650000, $currentSub);
                 ?>
-                <button class="purchase-btn" onclick="buy('advanced')" <?= $restricted ? 'disabled' : '' ?> style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
+                <button class="purchase-btn" onclick="buy('advanced')" <?= $restricted ? 'disabled' : '' ?>
+                    style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
                     <?= $restricted ? $label : 'Unlock Advanced' ?>
                 </button>
             </div>
@@ -547,7 +550,8 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 <?php
                 list($restricted, $label) = isPlanRestricted('supreme', 1800000, $currentSub);
                 ?>
-                <button class="purchase-btn" onclick="buy('supreme')" <?= $restricted ? 'disabled' : '' ?> style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
+                <button class="purchase-btn" onclick="buy('supreme')" <?= $restricted ? 'disabled' : '' ?>
+                    style="<?= $restricted ? 'opacity: 0.5; cursor: not-allowed; background: #374151;' : '' ?>">
                     <?= $restricted ? $label : 'Elite Access' ?>
                 </button>
             </div>
@@ -611,16 +615,86 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
     </div>
 
     <script>
+        // =============================================
+        // SUBSCRIPTION DATA (injected by server-side PHP)
+        // =============================================
+        const CURRENT_SUB = <?= json_encode($currentSub ? [
+            'plan_id' => $currentSub['plan_id'],
+            'plan_name' => $currentSub['plan_name'],
+            'price' => (float) $currentSub['price_idr'],
+            'end_date' => $currentSub['end_date'],
+        ] : null) ?>;
+
+        const PLAN_PRICES = {
+            'prematur': 50000,
+            'starter': 60000,
+            'basic': 100000,
+            'pro': 300000,
+            'advanced': 650000,
+            'supreme': 1800000
+        };
+
+        /**
+         * Client-side purchase restriction check.
+         * Returns { allowed: boolean, reason: string }
+         */
+        function checkPurchaseRestriction(planId) {
+            if (!CURRENT_SUB) return { allowed: true, reason: '' };
+
+            const newPrice = PLAN_PRICES[planId] || 0;
+            const curPrice = CURRENT_SUB.price || 0;
+            const endDate = new Date(CURRENT_SUB.end_date);
+            const now = new Date();
+            const remMs = endDate.getTime() - now.getTime();
+            const remDays = remMs / (1000 * 60 * 60 * 24);
+            const remHours = remMs / (1000 * 60 * 60);
+
+            // Rule A: Downgrade Protection
+            if (newPrice < curPrice) {
+                return {
+                    allowed: false,
+                    reason: `Downgrade tidak diperbolehkan.\nPaket aktif Anda (${CURRENT_SUB.plan_name}) memiliki tier lebih tinggi.\nTunggu masa aktif habis terlebih dahulu.`
+                };
+            }
+
+            // Rule B: Same-Tier Repurchase Cooldown
+            if (planId === CURRENT_SUB.plan_id) {
+                if (CURRENT_SUB.plan_id === 'prematur') {
+                    if (remHours > 1) {
+                        return {
+                            allowed: false,
+                            reason: `Paket Prematur hanya dapat dibeli ulang 1 jam sebelum habis.\nSisa masa aktif: ${remHours.toFixed(1)} jam.`
+                        };
+                    }
+                } else {
+                    if (remDays > 3) {
+                        return {
+                            allowed: false,
+                            reason: `Paket ${CURRENT_SUB.plan_name} hanya dapat dibeli ulang 3 hari sebelum masa aktif habis.\nSisa masa aktif: ${remDays.toFixed(1)} hari.`
+                        };
+                    }
+                }
+            }
+
+            return { allowed: true, reason: '' };
+        }
+
         async function buy(id) {
             console.log("Purchasing Plan:", id);
+
+            // ========== CLIENT-SIDE RESTRICTION CHECK ==========
+            const restriction = checkPurchaseRestriction(id);
+            if (!restriction.allowed) {
+                alert("⛔ " + restriction.reason);
+                return; // Block immediately, do NOT call the API
+            }
+            // ===================================================
 
             const btn = event.target;
             const originalText = btn.innerText;
             btn.innerText = "Processing...";
             btn.disabled = true;
 
-            // Check if it's an upgrade or new purchase
-            // (Simple frontend check, backend also handles this)
             const action = 'create_invoice';
 
             const formData = new FormData();
