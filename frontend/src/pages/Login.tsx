@@ -15,6 +15,23 @@ const Login: React.FC = () => {
 
     const from = (location.state as any)?.from?.pathname || '/';
 
+    const handleGoogleLogin = async (response: any) => {
+        try {
+            console.log("Google Login Response:", response);
+            setLoading(true);
+            const res = await api.post('/accounts/auth/google', {
+                token: response.credential
+            });
+            const token = res.data.access_token;
+            await login(token);
+            navigate(from, { replace: true });
+        } catch (err: any) {
+            console.error("Google Login Error:", err);
+            setError(err.response?.data?.detail || 'Google Login failed.');
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         const checkCentralSession = async () => {
             try {
@@ -33,7 +50,30 @@ const Login: React.FC = () => {
             }
         };
         checkCentralSession();
+
+        // Load Google Script
+        const script = document.createElement('script');
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.onload = () => {
+            (window as any).google?.accounts.id.initialize({
+                client_id: "826952988399-b1tqd1vc3v7miel3sjqmojmgsbetc17a.apps.googleusercontent.com",
+                callback: handleGoogleLogin
+            });
+            (window as any).google?.accounts.id.renderButton(
+                document.getElementById("google-btn"),
+                { theme: "filled_blue", size: "large", width: "100%", text: "signin_with" }
+            );
+        };
+        document.body.appendChild(script);
+
+        return () => {
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
+            }
+        }
     }, []);
+
 
     const handleSync = async () => {
         setError('');
@@ -163,6 +203,14 @@ const Login: React.FC = () => {
                             >
                                 {loading ? 'Processing...' : 'Sign In'}
                             </button>
+
+                            <div className="relative flex items-center justify-center my-4">
+                                <div className="border-t border-slate-700 w-full"></div>
+                                <span className="bg-[#0f172a] px-3 text-slate-500 text-sm">OR</span>
+                                <div className="border-t border-slate-700 w-full"></div>
+                            </div>
+
+                            <div id="google-btn" className="w-full flex justify-center"></div>
                         </form>
                     )}
                 </div>
