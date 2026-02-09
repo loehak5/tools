@@ -6,7 +6,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InstaTools — Instagram Automation & Management Platform</title>
     <meta name="description"
-        content="Platform otomasi dan manajemen Instagram terpercaya. Kelola ribuan akun IG dengan mudah, aman, dan efisien.">
+        content="Platform otomasi dan manajemen Instagram terpercaya. Kelola ribuan akun IG dengan mudah, aman, dan efisien. Scheduling, proxy management, bulk import, dan cross posting.">
+    <meta name="keywords"
+        content="instagram automation, instagram bot, instagram management, bulk instagram, proxy management, auto post instagram, scheduling instagram, instatools">
+    <meta name="author" content="InstaTools">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://instatools.web.id/">
+    <meta name="theme-color" content="#050a18">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://instatools.web.id/">
+    <meta property="og:title" content="InstaTools — Instagram Automation & Management Platform">
+    <meta property="og:description"
+        content="Platform otomasi dan manajemen Instagram terpercaya. Kelola ribuan akun IG dengan aman, cepat, dan efisien.">
+    <meta property="og:site_name" content="InstaTools">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="InstaTools — Instagram Automation & Management Platform">
+    <meta name="twitter:description"
+        content="Platform otomasi dan manajemen Instagram terpercaya. Kelola ribuan akun IG dengan aman, cepat, dan efisien.">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "InstaTools",
+        "url": "https://instatools.web.id/",
+        "description": "Platform otomasi dan manajemen Instagram terpercaya.",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://instatools.web.id/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "InstaTools",
+        "operatingSystem": "Windows",
+        "applicationCategory": "BusinessApplication",
+        "description": "Platform otomasi dan manajemen Instagram untuk mengelola ribuan akun secara bersamaan.",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "IDR"
+        }
+    }
+    </script>
+
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap">
     <style>

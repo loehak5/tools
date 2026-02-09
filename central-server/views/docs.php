@@ -6,7 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panduan Instalasi — InstaTools</title>
     <meta name="description"
-        content="Panduan lengkap instalasi dan penggunaan InstaTools. Mulai dari install Git, Python, Node.js hingga menjalankan aplikasi setiap hari.">
+        content="Panduan lengkap instalasi dan penggunaan InstaTools. Install Git, Python, Node.js, clone repository, dan jalankan aplikasi setiap hari dengan mudah.">
+    <meta name="keywords"
+        content="panduan instalasi instatools, install git, install python, install nodejs, cara pakai instatools, setup instatools">
+    <meta name="author" content="InstaTools">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://instatools.web.id/docs">
+    <meta name="theme-color" content="#050a18">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://instatools.web.id/docs">
+    <meta property="og:title" content="Panduan Instalasi — InstaTools">
+    <meta property="og:description"
+        content="Panduan lengkap instalasi InstaTools. Dari install Git, Python, Node.js hingga menjalankan aplikasi setiap hari.">
+    <meta property="og:site_name" content="InstaTools">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Panduan Instalasi — InstaTools">
+    <meta name="twitter:description"
+        content="Panduan lengkap instalasi InstaTools. Dari install Git, Python, Node.js hingga menjalankan aplikasi.">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "Cara Install InstaTools",
+        "description": "Panduan lengkap instalasi dan penggunaan InstaTools di Windows",
+        "step": [
+            {"@type": "HowToStep", "name": "Install Git", "text": "Download dan install Git dari git-scm.com"},
+            {"@type": "HowToStep", "name": "Install Python", "text": "Download Python 3.12.7, centang Add Python to PATH saat install"},
+            {"@type": "HowToStep", "name": "Install Node.js", "text": "Download dan install Node.js v24.13.0"},
+            {"@type": "HowToStep", "name": "Clone Repository", "text": "Buka Git Bash, ketik: git clone https://github.com/loehak5/instatools.git"},
+            {"@type": "HowToStep", "name": "Jalankan Maintenance", "text": "Klik 2x file Aktifkan-Maintenance.bat"},
+            {"@type": "HowToStep", "name": "Jalankan Aplikasi", "text": "Klik 2x file Mulai-tools.bat"}
+        ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://instatools.web.id/"},
+            {"@type": "ListItem", "position": 2, "name": "Dokumentasi", "item": "https://instatools.web.id/docs"}
+        ]
+    }
+    </script>
+
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
     <style>

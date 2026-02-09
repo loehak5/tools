@@ -4,6 +4,17 @@ session_start();
 
 $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
+// SEO files
+if ($request_uri === '/sitemap.xml') {
+    header('Content-Type: application/xml');
+    readfile(__DIR__ . '/sitemap.xml');
+    exit;
+} elseif ($request_uri === '/robots.txt') {
+    header('Content-Type: text/plain');
+    readfile(__DIR__ . '/robots.txt');
+    exit;
+}
+
 // API Routes
 if (strpos($request_uri, '/api/billing') !== false) {
     require_once __DIR__ . '/api/billing.php';

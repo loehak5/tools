@@ -52,7 +52,13 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instatools - Elite Automation Access</title>
+    <title>Subscription Plans — InstaTools Automation Platform</title>
+    <meta name="description"
+        content="Pilih paket langganan InstaTools sesuai kebutuhan. Dari Prematur hingga Supreme, kelola akun Instagram dengan fitur premium.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://instatools.web.id/billing">
+    <meta name="theme-color" content="#030712">
+
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;700&display=swap"
         rel="stylesheet">
@@ -926,7 +932,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             document.getElementById('qoQty').value = 100;
             selectQoType(qoSelectedType);
             document.getElementById('quotaOrderModal').style.display = 'flex';
-            document.getElementById('quotaOrderModal').onclick = function(e) {
+            document.getElementById('quotaOrderModal').onclick = function (e) {
                 if (e.target === document.getElementById('quotaOrderModal')) closeQuotaOrder();
             };
         }
@@ -937,7 +943,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
 
         function selectQoType(type) {
             qoSelectedType = type;
-            ['proxy','account'].forEach(t => {
+            ['proxy', 'account'].forEach(t => {
                 const btn = document.getElementById('qo-' + t);
                 if (t === type) {
                     btn.style.borderColor = 'rgba(129,140,248,0.4)';

@@ -4,7 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IG Tools - Automation & Management Console</title>
+    <title>Login — InstaTools Automation & Management Console</title>
+    <meta name="description"
+        content="Login ke InstaTools untuk mengakses dashboard otomasi dan manajemen Instagram Anda.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://instatools.web.id/login">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://instatools.web.id/login">
+    <meta property="og:title" content="Login — InstaTools">
+    <meta property="og:description" content="Login ke InstaTools untuk mengakses dashboard otomasi Instagram.">
+    <meta property="og:site_name" content="InstaTools">
+
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>

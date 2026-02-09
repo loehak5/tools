@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /docs
+Disallow: /billing
+Disallow: /api/
+Disallow: /logout
+
+Sitemap: https://instatools.web.id/sitemap.xml
