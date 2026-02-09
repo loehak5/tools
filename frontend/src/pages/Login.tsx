@@ -15,6 +15,33 @@ const Login: React.FC = () => {
 
     const from = (location.state as any)?.from?.pathname || '/';
 
+    const checkSubscriptionAndNavigate = async (user: any) => {
+        try {
+            const statsRes = await api.get('/dashboard/stats');
+            const subStatus = statsRes.data?.subscription?.status;
+
+            if (subStatus !== 'active' && user?.role !== 'admin') {
+                console.log('⚠️ No active subscription found. Redirecting to Central Server...');
+                window.location.href = 'https://instatools.web.id';
+                return;
+            }
+
+            if (user?.role === 'admin') {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate(from, { replace: true });
+            }
+        } catch (err) {
+            console.error('Error checking subscription during login:', err);
+            // Default to normal navigation if check fails to avoid blocking the user
+            if (user?.role === 'admin') {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate(from, { replace: true });
+            }
+        }
+    };
+
     const handleGoogleLogin = async (response: any) => {
         try {
             console.log("Google Login Response:", response);
@@ -24,11 +51,7 @@ const Login: React.FC = () => {
             });
             const token = res.data.access_token;
             const userData = await login(token);
-            if (userData?.role === 'admin') {
-                navigate('/admin', { replace: true });
-            } else {
-                navigate(from, { replace: true });
-            }
+            await checkSubscriptionAndNavigate(userData);
         } catch (err: any) {
             console.error("Google Login Error:", err);
             setError(err.response?.data?.detail || 'Google Login failed.');
@@ -78,7 +101,6 @@ const Login: React.FC = () => {
         }
     }, []);
 
-
     const handleSync = async () => {
         setError('');
         setLoading(true);
@@ -97,11 +119,7 @@ const Login: React.FC = () => {
                 const userData = await login(token);
                 console.log('✅ Sync successful! Logging in...');
 
-                if (userData?.role === 'admin') {
-                    navigate('/admin', { replace: true });
-                } else {
-                    navigate(from, { replace: true });
-                }
+                await checkSubscriptionAndNavigate(userData);
             } else {
                 throw new Error(dataSync.message || 'Sync failed');
             }
@@ -133,11 +151,7 @@ const Login: React.FC = () => {
             const token = response.data.access_token;
             const userData = await login(token);
 
-            if (userData?.role === 'admin') {
-                navigate('/admin', { replace: true });
-            } else {
-                navigate(from, { replace: true });
-            }
+            await checkSubscriptionAndNavigate(userData);
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
         } finally {
