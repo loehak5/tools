@@ -568,15 +568,15 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 <div class="addon-category">
                     <h4>LAYANAN KUOTA</h4>
                     <div class="addon-list">
-                        <div class="addon-item" onclick="buyAddon('quota', 'proxy', 100)">
-                            <div class="addon-info"><span class="addon-label">Kuota Proxy (100 IP)</span><span
-                                    class="addon-price">50k</span></div>
-                            <div class="addon-desc">Rp 500 per IP · 100 unit</div>
+                        <div class="addon-item" onclick="openQuotaOrder()">
+                            <div class="addon-info"><span class="addon-label">Kuota Proxy</span><span
+                                    class="addon-price">Rp 500/IP</span></div>
+                            <div class="addon-desc">Tambah kuota request per IP proxy</div>
                         </div>
-                        <div class="addon-item" onclick="buyAddon('quota', 'account', 100)">
-                            <div class="addon-info"><span class="addon-label">Kuota Akun IG (100u)</span><span
-                                    class="addon-price">100k</span></div>
-                            <div class="addon-desc">Rp 1.000 per akun · 100 unit</div>
+                        <div class="addon-item" onclick="openQuotaOrder('account')">
+                            <div class="addon-info"><span class="addon-label">Kuota Akun IG</span><span
+                                    class="addon-price">Rp 1.000/akun</span></div>
+                            <div class="addon-desc">Tambah kuota aksi per akun Instagram</div>
                         </div>
                     </div>
                 </div>
@@ -593,6 +593,53 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 </div>
             </div>
         </section>
+    </div>
+
+    <!-- Quota Order Modal -->
+    <div id="quotaOrderModal"
+        style="display:none; position:fixed; inset:0; z-index:9998; align-items:center; justify-content:center; padding:24px; background:rgba(3,7,18,0.85); backdrop-filter:blur(12px);">
+        <div
+            style="background:linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.98)); border:1px solid rgba(129,140,248,0.2); border-radius:28px; padding:40px 36px 32px; max-width:480px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(129,140,248,0.1); animation:modalIn 0.3s ease-out;">
+            <div
+                style="width:64px; height:64px; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:28px; background:linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1)); border:1px solid rgba(16,185,129,0.3);">
+                ⚡</div>
+            <h3
+                style="color:#f8fafc; font-size:1.35rem; font-weight:700; text-align:center; margin-bottom:6px; font-family:'Outfit',sans-serif;">
+                Beli Kuota</h3>
+            <p id="qoSubtitle" style="color:#64748b; font-size:0.8rem; text-align:center; margin-bottom:24px;">Tentukan
+                jumlah kuota yang dibutuhkan</p>
+
+            <label style="color:#94a3b8; font-size:0.85rem; font-weight:600; display:block; margin-bottom:8px;">Tipe
+                Kuota</label>
+            <div style="display:flex; gap:8px; margin-bottom:20px;">
+                <button type="button" onclick="selectQoType('proxy')" id="qo-proxy"
+                    style="flex:1; padding:10px 0; border-radius:12px; border:1px solid rgba(129,140,248,0.4); background:rgba(129,140,248,0.15); color:#818cf8; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s;">Proxy</button>
+                <button type="button" onclick="selectQoType('account')" id="qo-account"
+                    style="flex:1; padding:10px 0; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#94a3b8; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s;">Akun
+                    IG</button>
+            </div>
+
+            <label style="color:#94a3b8; font-size:0.85rem; font-weight:600; display:block; margin-bottom:8px;">Jumlah
+                Unit</label>
+            <input type="number" id="qoQty" min="1" value="100" oninput="updateQoPrice()"
+                style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(15,23,42,0.6); color:#f8fafc; font-size:1rem; font-family:'Inter',sans-serif; outline:none; margin-bottom:20px; -moz-appearance:textfield;" />
+
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-radius:16px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.15); margin-bottom:24px;">
+                <span style="color:#94a3b8; font-size:0.85rem;">Total Harga</span>
+                <span id="qoTotalPrice"
+                    style="color:#10b981; font-size:1.3rem; font-weight:700; font-family:'Outfit',sans-serif;">Rp
+                    50.000</span>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeQuotaOrder()"
+                    style="flex:1; padding:14px; border-radius:16px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#94a3b8; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s;">Batal</button>
+                <button onclick="submitQuotaOrder()"
+                    style="flex:2; padding:14px; border-radius:16px; border:none; background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s; letter-spacing:0.5px;">Beli
+                    Sekarang</button>
+            </div>
+        </div>
     </div>
 
     <!-- Custom Order Modal -->
@@ -868,6 +915,57 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             }
             closeCustomOrder();
             buyAddon('proxy', coSelectedType, qty);
+        }
+
+        // ===== QUOTA ORDER MODAL =====
+        let qoSelectedType = 'proxy';
+        const QO_UNIT_PRICES = { proxy: 500, account: 1000 };
+
+        function openQuotaOrder(preselect) {
+            qoSelectedType = preselect || 'proxy';
+            document.getElementById('qoQty').value = 100;
+            selectQoType(qoSelectedType);
+            document.getElementById('quotaOrderModal').style.display = 'flex';
+            document.getElementById('quotaOrderModal').onclick = function(e) {
+                if (e.target === document.getElementById('quotaOrderModal')) closeQuotaOrder();
+            };
+        }
+
+        function closeQuotaOrder() {
+            document.getElementById('quotaOrderModal').style.display = 'none';
+        }
+
+        function selectQoType(type) {
+            qoSelectedType = type;
+            ['proxy','account'].forEach(t => {
+                const btn = document.getElementById('qo-' + t);
+                if (t === type) {
+                    btn.style.borderColor = 'rgba(129,140,248,0.4)';
+                    btn.style.background = 'rgba(129,140,248,0.15)';
+                    btn.style.color = '#818cf8';
+                } else {
+                    btn.style.borderColor = 'rgba(255,255,255,0.1)';
+                    btn.style.background = 'transparent';
+                    btn.style.color = '#94a3b8';
+                }
+            });
+            updateQoPrice();
+        }
+
+        function updateQoPrice() {
+            const qty = Math.max(1, parseInt(document.getElementById('qoQty').value) || 1);
+            const total = QO_UNIT_PRICES[qoSelectedType] * qty;
+            document.getElementById('qoTotalPrice').textContent = 'Rp ' + total.toLocaleString('id-ID');
+        }
+
+        function submitQuotaOrder() {
+            const qty = parseInt(document.getElementById('qoQty').value) || 0;
+            if (qty < 1) {
+                showModal('error', 'Jumlah Tidak Valid', 'Minimal pembelian kuota adalah 1 unit.');
+                return;
+            }
+            closeQuotaOrder();
+            buyAddon('quota', qoSelectedType, qty);
         }
 
         function showModal(type, title, message) {
