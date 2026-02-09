@@ -415,11 +415,12 @@ async def distribute_proxies(
                       
     if starving_active:
         # Find victims: Non-active accounts that HAVE a proxy
-        # We need to query this from DB as they might not be in our 'accounts' list if Overwrite=False
+        # CRITICAL FIX: Must filter by current_user.id to prevent stealing from other users
         stmt_victims = select(Account).where(
             Account.proxy != None,
             Account.proxy != "",
-            Account.status != 'active'
+            Account.status != 'active',
+            Account.user_id == current_user.id
         )
         result_victims = await db.execute(stmt_victims)
         possible_victims = result_victims.scalars().all()
