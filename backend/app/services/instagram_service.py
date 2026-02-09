@@ -90,13 +90,17 @@ class InstagramService:
             
             print(f"Starting login for {self.account.username}, method: {self.account.login_method} (jitter: {jitter:.2f}s, force: {force_full_login})")
             
-            # GREEDY SESSION REUSE: Always try cookies first if available
-            # Unless we are forcing a full login
-            if self.account.cookies and not force_full_login:
+            # GREEDY SESSION REUSE or EXPLICIT COOKIE LOGIN (Method 3)
+            # Always try cookies first if available, or if method is 3
+            if (self.account.cookies or self.account.login_method == 3) and not force_full_login:
                 try:
-                    print("Attempting greedy cookie-based login...")
+                    print(f"Attempting cookie-based login (Method: {self.account.login_method})...")
                     # Settings are already loaded in _setup_client
-                    # We just need to verify it with a simple request or login_by_sessionid
+                    
+                    # If we have no cookies stored but method is 3, we can't proceed
+                    if not self.account.cookies:
+                        raise ValueError("Cookie login method selected but no cookies found in database.")
+
                     session_id = self.account.cookies.get("sessionid")
                     if session_id:
                         # login_by_sessionid is fast and doesn't trigger 2FA
@@ -107,9 +111,25 @@ class InstagramService:
                             updates["cookies"] = self.client.get_settings()
                             updates["last_login_state"] = updates["cookies"]
                             return updates
+                        else:
+                            print(f"login_by_sessionid returned False for {self.account.username}")
+                    
+                    # Fallback to general settings load if sessionid alone didn't work
+                    # (This is already mostly handled by self.client.set_settings in __init__)
+                    self.client.get_timeline_feed()
+                    print(f"Session verified via get_timeline_feed for {self.account.username}")
+                    updates["status"] = "active"
+                    return updates
+
                 except Exception as e:
-                    print(f"Greedy cookie login failed: {e}. Falling back to configured method.")
-                    # Fallback to password/2FA
+                    print(f"Cookie login failed for {self.account.username}: {e}")
+                    if self.account.login_method == 3:
+                        # If explicitly using cookies and it failed, we shouldn't just 
+                        # fallback to password if password might not exist or isn't intended
+                        if not self.account.password_encrypted:
+                            updates["status"] = "expired"
+                            raise ValueError(f"Cookie session expired or invalid for @{self.account.username}. Please re-export cookies.")
+                        print("Cookie failed, falling back to password/2FA since credentials exist.")
 
             # Get password
             password = self.account.password_encrypted

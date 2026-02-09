@@ -340,7 +340,7 @@ async def bulk_create_accounts(
                 cookies=item.cookies,
                 login_method=item.login_method,
                 fingerprint_id=fp.id,
-                status="pending",
+                status="active" if item.login_method == 3 else "pending", # Cookies are assumed active
                 user_id=current_user.id
             )
             

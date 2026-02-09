@@ -47,15 +47,13 @@ async def import_account_from_cookie(
         fp = await fp_service.create_fingerprint(user_id=current_user.id)
         
         # Convert cookies dict to JSON string for storage
-        cookies_json = json.dumps(cookie_data.cookies)
-        
         # Create account with cookie-based login
         new_account = Account(
             username=username,
             password_encrypted="",  # No password for cookie-based accounts
-            cookies=cookies_json,
+            cookies=cookie_data.cookies,
             proxy=cookie_data.proxy or "",
-            login_method="cookies",
+            login_method=3,
             fingerprint_id=fp.id,
             user_id=current_user.id,
             status="active",  # Assume active since cookies were exported from active session
@@ -122,16 +120,13 @@ async def batch_import_accounts_from_cookies(
             fp_service = FingerprintService(db)
             fp = await fp_service.create_fingerprint(user_id=current_user.id)
             
-            # Convert cookies dict to JSON string
-            cookies_json = json.dumps(cookie_data.cookies)
-            
             # Create account
             new_account = Account(
                 username=username,
                 password_encrypted="",
-                cookies=cookies_json,
+                cookies=cookie_data.cookies,
                 proxy=cookie_data.proxy or "",
-                login_method="cookies",
+                login_method=3,
                 fingerprint_id=fp.id,
                 user_id=current_user.id,
                 status="active",
