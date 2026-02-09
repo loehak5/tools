@@ -104,7 +104,7 @@ async def execute_task(task_id: int):
             session_valid = False
             
             # Try to check current session if account was previously active
-            if account.status == "active" and account.session:
+            if account.status == "active" and account.cookies:
                 try:
                     check_result = await asyncio.to_thread(service.check_session)
                     session_valid = check_result.get("status") == "active"

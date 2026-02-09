@@ -1,0 +1,148 @@
+﻿2026-02-09 09:31:34,760 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2026-02-09 09:31:34,761 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-09 09:31:34,812 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2026-02-09 09:31:34,812 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-09 09:31:34,838 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2026-02-09 09:31:34,838 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-09 09:31:34,903 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-09 09:31:34,955 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s ORDER BY tasks.created_at DESC 
+ LIMIT %s
+2026-02-09 09:31:34,955 INFO sqlalchemy.engine.Engine [generated in 0.00032s] ('failed', 10)
+
+================================================================================
+ANALYSIS OF RECENT FAILED TASKS
+================================================================================
+
+2026-02-09 09:31:35,012 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,012 INFO sqlalchemy.engine.Engine [generated in 0.00039s] (265,)
+[1] Task ID: 103 | Type: story
+    Account: @VelvionaffViaffElvira (Status: active)
+    Created: 2026-02-09 02:18:48
+    Scheduled: 2026-02-09 02:31:08
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,044 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,044 INFO sqlalchemy.engine.Engine [cached since 0.03322s ago] (325,)
+[2] Task ID: 102 | Type: story
+    Account: @VelvionaffViaffQuenella (Status: active)
+    Created: 2026-02-09 02:18:47
+    Scheduled: 2026-02-09 02:30:54
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,073 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,073 INFO sqlalchemy.engine.Engine [cached since 0.06236s ago] (326,)
+[3] Task ID: 100 | Type: story
+    Account: @BelviaffViaffValencia (Status: active)
+    Created: 2026-02-09 02:18:46
+    Scheduled: 2026-02-09 02:30:25
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,098 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,099 INFO sqlalchemy.engine.Engine [cached since 0.08747s ago] (300,)
+[4] Task ID: 101 | Type: story
+    Account: @SalvieraffViaffAdivina (Status: active)
+    Created: 2026-02-09 02:18:46
+    Scheduled: 2026-02-09 02:30:36
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,127 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,127 INFO sqlalchemy.engine.Engine [cached since 0.1172s ago] (159,)
+[5] Task ID: 99 | Type: story
+    Account: @EstavinaffViaffClaribel (Status: active)
+    Created: 2026-02-09 02:18:45
+    Scheduled: 2026-02-09 02:29:54
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,161 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,162 INFO sqlalchemy.engine.Engine [cached since 0.1505s ago] (102,)
+[6] Task ID: 97 | Type: story
+    Account: @ArdevaffViaffRosetta (Status: active)
+    Created: 2026-02-09 02:18:44
+    Scheduled: 2026-02-09 02:29:51
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,190 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,190 INFO sqlalchemy.engine.Engine [cached since 0.1787s ago] (111,)
+[7] Task ID: 98 | Type: story
+    Account: @ValvieraffViaffCalista (Status: active)
+    Created: 2026-02-09 02:18:44
+    Scheduled: 2026-02-09 02:29:52
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,224 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,224 INFO sqlalchemy.engine.Engine [cached since 0.2125s ago] (130,)
+[8] Task ID: 96 | Type: story
+    Account: @RelviaffViaffPenelina (Status: active)
+    Created: 2026-02-09 02:18:43
+    Scheduled: 2026-02-09 02:29:48
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,253 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,254 INFO sqlalchemy.engine.Engine [cached since 0.2425s ago] (108,)
+[9] Task ID: 95 | Type: story
+    Account: @XelviaffViaffAlesia (Status: active)
+    Created: 2026-02-09 02:18:42
+    Scheduled: 2026-02-09 02:29:39
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,280 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.username, accounts.password_encrypted, accounts.seed_2fa, accounts.proxy, accounts.login_method, accounts.cookies, accounts.last_login_state, accounts.fingerprint_id, accounts.is_active, accounts.is_checker, accounts.status, accounts.last_error, accounts.threads_profile_id, accounts.has_threads, accounts.user_id, accounts.created_at, accounts.last_login 
+FROM accounts 
+WHERE accounts.id = %s
+2026-02-09 09:31:35,280 INFO sqlalchemy.engine.Engine [cached since 0.2691s ago] (282,)
+[10] Task ID: 93 | Type: story
+    Account: @LavieraffViaffLarencia (Status: active)
+    Created: 2026-02-09 02:18:41
+    Scheduled: 2026-02-09 02:28:57
+    Error Message:
+    ---
+    'Account' object has no attribute 'session'
+    ---
+----------------------------------------
+2026-02-09 09:31:35,307 INFO sqlalchemy.engine.Engine ROLLBACK

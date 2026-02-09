@@ -14,7 +14,7 @@ async def analyze_failed_tasks():
     
     async with AsyncSessionLocal() as db:
         # Get all failed tasks
-        stmt = select(Task).where(Task.status == "failed").order_by(Task.updated_at.desc()).limit(50)
+        stmt = select(Task).where(Task.status == "failed").order_by(Task.created_at.desc()).limit(50)
         result = await db.execute(stmt)
         tasks = result.scalars().all()
         
@@ -25,7 +25,7 @@ async def analyze_failed_tasks():
         error_examples = {}
         
         for task in tasks:
-            error_msg = task.error or "No error message"
+            error_msg = task.error_message or "No error message"
             
             # Categorize errors
             if "session" in error_msg.lower() or "login" in error_msg.lower():

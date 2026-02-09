@@ -13,6 +13,7 @@ interface ScheduledTask {
     status: string;
     params: Record<string, unknown>;
     created_at: string;
+    error_message?: string;
 }
 
 // Helper: Format date for datetime-local input
@@ -605,6 +606,18 @@ const Monitoring = () => {
                                                     {getParamDisplay(task) || '(No details)'}
                                                 </p>
                                             </div>
+
+                                            {/* Error Message for Failed Tasks */}
+                                            {task.status === 'failed' && task.error_message && (
+                                                <div className="mt-2 bg-red-500/10 border border-red-500/20 rounded-lg p-2">
+                                                    <div className="flex items-start gap-1.5">
+                                                        <AlertCircle className="w-3 h-3 text-red-500 mt-0.5 shrink-0" />
+                                                        <p className="text-[10px] text-red-400 font-medium leading-tight">
+                                                            {task.error_message}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Footer: Date & Status */}
