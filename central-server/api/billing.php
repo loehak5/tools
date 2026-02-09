@@ -96,23 +96,30 @@ function calculate_addon_price($tier, $addon_type, $sub_type = null, $quantity =
 
     // ===== LAYANAN PROXY (Statis Residensial) =====
     if ($addon_type === 'proxy') {
-        // Per-IP unit prices per bulan:
-        // Shared:    Rp 7.500/IP  (bundle 15 IP = 112.5k)
-        // Private:   Rp 18.000/IP (bundle 20 IP = 360k)
-        // Dedicated: Rp 37.000/IP (bundle 25 IP = 925k)
-        $unit_costs = [
-            'shared' => 7500.00,
-            'private' => 18000.00,
-            'dedicated' => 37000.00
+        // Standard bundle prices (flat/rounded)
+        $bundle_prices = [
+            'shared' => ['qty' => 15, 'price' => 150000.00],
+            'private' => ['qty' => 20, 'price' => 450000.00],
+            'dedicated' => ['qty' => 25, 'price' => 1100000.00],
         ];
 
-        // Custom order: minimum 10 units
-        if ($sub_type === 'custom' || !isset($unit_costs[$sub_type])) {
-            return 0; // Handled separately or invalid
+        // Standard bundle purchase (fixed qty = fixed price)
+        if (isset($bundle_prices[$sub_type]) && $quantity == $bundle_prices[$sub_type]['qty']) {
+            return $bundle_prices[$sub_type]['price'];
         }
 
-        $price = ($unit_costs[$sub_type] ?? 0) * $quantity;
-        return $price;
+        // Custom order: per-IP unit pricing, minimum 10 IPs
+        $unit_costs = [
+            'shared' => 10000.00,
+            'private' => 22500.00,
+            'dedicated' => 44000.00
+        ];
+
+        if (isset($unit_costs[$sub_type]) && $quantity >= 10) {
+            return $unit_costs[$sub_type] * $quantity;
+        }
+
+        return 0; // Invalid
     }
 
     // ===== LAYANAN KUOTA =====

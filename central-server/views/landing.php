@@ -544,23 +544,23 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                     <div class="addon-list">
                         <div class="addon-item" onclick="buyAddon('proxy', 'shared', 15)">
                             <div class="addon-info"><span class="addon-label">Shared Bundle (15 IP)</span><span
-                                    class="addon-price">112.5k/bln</span></div>
-                            <div class="addon-desc">15 Shared Static IPs · Rp 7.500/IP</div>
+                                    class="addon-price">150k/bln</span></div>
+                            <div class="addon-desc">15 Shared Residential Static IPs</div>
                         </div>
                         <div class="addon-item" onclick="buyAddon('proxy', 'private', 20)">
                             <div class="addon-info"><span class="addon-label">Private Elite (20 IP)</span><span
-                                    class="addon-price">360k/bln</span></div>
-                            <div class="addon-desc">20 Private Static IPs · Rp 18.000/IP</div>
+                                    class="addon-price">450k/bln</span></div>
+                            <div class="addon-desc">20 Private Residential Static IPs</div>
                         </div>
                         <div class="addon-item" onclick="buyAddon('proxy', 'dedicated', 25)">
                             <div class="addon-info"><span class="addon-label">Dedicated VIP (25 IP)</span><span
-                                    class="addon-price">925k/bln</span></div>
-                            <div class="addon-desc">25 Dedicated Data Center IPs · Rp 37.000/IP</div>
+                                    class="addon-price">1.1M/bln</span></div>
+                            <div class="addon-desc">25 Dedicated Data Center IPs</div>
                         </div>
-                        <div class="addon-item" onclick="showCustomOrderModal()">
+                        <div class="addon-item" onclick="openCustomOrder()">
                             <div class="addon-info"><span class="addon-label">Custom Order</span><span
                                     class="addon-price">Custom</span></div>
-                            <div class="addon-desc">Shared / Private / Dedicated · Min. 10 IP</div>
+                            <div class="addon-desc">Pilih tipe & jumlah IP sesuai kebutuhan</div>
                         </div>
                     </div>
                 </div>
@@ -593,6 +593,54 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 </div>
             </div>
         </section>
+    </div>
+
+    <!-- Custom Order Modal -->
+    <div id="customOrderModal"
+        style="display:none; position:fixed; inset:0; z-index:9998; align-items:center; justify-content:center; padding:24px; background:rgba(3,7,18,0.85); backdrop-filter:blur(12px);">
+        <div
+            style="background:linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.98)); border:1px solid rgba(129,140,248,0.2); border-radius:28px; padding:40px 36px 32px; max-width:480px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(129,140,248,0.1); animation:modalIn 0.3s ease-out;">
+            <div
+                style="width:64px; height:64px; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:28px; background:linear-gradient(135deg, rgba(34,211,238,0.2), rgba(34,211,238,0.1)); border:1px solid rgba(34,211,238,0.3);">
+                🌐</div>
+            <h3
+                style="color:#f8fafc; font-size:1.35rem; font-weight:700; text-align:center; margin-bottom:6px; font-family:'Outfit',sans-serif;">
+                Custom Proxy Order</h3>
+            <p style="color:#64748b; font-size:0.8rem; text-align:center; margin-bottom:24px;">Minimal 10 IP per pesanan
+            </p>
+
+            <label style="color:#94a3b8; font-size:0.85rem; font-weight:600; display:block; margin-bottom:8px;">Tipe
+                Proxy</label>
+            <div id="coTypeSelect" style="display:flex; gap:8px; margin-bottom:20px;">
+                <button type="button" onclick="selectCoType('shared')" id="co-shared" class="co-type-btn co-active"
+                    style="flex:1; padding:10px 0; border-radius:12px; border:1px solid rgba(129,140,248,0.4); background:rgba(129,140,248,0.15); color:#818cf8; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s;">Shared</button>
+                <button type="button" onclick="selectCoType('private')" id="co-private" class="co-type-btn"
+                    style="flex:1; padding:10px 0; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#94a3b8; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s;">Private</button>
+                <button type="button" onclick="selectCoType('dedicated')" id="co-dedicated" class="co-type-btn"
+                    style="flex:1; padding:10px 0; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#94a3b8; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s;">Dedicated</button>
+            </div>
+
+            <label style="color:#94a3b8; font-size:0.85rem; font-weight:600; display:block; margin-bottom:8px;">Jumlah
+                IP</label>
+            <input type="number" id="coQty" min="10" value="10" oninput="updateCoPrice()"
+                style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(15,23,42,0.6); color:#f8fafc; font-size:1rem; font-family:'Inter',sans-serif; outline:none; margin-bottom:20px; -moz-appearance:textfield;" />
+
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-radius:16px; background:rgba(129,140,248,0.08); border:1px solid rgba(129,140,248,0.15); margin-bottom:24px;">
+                <span style="color:#94a3b8; font-size:0.85rem;">Total Harga</span>
+                <span id="coTotalPrice"
+                    style="color:#22d3ee; font-size:1.3rem; font-weight:700; font-family:'Outfit',sans-serif;">Rp
+                    100.000</span>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeCustomOrder()"
+                    style="flex:1; padding:14px; border-radius:16px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#94a3b8; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s;">Batal</button>
+                <button onclick="submitCustomOrder()"
+                    style="flex:2; padding:14px; border-radius:16px; border:none; background:linear-gradient(135deg, #818cf8, #6366f1); color:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s; letter-spacing:0.5px;">Beli
+                    Sekarang</button>
+            </div>
+        </div>
     </div>
 
     <!-- Restriction Modal -->
@@ -771,14 +819,55 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             }
         }
 
-        function showCustomOrderModal() {
-            showModal('info', 'Custom Proxy Order',
-                'Pilih tipe proxy dan tentukan jumlah IP:\n\n' +
-                '• Shared: Rp 7.500/IP\n' +
-                '• Private: Rp 18.000/IP\n' +
-                '• Dedicated: Rp 37.000/IP\n\n' +
-                'Minimal pemesanan: 10 IP\n' +
-                'Hubungi admin untuk custom order.');
+        // ===== CUSTOM ORDER MODAL =====
+        let coSelectedType = 'shared';
+        const CO_UNIT_PRICES = { shared: 10000, private: 22500, dedicated: 44000 };
+
+        function openCustomOrder() {
+            coSelectedType = 'shared';
+            document.getElementById('coQty').value = 10;
+            selectCoType('shared');
+            document.getElementById('customOrderModal').style.display = 'flex';
+            document.getElementById('customOrderModal').onclick = function (e) {
+                if (e.target === document.getElementById('customOrderModal')) closeCustomOrder();
+            };
+        }
+
+        function closeCustomOrder() {
+            document.getElementById('customOrderModal').style.display = 'none';
+        }
+
+        function selectCoType(type) {
+            coSelectedType = type;
+            ['shared', 'private', 'dedicated'].forEach(t => {
+                const btn = document.getElementById('co-' + t);
+                if (t === type) {
+                    btn.style.borderColor = 'rgba(129,140,248,0.4)';
+                    btn.style.background = 'rgba(129,140,248,0.15)';
+                    btn.style.color = '#818cf8';
+                } else {
+                    btn.style.borderColor = 'rgba(255,255,255,0.1)';
+                    btn.style.background = 'transparent';
+                    btn.style.color = '#94a3b8';
+                }
+            });
+            updateCoPrice();
+        }
+
+        function updateCoPrice() {
+            const qty = Math.max(10, parseInt(document.getElementById('coQty').value) || 10);
+            const total = CO_UNIT_PRICES[coSelectedType] * qty;
+            document.getElementById('coTotalPrice').textContent = 'Rp ' + total.toLocaleString('id-ID');
+        }
+
+        function submitCustomOrder() {
+            const qty = parseInt(document.getElementById('coQty').value) || 0;
+            if (qty < 10) {
+                showModal('error', 'Jumlah Tidak Valid', 'Minimal pemesanan custom order adalah 10 IP.');
+                return;
+            }
+            closeCustomOrder();
+            buyAddon('proxy', coSelectedType, qty);
         }
 
         function showModal(type, title, message) {
