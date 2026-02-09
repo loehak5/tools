@@ -162,7 +162,7 @@ async def create_account(
         stmt = select(Account).where(Account.username == account_in.username)
         result = await db.execute(stmt)
         if result.scalars().first():
-            raise HTTPException(status_code=400, detail="Username already exists")
+            raise HTTPException(status_code=400, detail="Akun sudah terdaftar di database (milik sendiri atau orang lain). Silakan hubungi Admin jika ini adalah kesalahan.")
 
         # 2. Proxy Validation (Optional)
         # if not account_in.proxy or not account_in.proxy.strip():
@@ -290,19 +290,19 @@ async def bulk_create_accounts(
             # Check if username already exists
             stmt = select(Account).where(Account.username == item.username)
             result = await db.execute(stmt)
-            if result.scalars().first():
-                results.append({
-                    "username": item.username,
-                    "success": False,
-                    "error": "Username already exists",
-                    "login_status": "skipped"
-                })
-                error_count += 1
-                continue
+                if result.scalars().first():
+                    results.append({
+                        "username": item.username,
+                        "success": False,
+                        "error": "Sudah ada di database (Skip)",
+                        "login_status": "skipped"
+                    })
+                    error_count += 1
+                    continue
             
             # Generate fingerprint
             fp_service = FingerprintService(db)
-            fp = await fp_service.create_fingerprint()
+            fp = await fp_service.create_fingerprint(user_id=current_user.id)
             
             # Determine proxy (individual -> pool/random -> common)
             proxy = item.proxy
@@ -833,6 +833,8 @@ async def check_account_session(
             "valid": updates.get("status") == "active",
             "message": "Session is valid" if updates.get("status") == "active" else "Session expired or invalid"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -942,7 +944,8 @@ async def perform_login(account_id: int):
             executed_at=func.now(),
             status=task_status,
             error_message=error_msg,
-            params={"method": "manual" if not account.last_login_state else "session"}
+            params={"method": "manual" if not account.last_login_state else "session"},
+            user_id=account.user_id
         )
         session.add(login_task)
 
@@ -989,7 +992,7 @@ async def import_account_from_cookie(
             return CookieImportResponse(
                 success=False,
                 username=username,
-                message=f"Account @{username} already exists",
+                message=f"Akun @{username} sudah ada di sistem.",
                 skipped=True
             )
         
@@ -1063,7 +1066,7 @@ async def batch_import_accounts_from_cookies(
                 results.append(CookieImportResponse(
                     success=False,
                     username=username,
-                    message=f"Account already exists",
+                    message=f"Sudah terdaftar",
                     skipped=True
                 ))
                 skipped += 1
