@@ -10,6 +10,7 @@ import Reports from './pages/Reports';
 import Login from './pages/Login';
 import SSORedirect from './pages/SSORedirect';
 import AdminPanel from './pages/AdminPanel';
+import ProfileSettings from './pages/ProfileSettings';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
@@ -33,6 +34,7 @@ function App() {
                         <Route path="monitoring" element={<Monitoring />} />
                         <Route path="reports" element={<Reports />} />
                         <Route path="settings" element={<ProxySettings />} />
+                        <Route path="profile" element={<ProfileSettings />} />
                         <Route path="admin" element={
                             <ProtectedRoute allowedRoles={['admin']}>
                                 <AdminPanel />

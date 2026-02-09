@@ -4,13 +4,16 @@ from pydantic import BaseModel
 class UserBase(BaseModel):
     username: str
     full_name: Optional[str] = None
+    avatar: Optional[str] = None
     role: Optional[str] = "operator"
     is_active: Optional[bool] = True
 
 class UserCreate(UserBase):
     password: str
 
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    avatar: Optional[str] = None
     password: Optional[str] = None
 
 class UserResponse(UserBase):

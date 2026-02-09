@@ -13,7 +13,7 @@ from app.models.account import Account, Fingerprint
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.account import AccountCreate, AccountResponse, BulkDisconnectRequest, BulkAccountCreate, BulkImportStatus
-from app.schemas.user import UserResponse, Token, UserCreate
+from app.schemas.user import UserResponse, Token, UserCreate, UserUpdate
 from app.services.fingerprint_service import FingerprintService
 from app.services.instagram_service import InstagramService
 from app.core.security import verify_password, create_access_token, get_password_hash
@@ -45,6 +45,25 @@ async def login_for_access_token(
 
 @router.get("/auth/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@router.put("/auth/me", response_model=UserResponse)
+async def update_user_me(
+    user_in: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Update current user profile."""
+    if user_in.full_name is not None:
+        current_user.full_name = user_in.full_name
+    if user_in.avatar is not None:
+        current_user.avatar = user_in.avatar
+    if user_in.password is not None:
+        current_user.hashed_password = get_password_hash(user_in.password)
+    
+    db.add(current_user)
+    await db.commit()
+    await db.refresh(current_user)
     return current_user
 
 import hmac

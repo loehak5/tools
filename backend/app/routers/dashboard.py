@@ -9,8 +9,9 @@ from app.models.account import Account
 from app.models.task import Task
 from app.models.proxy import ProxyTemplate
 
-from app.routers.deps import get_current_user
 from app.models.user import User
+from app.models.subscription import Subscription, SubscriptionPlan, SubscriptionAddon
+from app.middleware.auth_check import get_user_subscription
 
 router = APIRouter()
 
@@ -232,13 +233,46 @@ async def get_dashboard_stats(
             activity_stats[t_type] = 0
         activity_stats[t_type] += 1
 
+    # 8. Subscription & Quota Info
+    sub = await get_user_subscription(current_user)
+    
+    # Calculate limits
+    ig_limit = 0
+    proxy_limit = 0
+    plan_name = "FREE"
+    expiry_date = None
+    
+    if sub:
+        ig_limit = sub.plan.ig_account_limit
+        proxy_limit = sub.plan.proxy_slot_limit
+        plan_name = sub.plan.name
+        expiry_date = sub.end_date.isoformat() if sub.end_date else None
+        
+    # Addons
+    async with db.begin_nested() if db.in_transaction() else db.begin():
+        stmt_addons = select(SubscriptionAddon).where(
+            SubscriptionAddon.user_id == current_user.id,
+            SubscriptionAddon.is_active == True,
+            SubscriptionAddon.end_date > datetime.now()
+        )
+        result_addons = await db.execute(stmt_addons)
+        addons = result_addons.scalars().all()
+        
+        for addon in addons:
+            if addon.addon_type == "quota":
+                if addon.sub_type == "account":
+                    ig_limit += addon.quantity
+                elif addon.sub_type == "proxy":
+                    proxy_limit += addon.quantity
+
     return {
         "accounts": {
             "total": total_accounts,
             "active": active_accounts,
             "issues": issues_accounts,
             "uptime_pct": round((active_accounts / total_accounts * 100), 1) if total_accounts > 0 else 0,
-            "breakdown": status_breakdown
+            "breakdown": status_breakdown,
+            "limit": ig_limit
         },
         "tasks": {
             "total_today": tasks_period,  # Now represents selected period
@@ -247,7 +281,13 @@ async def get_dashboard_stats(
             "trends": trend_data
         },
         "proxies": {
-            "total": total_proxies
+            "total": total_proxies,
+            "limit": proxy_limit
+        },
+        "subscription": {
+            "plan": plan_name,
+            "expiry": expiry_date,
+            "status": "active" if sub else "inactive"
         },
         "schedules": schedules,
         "activity_stats": activity_stats,

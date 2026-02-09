@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Users, Activity, Clock, TrendingUp, ShieldCheck, LogIn, Globe, Wifi, Play, Video, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { Users, Activity, Clock, TrendingUp, ShieldCheck, LogIn, Globe, Wifi, Play, Video, Eye, MoreVertical } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Label
@@ -12,6 +14,108 @@ const COLORS = {
     failed: '#ef4444',    // red-500
     challenge: '#f59e0b', // amber-500
     banned: '#7f1d1d',    // red-900
+};
+
+const WelcomeCard = ({ user, stats, onEditProfile }: any) => {
+    const formatDate = (dateString: string) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    return (
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600/20 via-purple-600/10 to-transparent border border-indigo-500/20 rounded-[2.5rem] p-8 mb-8 group">
+            {/* Background decorative elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-indigo-500/20 transition-colors duration-500"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl -ml-10 -mb-10"></div>
+
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="flex items-center space-x-6">
+                    {/* Profile Photo */}
+                    <div
+                        onClick={onEditProfile}
+                        className="relative cursor-pointer group/photo"
+                    >
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 p-0.5 shadow-xl shadow-indigo-500/20 group-hover/photo:scale-105 transition-transform duration-300">
+                            <div className="w-full h-full rounded-2xl bg-gray-900 flex items-center justify-center overflow-hidden">
+                                {user?.avatar ? (
+                                    <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+                                ) : (
+                                    <Users className="w-10 h-10 text-indigo-400" />
+                                )}
+                            </div>
+                        </div>
+                        <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-green-500 border-4 border-gray-950 rounded-full shadow-lg"></div>
+                    </div>
+
+                    <div>
+                        <div className="flex items-center space-x-3 mb-1">
+                            <h2 className="text-3xl font-black text-white tracking-tight">
+                                Welcome back, <span className="text-indigo-400">{user?.full_name || user?.username}!</span>
+                            </h2>
+                            <button
+                                onClick={onEditProfile}
+                                className="p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800 rounded-xl transition-all duration-200 self-center"
+                                title="Edit Profile"
+                            >
+                                <MoreVertical className="w-4 h-4 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <span className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                                {user?.role || 'Operator'}
+                            </span>
+                            <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
+                            <span className="text-sm text-gray-400 font-medium">
+                                Account Status: <span className="text-emerald-400 font-bold">Verified</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quota Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:w-auto w-full">
+                    <div className="bg-gray-900/40 backdrop-blur-md border border-gray-800 p-4 rounded-3xl hover:border-indigo-500/30 transition-colors">
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">IG Accounts</p>
+                        <div className="flex flex-col items-center">
+                            <span className="text-lg font-black text-white">{stats?.accounts?.total || 0} / {stats?.accounts?.limit || 0}</span>
+                            <div className="w-full bg-gray-800 h-1 rounded-full mt-2 overflow-hidden">
+                                <div
+                                    className="bg-indigo-500 h-full rounded-full transition-all duration-1000"
+                                    style={{ width: `${Math.min(100, (stats?.accounts?.total / stats?.accounts?.limit) * 100 || 0)}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-900/40 backdrop-blur-md border border-gray-800 p-4 rounded-3xl hover:border-indigo-500/30 transition-colors">
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">Proxy Slots</p>
+                        <div className="flex flex-col items-center">
+                            <span className="text-lg font-black text-white">{stats?.proxies?.total || 0} / {stats?.proxies?.limit || 0}</span>
+                            <div className="w-full bg-gray-800 h-1 rounded-full mt-2 overflow-hidden">
+                                <div
+                                    className="bg-emerald-500 h-full rounded-full transition-all duration-1000"
+                                    style={{ width: `${Math.min(100, (stats?.proxies?.total / stats?.proxies?.limit) * 100 || 0)}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-900/40 backdrop-blur-md border border-gray-800 p-4 rounded-3xl hover:border-indigo-500/30 transition-colors">
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center">Subscription</p>
+                        <div className="flex flex-col items-center">
+                            <span className="text-indigo-400 font-black text-sm uppercase">{stats?.subscription?.plan || 'Starter'}</span>
+                            <span className="text-[10px] text-gray-500 font-medium mt-1">Exp: {formatDate(stats?.subscription?.expiry)}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    );
 };
 
 const StatCard = ({ title, value, icon: Icon, color, subtitle, loading }: any) => (
@@ -36,6 +140,8 @@ const StatCard = ({ title, value, icon: Icon, color, subtitle, loading }: any) =
 );
 
 const Dashboard = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [timePeriod, setTimePeriod] = useState<'today' | 'yesterday' | '7days'>('today');
@@ -92,7 +198,7 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
-            <div className="flex justify-between items-end">
+            <div className="flex justify-between items-end mb-2">
                 <div>
                     <h1 className="text-3xl font-extrabold text-white tracking-tight">Dashboard</h1>
                     <p className="text-gray-500 mt-1 font-medium italic">Empowering your automation journey.</p>
@@ -102,6 +208,12 @@ const Dashboard = () => {
                     <span>Live Updates</span>
                 </div>
             </div>
+
+            <WelcomeCard
+                user={user}
+                stats={stats}
+                onEditProfile={() => navigate('/profile')}
+            />
 
             {/* Top Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
