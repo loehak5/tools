@@ -13,7 +13,8 @@ async def verify_tables():
     if config.get("MYSQL_HOST"):
         db_url = f"mysql+aiomysql://{config['MYSQL_USER']}:{config['MYSQL_PASSWORD']}@{config['MYSQL_HOST']}:{config.get('MYSQL_PORT', '3306')}/{config['MYSQL_DATABASE']}"
     else:
-        db_url = "sqlite+aiosqlite:///./backend.db"
+        print("❌ Error: MYSQL_HOST not found in .env")
+        return
     
     engine = create_async_engine(db_url, echo=False)
     

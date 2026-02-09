@@ -28,12 +28,9 @@ async def create_tables():
         if config.get("MYSQL_HOST"):
             db_url = f"mysql+aiomysql://{config['MYSQL_USER']}:{config['MYSQL_PASSWORD']}@{config['MYSQL_HOST']}:{config.get('MYSQL_PORT', '3306')}/{config['MYSQL_DATABASE']}"
             db_type = "MySQL"
-        elif config.get("POSTGRES_SERVER"):
-            db_url = f"postgresql+asyncpg://{config['POSTGRES_USER']}:{config['POSTGRES_PASSWORD']}@{config['POSTGRES_SERVER']}:{config.get('POSTGRES_PORT', '5432')}/{config['POSTGRES_DB']}"
-            db_type = "PostgreSQL"
         else:
-            print("❌ ERROR: No database configuration found in .env")
-            print("Please configure either MYSQL_* or POSTGRES_* variables")
+            print("❌ ERROR: MySQL database configuration not found in .env")
+            print("Please configure MYSQL_* variables")
             sys.exit(1)
         
         print(f"Database Type: {db_type}")

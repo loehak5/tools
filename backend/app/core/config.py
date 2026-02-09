@@ -18,14 +18,7 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    # Database - Option 1: PostgreSQL (Legacy)
-    POSTGRES_SERVER: Optional[str] = None
-    POSTGRES_USER: Optional[str] = None
-    POSTGRES_PASSWORD: Optional[str] = None
-    POSTGRES_DB: Optional[str] = None
-    POSTGRES_PORT: str = "5432"
-    
-    # Database - Option 2: MySQL Remote (New)
+    # Database - MySQL Remote (Exclusive)
     MYSQL_HOST: Optional[str] = None
     MYSQL_PORT: int = 3306
     MYSQL_USER: Optional[str] = None
@@ -36,25 +29,15 @@ class Settings(BaseSettings):
     
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
-        """
-        Get database URL. Priority:
-        1. If MYSQL_HOST is set, use MySQL remote
-        2. If POSTGRES_SERVER is set, use PostgreSQL
-        3. Default to PostgreSQL localhost
-        """
+        """Get MySQL remote database URL."""
         if self.MYSQL_HOST and self.MYSQL_USER and self.MYSQL_PASSWORD and self.MYSQL_DATABASE:
-            # Use MySQL remote database
             return f"mysql+aiomysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}"
         
-        if self.POSTGRES_SERVER and self.POSTGRES_USER and self.POSTGRES_PASSWORD and self.POSTGRES_DB:
-            # Use PostgreSQL (legacy)
-            return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        
-        # Default fallback
-        return "postgresql+asyncpg://postgres:postgres@db:5432/instagram_automation"
+        # Fallback to a clear error if not configured
+        raise ValueError("MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, and MYSQL_DATABASE must be set in .env")
 
     # Redis / Celery
-    REDIS_HOST: str = "redis"
+    REDIS_HOST: str = "localhost" # Default for local run, override in docker-compose
     REDIS_PORT: int = 6379
     
     @property

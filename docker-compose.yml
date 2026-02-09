@@ -1,18 +1,6 @@
 version: "3.9"
 
 services:
-  db:
-    image: postgres:15-alpine
-    restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=app_user
-      - POSTGRES_PASSWORD=app_password
-      - POSTGRES_DB=ig_automation_db
-    ports:
-      - "5432:5432"
-
   redis:
     image: redis:7-alpine
     restart: always
@@ -27,15 +15,10 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - POSTGRES_SERVER=db
-      - POSTGRES_USER=app_user
-      - POSTGRES_PASSWORD=app_password
-      - POSTGRES_DB=ig_automation_db
       - REDIS_HOST=redis
       - BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:5173"]
       - WORKER_CONCURRENCY=${WORKER_CONCURRENCY:-20}
     depends_on:
-      - db
       - redis
     ports:
       - "8000:8000"
@@ -49,14 +32,9 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - POSTGRES_SERVER=db
-      - POSTGRES_USER=app_user
-      - POSTGRES_PASSWORD=app_password
-      - POSTGRES_DB=ig_automation_db
       - REDIS_HOST=redis
       - WORKER_CONCURRENCY=${WORKER_CONCURRENCY:-20}
     depends_on:
-      - db
       - redis
   beat:
     build:
@@ -67,15 +45,10 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - POSTGRES_SERVER=db
-      - POSTGRES_USER=app_user
-      - POSTGRES_PASSWORD=app_password
-      - POSTGRES_DB=ig_automation_db
       - REDIS_HOST=redis
     depends_on:
-      - db
       - redis
       - backend
 
 volumes:
-  postgres_data:
+  redis_data:
