@@ -309,15 +309,15 @@ async def bulk_create_accounts(
             # Check if username already exists
             stmt = select(Account).where(Account.username == item.username)
             result = await db.execute(stmt)
-                if result.scalars().first():
-                    results.append({
-                        "username": item.username,
-                        "success": False,
-                        "error": "Sudah ada di database (Skip)",
-                        "login_status": "skipped"
-                    })
-                    error_count += 1
-                    continue
+            if result.scalars().first():
+                results.append({
+                    "username": item.username,
+                    "success": False,
+                    "error": "Sudah ada di database (Skip)",
+                    "login_status": "skipped"
+                })
+                error_count += 1
+                continue
             
             # Generate fingerprint
             fp_service = FingerprintService(db)
