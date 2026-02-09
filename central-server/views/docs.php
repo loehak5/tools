@@ -301,12 +301,41 @@
         .code-block .code-label {
             position: absolute;
             top: 8px;
-            right: 12px;
+            right: 52px;
             font-size: 0.65rem;
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(129, 140, 248, 0.15);
+            border-color: rgba(129, 140, 248, 0.3);
+            color: var(--primary);
+        }
+
+        .copy-btn.copied {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: var(--accent-green);
         }
 
         /* ========== SECTION DIVIDER ========== */
@@ -520,7 +549,13 @@
             </ul>
             <div class="code-block">
                 <span class="code-label">Git Bash</span>
-                git clone https://github.com/loehak5/instatools.git
+                <button class="copy-btn" onclick="copyCode(this)" title="Copy">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                    </svg>
+                </button>
+                <span class="code-text">git clone https://github.com/loehak5/instatools.git</span>
             </div>
             <div class="alert alert-info">
                 <span class="alert-icon">💡</span>
@@ -582,6 +617,20 @@
     <footer>
         &copy; 2026 InstaTools. All rights reserved.
     </footer>
+
+    <script>
+        function copyCode(btn) {
+            const text = btn.parentElement.querySelector('.code-text').textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 
 </html>
