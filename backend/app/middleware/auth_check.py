@@ -3,26 +3,36 @@ from fastapi import HTTPException, status, Depends
 from datetime import datetime, timezone
 from sqlalchemy import func
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from app.db.session import AsyncSessionLocal
 from app.models.user import User
 from app.models.subscription import Subscription, SubscriptionPlan
 import json
 
-async def get_user_subscription(user: User) -> Subscription:
+from sqlalchemy.ext.asyncio import AsyncSession
+
+async def get_user_subscription(user: User, db: AsyncSession = None) -> Subscription:
     """Get user's active subscription with plan details."""
-    async with AsyncSessionLocal() as db:
-        now = datetime.now(timezone.utc)
-        stmt = (
-            select(Subscription)
-            .join(SubscriptionPlan)
-            .where(
-                Subscription.user_id == user.id,
-                Subscription.status == "active",
-                Subscription.end_date > now
-            )
+    if db:
+        return await _get_subscription_query(db, user)
+    
+    async with AsyncSessionLocal() as session:
+        return await _get_subscription_query(session, user)
+
+async def _get_subscription_query(db: AsyncSession, user: User) -> Subscription:
+    now = datetime.now(timezone.utc)
+    stmt = (
+        select(Subscription)
+        .options(selectinload(Subscription.plan))
+        .join(SubscriptionPlan)
+        .where(
+            Subscription.user_id == user.id,
+            Subscription.status == "active",
+            Subscription.end_date > now
         )
-        result = await db.execute(stmt)
-        return result.scalars().first()
+    )
+    result = await db.execute(stmt)
+    return result.scalars().first()
 
 async def check_user_limits(user: User, resource_type: str = "account") -> bool:
     """Check if user has reached their subscription limits."""

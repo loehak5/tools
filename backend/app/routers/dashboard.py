@@ -11,7 +11,9 @@ from app.models.proxy import ProxyTemplate
 
 from app.models.user import User
 from app.models.subscription import Subscription, SubscriptionPlan, SubscriptionAddon
+from app.models.subscription import Subscription, SubscriptionPlan, SubscriptionAddon
 from app.middleware.auth_check import get_user_subscription
+from app.routers.deps import get_current_user
 
 router = APIRouter()
 
@@ -234,7 +236,7 @@ async def get_dashboard_stats(
         activity_stats[t_type] += 1
 
     # 8. Subscription & Quota Info
-    sub = await get_user_subscription(current_user)
+    sub = await get_user_subscription(current_user, db)
     
     # Calculate limits
     ig_limit = 0
@@ -265,7 +267,7 @@ async def get_dashboard_stats(
                 elif addon.sub_type == "proxy":
                     proxy_limit += addon.quantity
 
-    return {
+    stats_response = {
         "accounts": {
             "total": total_accounts,
             "active": active_accounts,
@@ -293,3 +295,5 @@ async def get_dashboard_stats(
         "activity_stats": activity_stats,
         "period": period  # Return the period so frontend knows what was requested
     }
+    
+    return stats_response
