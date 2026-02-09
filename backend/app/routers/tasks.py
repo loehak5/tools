@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, B
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional, Dict
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import shutil
 
@@ -15,7 +15,7 @@ from instagrapi.exceptions import LoginRequired
 from app.routers.deps import get_current_user
 from app.models.user import User
 from app.core.config import settings
-from app.middleware.auth_check import require_active_subscription
+from app.middleware.auth_check import require_active_subscription, require_feature, has_feature
 
 router = APIRouter()
 
@@ -27,7 +27,6 @@ async def get_task_stats_by_account(
     current_user: User = Depends(get_current_user)
 ) -> Dict[int, Dict[str, int]]:
     """Get task counts grouped by account_id and status."""
-    # Query to get counts
     stmt = select(
         Task.account_id,
         Task.status,
@@ -41,7 +40,6 @@ async def get_task_stats_by_account(
     result = await db.execute(stmt)
     rows = result.all()
     
-    # Build response: { account_id: { pending: X, completed: Y, failed: Z, total: N } }
     stats: Dict[int, Dict[str, int]] = {}
     for row in rows:
         account_id = row.account_id
@@ -62,7 +60,6 @@ async def get_action_stats_by_account(
     current_user: User = Depends(get_current_user)
 ) -> Dict[int, Dict[str, int]]:
     """Get completed action counts grouped by account_id and task_type."""
-    # Query to get counts of completed tasks only
     stmt = select(
         Task.account_id,
         Task.task_type,
@@ -77,7 +74,6 @@ async def get_action_stats_by_account(
     result = await db.execute(stmt)
     rows = result.all()
     
-    # Build response: { account_id: { like: X, follow: Y, view: Z, post: W, total: N } }
     stats: Dict[int, Dict[str, int]] = {}
     for row in rows:
         account_id = row.account_id
@@ -91,7 +87,6 @@ async def get_action_stats_by_account(
         stats[account_id]["total"] += count
     
     return stats
-
 
 from app.services.task_executor import execute_task
 
@@ -120,7 +115,6 @@ async def list_tasks(
     if task_type:
         stmt = stmt.where(Task.task_type == task_type)
     else:
-        # Exclude internal tasks by default
         stmt = stmt.where(Task.task_type.not_in(['login', 'check_session']))
     stmt = stmt.offset(skip).limit(limit)
     result = await db.execute(stmt)
@@ -143,7 +137,6 @@ async def count_tasks(
     if task_type:
         stmt = stmt.where(Task.task_type == task_type)
     else:
-        # Exclude internal tasks by default
         stmt = stmt.where(Task.task_type.not_in(['login', 'check_session']))
     
     result = await db.execute(stmt)
@@ -167,7 +160,7 @@ async def get_task(
     return task
 
 @router.post("/post", response_model=TaskResponse)
-@require_active_subscription
+@require_feature("post")
 async def create_post_task(
     background_tasks: BackgroundTasks,
     account_id: int = Form(...),
@@ -181,7 +174,12 @@ async def create_post_task(
     current_user: User = Depends(get_current_user)
 ):
     """Schedule an image post."""
-    # Verify account exists and belongs to user
+    # Check Cross-Posting feature if requested
+    if share_to_threads.lower() == "true":
+        if not await has_feature(current_user, "cross_posting") and not await has_feature(current_user, "cross_threads"):
+             raise HTTPException(status_code=403, detail="FEATURE_RESTRICTED:cross_posting")
+
+    # Verify account
     stmt = select(Account).where(Account.id == account_id)
     if current_user.role != "admin":
         stmt = stmt.where(Account.user_id == current_user.id)
@@ -191,13 +189,11 @@ async def create_post_task(
     if not account:
         raise HTTPException(status_code=404, detail="Account not found or access denied")
     
-    # Parse scheduled_at
     try:
         scheduled_datetime = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid datetime format")
     
-    # Save uploaded image
     filename = f"{account_id}_{int(datetime.now().timestamp())}_{image.filename}"
     file_path = os.path.join(settings.MEDIA_PATH, filename)
     
@@ -217,14 +213,13 @@ async def create_post_task(
     await db.commit()
     await db.refresh(task)
     
-    # Execute immediately if requested
     if execute_now.lower() == "true":
         background_tasks.add_task(execute_task_now, task.id)
     
     return task
 
 @router.post("/reels", response_model=TaskResponse)
-@require_active_subscription
+@require_feature("reels")
 async def create_reels_task(
     background_tasks: BackgroundTasks,
     account_id: int = Form(...),
@@ -238,13 +233,12 @@ async def create_reels_task(
     current_user: User = Depends(get_current_user)
 ):
     """Schedule a Reels post."""
-    # Check file size (approximate using Content-Length if available, or seek end)
-    # 10MB limit
-    # MAX_SIZE = 10 * 1024 * 1024
-    # if video.size and video.size > MAX_SIZE:
-    #      raise HTTPException(status_code=400, detail="Video file too large (max 10MB)")
-    
-    # Verify account exists and belongs to user
+    # Check Cross-Posting feature if requested
+    if share_to_threads.lower() == "true":
+        if not await has_feature(current_user, "cross_posting") and not await has_feature(current_user, "cross_threads"):
+             raise HTTPException(status_code=403, detail="FEATURE_RESTRICTED:cross_posting")
+
+    # Verify account
     stmt = select(Account).where(Account.id == account_id)
     if current_user.role != "admin":
         stmt = stmt.where(Account.user_id == current_user.id)
@@ -254,13 +248,11 @@ async def create_reels_task(
     if not account:
         raise HTTPException(status_code=404, detail="Account not found or access denied")
     
-    # Parse scheduled_at
     try:
         scheduled_datetime = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid datetime format")
     
-    # Save uploaded video
     filename = f"reels_{account_id}_{int(datetime.now().timestamp())}_{video.filename}"
     file_path = os.path.join(settings.MEDIA_PATH, filename)
     
@@ -280,14 +272,13 @@ async def create_reels_task(
     await db.commit()
     await db.refresh(task)
     
-    # Execute immediately if requested
     if execute_now.lower() == "true":
         background_tasks.add_task(execute_task_now, task.id)
     
     return task
 
 @router.post("/story", response_model=TaskResponse)
-@require_active_subscription
+@require_feature("story")
 async def create_story_task(
     background_tasks: BackgroundTasks,
     account_id: int = Form(...),
@@ -301,68 +292,50 @@ async def create_story_task(
     current_user: User = Depends(get_current_user)
 ):
     """Schedule a Story post."""
+    stmt = select(Account).where(Account.id == account_id)
+    if current_user.role != "admin":
+        stmt = stmt.where(Account.user_id == current_user.id)
+        
+    result = await db.execute(stmt)
+    account = result.scalars().first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found or access denied")
+    
     try:
-        # Check file size
-        # MAX_SIZE = 10 * 1024 * 1024
-        # if media.size and media.size > MAX_SIZE:
-        #      raise HTTPException(status_code=400, detail="Media file too large (max 10MB)")
-
-        # Verify account exists and belongs to user
-        stmt = select(Account).where(Account.id == account_id)
-        if current_user.role != "admin":
-            stmt = stmt.where(Account.user_id == current_user.id)
-            
-        result = await db.execute(stmt)
-        account = result.scalars().first()
-        if not account:
-            raise HTTPException(status_code=404, detail="Account not found or access denied")
+        scheduled_datetime = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid datetime format")
+    
+    filename = f"story_{account_id}_{int(datetime.now().timestamp())}_{media.filename}"
+    if not os.path.exists(settings.MEDIA_PATH):
+        os.makedirs(settings.MEDIA_PATH, exist_ok=True)
         
-        # Parse scheduled_at
-        try:
-            scheduled_datetime = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid datetime format")
-        
-        # Save uploaded media
-        filename = f"story_{account_id}_{int(datetime.now().timestamp())}_{media.filename}"
-        from app.core.config import settings
-        if not os.path.exists(settings.MEDIA_PATH):
-            os.makedirs(settings.MEDIA_PATH, exist_ok=True)
-            
-        file_path = os.path.join(settings.MEDIA_PATH, filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(media.file, buffer)
-        
-        task = Task(
-            account_id=account_id,
-            task_type="story",
-            params={"media_path": filename, "caption": caption, "link": link},
-            scheduled_at=scheduled_datetime,
-            status="pending",
-            batch_id=batch_id,
-            user_id=current_user.id
-        )
-        
-        db.add(task)
-        await db.commit()
-        await db.refresh(task)
-        
-        # Execute immediately if requested
-        if execute_now.lower() == "true":
-            background_tasks.add_task(execute_task_now, task.id)
-        
-        return task
-    except Exception as e:
-        import traceback
-        with open("error_log_story_task.txt", "a") as f:
-            f.write(f"Error creating story task: {str(e)}\n")
-            f.write(traceback.format_exc())
-            f.write("\n" + "-"*50 + "\n")
-        raise e
+    file_path = os.path.join(settings.MEDIA_PATH, filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(media.file, buffer)
+    
+    task = Task(
+        account_id=account_id,
+        task_type="story",
+        params={"media_path": filename, "caption": caption, "link": link},
+        scheduled_at=scheduled_datetime,
+        status="pending",
+        batch_id=batch_id,
+        user_id=current_user.id
+    )
+    
+    db.add(task)
+    await db.commit()
+    await db.refresh(task)
+    
+    if execute_now.lower() == "true":
+        background_tasks.add_task(execute_task_now, task.id)
+    
+    return task
 
 @router.post("/like", response_model=TaskResponse)
-@require_active_subscription
+@require_feature("like")
 async def create_like_task(
     task_in: TaskCreateLike,
     background_tasks: BackgroundTasks,
@@ -370,7 +343,6 @@ async def create_like_task(
     current_user: User = Depends(get_current_user)
 ):
     """Schedule a like action."""
-    # Verify account exists and belongs to user
     stmt = select(Account).where(Account.id == task_in.account_id)
     if current_user.role != "admin":
         stmt = stmt.where(Account.user_id == current_user.id)
@@ -393,14 +365,13 @@ async def create_like_task(
     await db.commit()
     await db.refresh(task)
     
-    # Execute immediately if requested
     if getattr(task_in, 'execute_now', False):
         background_tasks.add_task(execute_task_now, task.id)
     
     return task
 
 @router.post("/follow", response_model=TaskResponse)
-@require_active_subscription
+@require_feature("follow")
 async def create_follow_task(
     task_in: TaskCreateFollow,
     background_tasks: BackgroundTasks,
@@ -408,7 +379,6 @@ async def create_follow_task(
     current_user: User = Depends(get_current_user)
 ):
     """Schedule a follow action."""
-    # Verify account exists and belongs to user
     stmt = select(Account).where(Account.id == task_in.account_id)
     if current_user.role != "admin":
         stmt = stmt.where(Account.user_id == current_user.id)
@@ -431,14 +401,13 @@ async def create_follow_task(
     await db.commit()
     await db.refresh(task)
     
-    # Execute immediately if requested
     if getattr(task_in, 'execute_now', False):
         background_tasks.add_task(execute_task_now, task.id)
     
     return task
 
 @router.post("/view", response_model=TaskResponse)
-@require_active_subscription
+@require_feature("view")
 async def create_view_task(
     task_in: TaskCreateView,
     background_tasks: BackgroundTasks,
@@ -446,7 +415,6 @@ async def create_view_task(
     current_user: User = Depends(get_current_user)
 ):
     """Schedule a view action."""
-    # Verify account exists and belongs to user
     stmt = select(Account).where(Account.id == task_in.account_id)
     if current_user.role != "admin":
         stmt = stmt.where(Account.user_id == current_user.id)
@@ -469,13 +437,10 @@ async def create_view_task(
     await db.commit()
     await db.refresh(task)
     
-    # Execute immediately if requested
     if getattr(task_in, 'execute_now', False):
         background_tasks.add_task(execute_task_now, task.id)
     
     return task
-
-# ... endpoints ...
 
 @router.patch("/{task_id}", response_model=TaskResponse)
 async def update_task(
@@ -610,10 +575,7 @@ async def clear_task_history(
     try:
         from sqlalchemy import delete
         
-        # We clear statuses that are considered "done"
         done_statuses = ["completed", "failed"]
-        
-        print(f"DEBUG: Starting clear_history - task_type={task_type}, status={status}")
         
         stmt = delete(Task).where(Task.status.in_(done_statuses))
         if current_user.role != "admin":
@@ -623,23 +585,16 @@ async def clear_task_history(
             stmt = stmt.where(Task.task_type == task_type)
         
         if status:
-            # If a specific status is requested, we clear only that one
             stmt = stmt.where(Task.status == status)
             
         result = await db.execute(stmt)
         await db.commit()
         
-        row_count = result.rowcount
-        print(f"DEBUG: clear_history success - deleted {row_count} rows")
-        
         return {
             "message": "History cleared successfully",
-            "deleted_count": row_count
+            "deleted_count": result.rowcount
         }
     except Exception as e:
-        print(f"ERROR: clear_history failed: {e}")
-        import traceback
-        traceback.print_exc()
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Clear history failed: {str(e)}")
 
@@ -678,7 +633,6 @@ async def bulk_delete_tasks(
     if not body.ids:
         return {"message": "No tasks selected"}
         
-    # Check if any tasks are running
     stmt = select(Task).where(Task.id.in_(body.ids))
     if current_user.role != "admin":
         stmt = stmt.where(Task.user_id == current_user.id)
@@ -714,9 +668,8 @@ async def retry_task(
         raise HTTPException(status_code=404, detail="Task not found or access denied")
         
     if task.status == "running":
-        raise HTTPException(status_code=400, detail="Cannot retry running task")
+         raise HTTPException(status_code=400, detail="Cannot retry running task")
         
-    # Reset task
     task.status = "pending"
     task.error_message = None
     task.executed_at = None
@@ -724,7 +677,6 @@ async def retry_task(
     await db.commit()
     await db.refresh(task)
     
-    # Execute immediately
     background_tasks.add_task(execute_task_now, task.id)
     
     return task
@@ -734,19 +686,10 @@ async def list_expired_session_tasks(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """List failed tasks that are retryable (excluding permanent bans/blocks)."""
-    exclude_errors = [
-        "banned",
-        "IP blacklist",
-        "blacklist",
-        "challenge",
-        "checkpoint"
-    ]
+    """List failed tasks retryable."""
+    exclude_errors = ["banned", "IP blacklist", "blacklist", "challenge", "checkpoint"]
     
     stmt = select(Task).where(Task.status == "failed")
-    
-    # Exclude tasks with permanent error messages
-    # Exclude tasks with permanent error messages
     from sqlalchemy import not_, or_
     conditions = [Task.error_message.ilike(f"%{err}%") for err in exclude_errors]
     stmt = stmt.where(not_(or_(*conditions)))
@@ -755,22 +698,20 @@ async def list_expired_session_tasks(
         stmt = stmt.where(Task.user_id == current_user.id)
         
     stmt = stmt.order_by(Task.created_at.desc())
-    
     result = await db.execute(stmt)
     return result.scalars().all()
 
 @router.post("/bulk-retry")
 async def bulk_retry_tasks(
-    body: TaskBulkDelete, # Reusing schema with list of IDs
+    body: TaskBulkDelete,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Bulk retry/reschedule failing tasks."""
+    """Bulk retry failing tasks."""
     if not body.ids:
         return {"message": "No tasks selected"}
         
-    # Check tasks and ownership
     stmt = select(Task).where(Task.id.in_(body.ids))
     if current_user.role != "admin":
         stmt = stmt.where(Task.user_id == current_user.id)
@@ -784,12 +725,13 @@ async def bulk_retry_tasks(
             task.status = "pending"
             task.error_message = None
             task.executed_at = None
-            # Update scheduled_at to current time to trigger execution
-            task.scheduled_at = datetime.utcnow()
+            task.scheduled_at = datetime.now(timezone.utc)
             
             background_tasks.add_task(execute_task_now, task.id)
             retried_count += 1
             
     await db.commit()
     return {"message": f"Retried {retried_count} tasks"}
-
+ Riverside
+ Riverside
+ Riverside

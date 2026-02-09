@@ -2,19 +2,30 @@ import pymysql
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
+# Try to load .env from current dir or central-server dir
 load_dotenv()
+load_dotenv('central-server/.env')
 
 def migrate():
-    print(f"Connecting to MySQL at {os.getenv('MYSQL_HOST')} to setup Subscription System...")
+    host = os.getenv("DB_HOST", "localhost")
+    port = int(os.getenv("DB_PORT", 3306))
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASS")
+    database = os.getenv("DB_NAME")
+
+    print(f"Connecting to MySQL at {host} to setup Subscription System...")
     
+    if not user:
+        print("Error: DB_USER not found in environment. Check your .env file.")
+        return
+
     try:
         conn = pymysql.connect(
-            host=os.getenv("MYSQL_HOST"),
-            port=int(os.getenv("MYSQL_PORT", 3306)),
-            user=os.getenv("MYSQL_USER"),
-            password=os.getenv("MYSQL_PASSWORD"),
-            database=os.getenv("MYSQL_DATABASE")
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database
         )
     except Exception as e:
         print(f"Failed to connect to MySQL: {e}")
@@ -22,10 +33,7 @@ def migrate():
     
     try:
         with conn.cursor() as cursor:
-            # 1. Update users table (No trial columns added)
-            print("\nTable 'users' check completed (no changes needed for now).")
-
-            # 2. Create subscription_plans table
+            # 1. Create subscription_plans table
             print("\nCreating 'subscription_plans' table...")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS subscription_plans (
@@ -40,10 +48,8 @@ def migrate():
                     is_active BOOLEAN DEFAULT TRUE
                 )
             """)
-            print("  - table created or already exists")
 
-            # 3. Create subscriptions table
-            print("\nCreating 'subscriptions' table...")
+            # 2. Create subscriptions table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS subscriptions (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,10 +62,8 @@ def migrate():
                     CONSTRAINT fk_plan_sub FOREIGN KEY (plan_id) REFERENCES subscription_plans(id)
                 )
             """)
-            print("  - table created or already exists")
 
-            # 4. Create subscription_addons table
-            print("\nCreating 'subscription_addons' table...")
+            # 3. Create subscription_addons table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS subscription_addons (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -74,17 +78,17 @@ def migrate():
                     CONSTRAINT fk_user_addon FOREIGN KEY (user_id) REFERENCES users(id)
                 )
             """)
-            print("  - table created or already exists")
 
-            # 5. Initialize Default Plans
+            # 4. Initialize Default Plans per strict business rules
             print("\nInitializing default plans...")
             plans = [
+                # id, name, price, duration, accounts, proxies, features, allow_addons
                 ('prematur', 'Prematur (Daily Pass)', 50000, 1, 100, 10, '["follow", "like", "post", "reels", "story", "cross_posting"]', False),
                 ('starter', 'Starter', 60000, 7, 100, 0, '["post", "like", "reels"]', False),
                 ('basic', 'Basic', 100000, 7, 50, 0, '["post", "like", "reels", "story"]', True),
                 ('pro', 'Pro', 300000, 30, 300, 15, '["follow", "like", "post", "reels", "story", "cross_posting"]', True),
-                ('advanced', 'Advanced', 650000, 30, 500, 30, '["follow", "like", "post", "reels", "story", "cross_posting"]', True),
-                ('supreme', 'Supreme', 1800000, 60, 1500, 9999, '["follow", "like", "post", "reels", "story", "cross_posting"]', True)
+                ('advanced', 'Advanced', 650000, 30, 500, 30, '["follow", "like", "post", "reels", "story", "view", "cross_threads", "cross_posting"]', True),
+                ('supreme', 'Supreme', 1800000, 60, 1500, 999999, '["follow", "like", "post", "reels", "story", "view", "cross_threads", "cross_posting"]', True)
             ]
             
             for p in plans:
