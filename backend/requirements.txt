@@ -18,3 +18,5 @@ python-jose[cryptography]
 passlib[cryptography]
 greenlet
 bcrypt
+requests
+google-auth
