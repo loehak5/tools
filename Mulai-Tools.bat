@@ -3,8 +3,12 @@ title Instatool All-in-One Launcher
 color 0B
 cls
 
+:: Hubungi folder root agar script bisa dijalankan dari mana saja
+set "BASE_DIR=%~dp0"
+cd /d "%BASE_DIR%"
+
 echo =======================================================
-echo      PROJECT INSTATOOL - AUTO UPDATE & START
+echo      PROJECT INSTATOOL - AUTO UPDATE 
 echo =======================================================
 echo.
 
@@ -12,7 +16,6 @@ echo.
 echo [1/4] Mengecek update dari GitHub...
 git pull origin main
 
-:: Jika ada konflik, reset paksa (Opsional, hapus block if ini jika tidak ingin force reset)
 if %errorlevel% neq 0 (
     echo [!] Konflik ditemukan. Mereset ke versi server...
     git fetch --all
@@ -23,23 +26,20 @@ if %errorlevel% neq 0 (
 :: --- BAGIAN 2: SETUP BACKEND (PYTHON) ---
 echo.
 echo [2/4] Menyiapkan Backend Python...
-cd backend
+cd /d "%BASE_DIR%backend"
 
-:: Install library python jika ada yang baru
-pip install -r requirements.txt --quiet --disable-pip-version-check
+:: Gunakan python -m pip untuk kompatibilitas Windows
+python -m pip install -r requirements.txt --quiet --disable-pip-version-check
 
-:: Jalankan Python di JENDELA BARU (agar tidak memblokir script)
-:: "start" akan membuka CMD baru berjudul "Backend Server"
 echo     -> Menjalankan Python Service...
-start "Backend Server Instatool" cmd /k "python3 -m uvicorn app.main:app --port 8000 --host 127.0.0.1"
-
+:: Buka backend di jendela baru agar tidak menggantung
+start "Backend Server Instatool" cmd /k "cd /d %BASE_DIR%backend && python -m uvicorn app.main:app --port 8000 --host 127.0.0.1"
 
 :: --- BAGIAN 3: SETUP FRONTEND (NODE JS) ---
 echo.
 echo [3/4] Menyiapkan Frontend Web...
-cd frontend
+cd /d "%BASE_DIR%frontend"
 
-:: Cek apakah user punya Node.js
 where npm >nul 2>nul
 if %errorlevel% neq 0 (
     echo [ERROR] Node.js belum terinstall! Web tidak bisa jalan.
@@ -47,10 +47,9 @@ if %errorlevel% neq 0 (
     exit
 )
 
-:: Install dependency npm jika package.json berubah
-:: Gunakan 'call' agar batch script tidak berhenti setelah npm install
-echo     -> Menginstall/Update modul Frontend (tunggu sebentar)...
-call npm install --silent
+echo     -> Mengecek/Update modul Frontend...
+:: 'call' wajib digunakan agar script tidak langsung tertutup setelah npm selesai
+call npm install --no-audit --no-fund
 
 :: --- BAGIAN 4: JALANKAN WEBSERVER ---
 echo.
@@ -60,5 +59,4 @@ echo =======================================================
 echo      APLIKASI SIAP! JANGAN TUTUP JENDELA INI
 echo =======================================================
 
-:: Jalankan server dev
-npm run dev
+call npm run dev
