@@ -20,6 +20,7 @@ from app.core.security import verify_password, create_access_token, get_password
 from app.routers.deps import get_current_user, check_role
 from instagrapi.exceptions import ChallengeRequired, TwoFactorRequired
 from fastapi.security import OAuth2PasswordRequestForm
+from app.middleware.auth_check import require_active_subscription
 
 # In-memory storage for bulk import jobs (for progress tracking)
 bulk_import_jobs: Dict[str, Dict[str, Any]] = {}
@@ -78,6 +79,7 @@ async def create_new_user(
     return new_user
 
 @router.post("/", response_model=AccountResponse)
+@require_active_subscription
 async def create_account(
     account_in: AccountCreate, 
     background_tasks: BackgroundTasks,
@@ -174,6 +176,7 @@ async def list_accounts(
     return result.scalars().all()
 
 @router.post("/bulk")
+@require_active_subscription
 async def bulk_create_accounts(
     bulk_data: BulkAccountCreate,
     background_tasks: BackgroundTasks,
@@ -441,6 +444,7 @@ async def perform_bulk_login_job(
 
 
 @router.post("/{account_id}/login")
+@require_active_subscription
 async def login_account(
     account_id: int, 
     background_tasks: BackgroundTasks, 

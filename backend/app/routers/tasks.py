@@ -15,6 +15,7 @@ from instagrapi.exceptions import LoginRequired
 from app.routers.deps import get_current_user
 from app.models.user import User
 from app.core.config import settings
+from app.middleware.auth_check import require_active_subscription
 
 router = APIRouter()
 
@@ -166,6 +167,7 @@ async def get_task(
     return task
 
 @router.post("/post", response_model=TaskResponse)
+@require_active_subscription
 async def create_post_task(
     background_tasks: BackgroundTasks,
     account_id: int = Form(...),
@@ -222,6 +224,7 @@ async def create_post_task(
     return task
 
 @router.post("/reels", response_model=TaskResponse)
+@require_active_subscription
 async def create_reels_task(
     background_tasks: BackgroundTasks,
     account_id: int = Form(...),
@@ -284,6 +287,7 @@ async def create_reels_task(
     return task
 
 @router.post("/story", response_model=TaskResponse)
+@require_active_subscription
 async def create_story_task(
     background_tasks: BackgroundTasks,
     account_id: int = Form(...),
@@ -358,6 +362,7 @@ async def create_story_task(
         raise e
 
 @router.post("/like", response_model=TaskResponse)
+@require_active_subscription
 async def create_like_task(
     task_in: TaskCreateLike,
     background_tasks: BackgroundTasks,
@@ -395,6 +400,7 @@ async def create_like_task(
     return task
 
 @router.post("/follow", response_model=TaskResponse)
+@require_active_subscription
 async def create_follow_task(
     task_in: TaskCreateFollow,
     background_tasks: BackgroundTasks,
@@ -432,6 +438,7 @@ async def create_follow_task(
     return task
 
 @router.post("/view", response_model=TaskResponse)
+@require_active_subscription
 async def create_view_task(
     task_in: TaskCreateView,
     background_tasks: BackgroundTasks,
