@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Shield, User, Activity, MoreVertical, CheckCircle, XCircle } from 'lucide-react';
+import {
+    UserPlus, Shield, User, Activity, MoreVertical, CheckCircle, XCircle,
+    Users, Instagram, DollarSign, LifeBuoy, MessageSquare, Clock, CheckCircle2,
+    Search, Filter, Send, Loader2, ArrowLeft, Ban, Unlock
+} from 'lucide-react';
 import api from '../api/client';
+import { formatDistanceToNow } from 'date-fns';
 
 interface UserData {
     id: number;
@@ -8,12 +13,45 @@ interface UserData {
     full_name: string | null;
     role: string;
     is_active: boolean;
+    avatar?: string | null;
+}
+
+interface AdminStats {
+    total_operators: number;
+    total_sys_ig: number;
+    monthly_revenue: number;
+}
+
+interface TicketMessage {
+    id: number;
+    user_id: number;
+    message: string;
+    created_at: string;
+}
+
+interface Ticket {
+    id: number;
+    user_id: number;
+    subject: string;
+    priority: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+    messages: TicketMessage[];
 }
 
 const AdminPanel: React.FC = () => {
+    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'tickets'>('overview');
+    const [stats, setStats] = useState<AdminStats | null>(null);
     const [users, setUsers] = useState<UserData[]>([]);
+    const [tickets, setTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
+
+    // Ticket Detail View
+    const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
+    const [replyMessage, setReplyMessage] = useState('');
+    const [sendingReply, setSendingReply] = useState(false);
 
     // New User Form State
     const [newUsername, setNewUsername] = useState('');
@@ -23,27 +61,32 @@ const AdminPanel: React.FC = () => {
     const [createLoading, setCreateLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const fetchUsers = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/accounts/users');
-            setUsers(response.data);
+            const [statsRes, usersRes, ticketsRes] = await Promise.all([
+                api.get('/dashboard/stats'),
+                api.get('/accounts/users'),
+                api.get('/tickets')
+            ]);
+            setStats(statsRes.data.admin_stats);
+            setUsers(usersRes.data);
+            setTickets(ticketsRes.data);
         } catch (err) {
-            console.error('Failed to fetch users', err);
+            console.error('Failed to fetch admin data', err);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchUsers();
+        fetchData();
     }, []);
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setCreateLoading(true);
-
         try {
             await api.post('/accounts/users', {
                 username: newUsername,
@@ -56,7 +99,7 @@ const AdminPanel: React.FC = () => {
             setNewUsername('');
             setNewPassword('');
             setNewFullName('');
-            fetchUsers();
+            fetchData();
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Failed to create user');
         } finally {
@@ -64,117 +107,453 @@ const AdminPanel: React.FC = () => {
         }
     };
 
+    const handleToggleUserStatus = async (userId: number) => {
+        try {
+            await api.patch(`/accounts/users/${userId}/status`);
+            fetchData();
+        } catch (err: any) {
+            alert(err.response?.data?.detail || 'Gagal mengubah status user');
+        }
+    };
+
+    const handleSendReply = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!activeTicket || !replyMessage.trim()) return;
+        setSendingReply(true);
+        try {
+            const res = await api.post(`/tickets/${activeTicket.id}/messages`, {
+                message: replyMessage
+            });
+            // Append message locally
+            setActiveTicket({
+                ...activeTicket,
+                messages: [...activeTicket.messages, res.data],
+                status: 'pending' // Admin reply sets it to pending
+            });
+            setReplyMessage('');
+            fetchData(); // Refresh list
+        } catch (err) {
+            console.error('Failed to send reply', err);
+        } finally {
+            setSendingReply(false);
+        }
+    };
+
+    const handleUpdateTicket = async (ticketId: number, status: string) => {
+        try {
+            await api.patch(`/tickets/${ticketId}`, { status });
+            if (activeTicket?.id === ticketId) {
+                setActiveTicket({ ...activeTicket, status });
+            }
+            fetchData();
+        } catch (err) {
+            console.error('Failed to update ticket', err);
+        }
+    };
+
+    const StatusBadge = ({ status }: { status: string }) => {
+        const colors: any = {
+            'open': 'bg-green-500/10 text-green-400 border-green-500/20',
+            'pending': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+            'resolved': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+            'closed': 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+        };
+        return (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors[status.toLowerCase()] || colors.closed}`}>
+                {status}
+            </span>
+        );
+    };
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="flex justify-between items-center">
+        <div className="space-y-8 pb-20 animate-in fade-in duration-500">
+            {/* Header section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">Admin Console</h1>
-                    <p className="text-slate-400 mt-1 text-sm font-medium">Control center for users and system permissions</p>
+                    <p className="text-slate-400 mt-1 text-sm font-medium">Control center for system management & monitoring</p>
                 </div>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-indigo-600/20"
-                >
-                    <UserPlus className="w-5 h-5" />
-                    <span>Invite New User</span>
-                </button>
+                <div className="flex items-center gap-3">
+                    <div className="flex bg-[#1e293b]/60 backdrop-blur-md p-1 rounded-2xl border border-slate-700/50">
+                        {[
+                            { id: 'overview', label: 'Overview', icon: Activity },
+                            { id: 'users', label: 'Users', icon: Users },
+                            { id: 'tickets', label: 'Tickets', icon: LifeBuoy },
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => {
+                                    setActiveTab(tab.id as any);
+                                    setActiveTicket(null);
+                                }}
+                                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
+                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-700/30'
+                                    }`}
+                            >
+                                <tab.icon className="w-4 h-4" />
+                                <span>{tab.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    {activeTab === 'users' && (
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white px-5 py-2.5 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-indigo-600/20"
+                        >
+                            <UserPlus className="w-5 h-5" />
+                            <span className="hidden sm:inline">Invite User</span>
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                    { label: 'Total Users', value: users.length, icon: User, color: 'text-blue-400' },
-                    { label: 'Active Operators', value: users.filter(u => u.role === 'operator').length, icon: Activity, color: 'text-green-400' },
-                    { label: 'System Admins', value: users.filter(u => u.role === 'admin').length, icon: Shield, color: 'text-purple-400' },
-                ].map((stat, i) => (
-                    <div key={i} className="bg-[#1e293b]/40 backdrop-blur-md border border-slate-700/50 p-6 rounded-3xl">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{stat.label}</p>
-                                <p className="text-3xl font-bold text-white mt-1">{stat.value}</p>
+            {/* Overview Section */}
+            {activeTab === 'overview' && (
+                <div className="space-y-8">
+                    {/* Admin Stats */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[
+                            {
+                                label: 'Total Operators',
+                                value: stats?.total_operators || 0,
+                                icon: Users,
+                                gradient: 'from-blue-500 to-indigo-500',
+                                desc: 'Active system users'
+                            },
+                            {
+                                label: 'Instagram Total',
+                                value: stats?.total_sys_ig || 0,
+                                icon: Instagram,
+                                gradient: 'from-purple-500 to-pink-500',
+                                desc: 'Accounts across all users'
+                            },
+                            {
+                                label: 'Monthly Revenue',
+                                value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(stats?.monthly_revenue || 0),
+                                icon: DollarSign,
+                                gradient: 'from-emerald-500 to-teal-500',
+                                desc: 'Projected monthly billing'
+                            },
+                        ].map((stat, i) => (
+                            <div key={i} className="group relative overflow-hidden bg-[#1e293b]/40 backdrop-blur-md border border-slate-700/50 p-6 rounded-[2rem] hover:border-slate-600/50 transition-all">
+                                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.gradient} opacity-[0.03] blur-2xl group-hover:opacity-[0.07] transition-opacity`}></div>
+                                <div className="flex items-center justify-between relative z-10">
+                                    <div>
+                                        <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">{stat.label}</p>
+                                        <p className="text-3xl font-bold text-white mt-2 font-mono tracking-tight">{stat.value}</p>
+                                        <p className="text-slate-400 text-[10px] mt-2 font-medium bg-slate-800/50 w-fit px-2 py-0.5 rounded-full">{stat.desc}</p>
+                                    </div>
+                                    <div className={`p-4 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-lg shadow-indigo-500/10`}>
+                                        <stat.icon className="w-6 h-6 text-white" />
+                                    </div>
+                                </div>
                             </div>
-                            <div className={`${stat.color} bg-white/5 p-3 rounded-2xl`}>
-                                <stat.icon className="w-6 h-6" />
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Summary Lists or Charts could go here */}
+                        <div className="bg-[#1e293b]/40 border border-slate-700/50 rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-center space-y-4">
+                            <div className="w-16 h-16 rounded-3xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                                <Shield className="w-8 h-8 text-indigo-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-white">System Security Active</h3>
+                                <p className="text-slate-400 text-sm max-w-xs mt-2">All nodes are operational. No security breaches detected in the last 24 hours.</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-[#1e293b]/40 border border-slate-700/50 rounded-[2.5rem] p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="font-bold text-white">Pending Support</h3>
+                                <LifeBuoy className="w-5 h-5 text-amber-500" />
+                            </div>
+                            <div className="space-y-4">
+                                {tickets.filter(t => t.status === 'open').slice(0, 3).map(ticket => (
+                                    <div key={ticket.id} className="flex items-center justify-between p-4 bg-slate-800/40 rounded-2xl border border-slate-700/30">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                                            <p className="text-sm font-medium text-slate-200 truncate max-w-[150px]">{ticket.subject}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('tickets');
+                                                setActiveTicket(ticket);
+                                            }}
+                                            className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase"
+                                        >
+                                            View
+                                        </button>
+                                    </div>
+                                ))}
+                                {tickets.filter(t => t.status === 'open').length === 0 && (
+                                    <p className="text-slate-500 text-center text-sm py-4 italic">No pending urgent tickets</p>
+                                )}
                             </div>
                         </div>
                     </div>
-                ))}
-            </div>
+                </div>
+            )}
 
-            {/* Users Table */}
-            <div className="bg-[#1e293b]/40 backdrop-blur-md border border-slate-700/50 rounded-3xl overflow-hidden shadow-xl">
-                <div className="px-8 py-6 border-b border-slate-700/50 flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-white">Access Management</h2>
-                    <div className="text-xs font-mono text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">
-                        TRUSTED_NODES: {users.length}
+            {/* User Access Section */}
+            {activeTab === 'users' && (
+                <div className="bg-[#1e293b]/40 backdrop-blur-md border border-slate-700/50 rounded-[2.5rem] overflow-hidden shadow-xl">
+                    <div className="px-8 py-6 border-b border-slate-700/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <h2 className="text-xl font-bold text-white">User Matrix</h2>
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <div className="relative flex-1 sm:w-64">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input
+                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    placeholder="Search identity..."
+                                />
+                            </div>
+                            <button className="p-2 bg-slate-800 rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">
+                                <Filter className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-800/30 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                                    <th className="px-8 py-5">Identity Protocol</th>
+                                    <th className="px-8 py-5">Clearance</th>
+                                    <th className="px-8 py-5">Node Status</th>
+                                    <th className="px-8 py-5 text-right">Action Protocol</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700/30">
+                                {loading ? (
+                                    [1, 2, 3].map(i => (
+                                        <tr key={i} className="animate-pulse">
+                                            <td colSpan={4} className="px-8 py-6">
+                                                <div className="h-10 bg-slate-700/30 rounded-xl w-full"></div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    users.map(user => (
+                                        <tr key={user.id} className="hover:bg-indigo-500/5 transition-colors group">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center space-x-4">
+                                                    <div className="relative">
+                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-transform group-hover:scale-110 duration-300 ${user.is_active ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-red-500/10 border-red-500/20'
+                                                            }`}>
+                                                            {user.avatar ? (
+                                                                <img src={user.avatar} className="w-full h-full rounded-2xl object-cover" alt="" />
+                                                            ) : (
+                                                                <span className="text-white font-black text-lg">{user.username.charAt(0).toUpperCase()}</span>
+                                                            )}
+                                                        </div>
+                                                        {user.is_active && (
+                                                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-[#1e293b] rounded-full"></div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-white font-bold text-base group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{user.full_name || 'Generic Identification'}</p>
+                                                        <p className="text-slate-500 text-[10px] font-black tracking-widest mt-1">ID_{user.username.toUpperCase()}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <div className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${user.role === 'admin'
+                                                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-[0_0_15px_-5px_rgba(168,85,247,0.4)]'
+                                                        : 'bg-indigo-500/5 text-indigo-400/70 border-indigo-500/20'
+                                                    }`}>
+                                                    <Shield className="w-3 h-3 mr-1.5" />
+                                                    {user.role}
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className={`p-1.5 rounded-lg border ${user.is_active ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'
+                                                        }`}>
+                                                        {user.is_active ? (
+                                                            <CheckCircle className="w-4 h-4 text-green-500" />
+                                                        ) : (
+                                                            <XCircle className="w-4 h-4 text-red-500" />
+                                                        )}
+                                                    </div>
+                                                    <span className={`text-[10px] font-black tracking-widest ${user.is_active ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {user.is_active ? 'ENFORCE_ACTIVE' : 'LOCKED_BY_ADMIN'}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-5 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    {user.role !== 'admin' && (
+                                                        <button
+                                                            onClick={() => handleToggleUserStatus(user.id)}
+                                                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${user.is_active
+                                                                    ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 text-white'
+                                                                    : 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500 text-white'
+                                                                }`}
+                                                        >
+                                                            {user.is_active ? <Ban className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                                                            {user.is_active ? 'Ban Account' : 'Unban'}
+                                                        </button>
+                                                    )}
+                                                    <button className="p-2 bg-slate-800/50 rounded-xl border border-slate-700 text-slate-500 hover:text-white transition-colors">
+                                                        <MoreVertical className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+            )}
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="bg-slate-800/30 text-slate-400 text-xs font-bold uppercase tracking-widest">
-                                <th className="px-8 py-4">Identity</th>
-                                <th className="px-8 py-4">Clearance Level</th>
-                                <th className="px-8 py-4">Status</th>
-                                <th className="px-8 py-4 text-right">Protocol</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-700/30">
-                            {loading ? (
-                                [1, 2, 3].map(i => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td colSpan={4} className="px-8 py-6">
-                                            <div className="h-10 bg-slate-700/50 rounded-xl w-full"></div>
-                                        </td>
-                                    </tr>
-                                ))
+            {/* Tickets Support Section */}
+            {activeTab === 'tickets' && (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[600px]">
+                    {/* Ticket List Panel */}
+                    <div className={`lg:col-span-5 bg-[#1e293b]/40 backdrop-blur-md border border-slate-700/50 rounded-[2.5rem] flex flex-col overflow-hidden ${activeTicket ? 'hidden lg:flex' : 'flex'}`}>
+                        <div className="p-8 border-b border-slate-700/50">
+                            <h2 className="text-xl font-bold text-white mb-4">Support Hub</h2>
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input
+                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                    placeholder="Search tickets..."
+                                />
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto custom-scrollbar">
+                            {tickets.length === 0 ? (
+                                <div className="p-12 text-center">
+                                    <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-700/50 shadow-inner">
+                                        <LifeBuoy className="w-8 h-8 text-slate-600" />
+                                    </div>
+                                    <p className="text-slate-400 font-medium">No records matching query</p>
+                                </div>
                             ) : (
-                                users.map(user => (
-                                    <tr key={user.id} className="hover:bg-indigo-500/5 transition-colors group">
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center border border-slate-600">
-                                                    <span className="text-white font-bold">{user.username.charAt(0).toUpperCase()}</span>
+                                <div className="divide-y divide-slate-700/30">
+                                    {tickets.map(ticket => (
+                                        <button
+                                            key={ticket.id}
+                                            onClick={() => setActiveTicket(ticket)}
+                                            className={`w-full p-6 text-left transition-all hover:bg-slate-800/30 group relative ${activeTicket?.id === ticket.id ? 'bg-indigo-600/10 border-l-4 border-l-indigo-500' : ''}`}
+                                        >
+                                            <div className="flex justify-between items-start mb-2">
+                                                <p className="text-white font-bold truncate group-hover:text-indigo-400 transition-colors uppercase tracking-tight pr-4">{ticket.subject}</p>
+                                                <StatusBadge status={ticket.status} />
+                                            </div>
+                                            <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                                                <div className="flex items-center gap-1">
+                                                    <User className="w-3 h-3" />
+                                                    <span>UID_{ticket.user_id}</span>
                                                 </div>
-                                                <div>
-                                                    <p className="text-white font-bold text-base">{user.full_name || 'Generic ID'}</p>
-                                                    <p className="text-slate-500 text-xs font-mono tracking-tighter">@{user.username}</p>
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    <span>{formatDistanceToNow(new Date(ticket.updated_at))} ago</span>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${user.role === 'admin'
-                                                ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
-                                                : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                                                }`}>
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center space-x-2">
-                                                {user.is_active ? (
-                                                    <CheckCircle className="w-4 h-4 text-green-500" />
-                                                ) : (
-                                                    <XCircle className="w-4 h-4 text-red-500" />
-                                                )}
-                                                <span className={`text-xs font-bold ${user.is_active ? 'text-green-400' : 'text-red-400'}`}>
-                                                    {user.is_active ? 'ENABLED' : 'DISABLED'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5 text-right">
-                                            <button className="text-slate-500 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-700/50">
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+                                            <p className="mt-3 text-slate-400 text-xs line-clamp-1 opacity-70">
+                                                {ticket.messages[ticket.messages.length - 1]?.message}
+                                            </p>
+                                        </button>
+                                    ))}
+                                </div>
                             )}
-                        </tbody>
-                    </table>
+                        </div>
+                    </div>
+
+                    {/* Chat Panel */}
+                    <div className={`lg:col-span-7 bg-[#1e293b]/40 backdrop-blur-md border border-slate-700/50 rounded-[2.5rem] flex flex-col overflow-hidden relative ${!activeTicket ? 'hidden lg:flex' : 'flex'}`}>
+                        {activeTicket ? (
+                            <>
+                                <div className="p-6 border-b border-slate-700/50 flex items-center justify-between bg-white/[0.02]">
+                                    <div className="flex items-center gap-4">
+                                        <button onClick={() => setActiveTicket(null)} className="lg:hidden p-2 text-slate-400 hover:text-white">
+                                            <ArrowLeft className="w-5 h-5" />
+                                        </button>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-white uppercase tracking-tight">{activeTicket.subject}</h3>
+                                            <div className="flex items-center gap-4 mt-1">
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${activeTicket.priority === 'urgent' ? 'bg-red-500' : 'bg-indigo-400'}`}></div>
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{activeTicket.priority}</span>
+                                                </div>
+                                                <span className="text-slate-700">|</span>
+                                                <StatusBadge status={activeTicket.status} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => handleUpdateTicket(activeTicket.id, 'resolved')}
+                                            className="p-2.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-lg shadow-green-500/5"
+                                            title="Mark Resolved"
+                                        >
+                                            <CheckCircle2 className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleUpdateTicket(activeTicket.id, 'closed')}
+                                            className="p-2.5 bg-slate-800 text-slate-400 border border-slate-700 rounded-xl hover:text-white transition-all"
+                                            title="Close Ticket"
+                                        >
+                                            <XCircle className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.03),transparent)]">
+                                    {activeTicket.messages.map((msg, i) => {
+                                        const isMe = msg.user_id === 1; // Simplification for current setup
+                                        return (
+                                            <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`max-w-[85%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
+                                                    <div className={`px-5 py-3 rounded-[1.5rem] shadow-sm relative group ${isMe
+                                                            ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none'
+                                                            : 'bg-slate-800/80 text-slate-200 border border-slate-700/50 rounded-tl-none'
+                                                        }`}>
+                                                        <p className="text-sm leading-relaxed">{msg.message}</p>
+                                                        <div className={`absolute -bottom-5 ${isMe ? 'right-1' : 'left-1'} text-[8px] font-black text-slate-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity`}>
+                                                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="p-6 bg-slate-800/30 border-t border-slate-700/50">
+                                    <form onSubmit={handleSendReply} className="flex gap-3">
+                                        <input
+                                            value={replyMessage}
+                                            onChange={(e) => setReplyMessage(e.target.value)}
+                                            placeholder="Transmit message to user..."
+                                            className="flex-1 bg-slate-900/60 border border-slate-700 text-white rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                        />
+                                        <button
+                                            disabled={sendingReply || !replyMessage.trim()}
+                                            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white p-4 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/20"
+                                        >
+                                            {sendingReply ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                        </button>
+                                    </form>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center opacity-40">
+                                <div className="w-24 h-24 bg-gradient-to-br from-slate-700 to-slate-800 rounded-[2rem] flex items-center justify-center mb-6 border border-slate-600/30 shadow-2xl">
+                                    <MessageSquare className="w-10 h-10 text-slate-500" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Communication Terminal</h3>
+                                <p className="text-slate-400 text-sm max-w-[240px]">Select an active transmission on the left to review intelligence or send instructions.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Create User Modal */}
             {showCreateModal && (
@@ -186,60 +565,45 @@ const AdminPanel: React.FC = () => {
                             </button>
                         </div>
 
-                        <h3 className="text-2xl font-bold text-white mb-2">New Identity Protocol</h3>
-                        <p className="text-slate-400 text-sm mb-8">Generate unique credentials for system operators</p>
+                        <h3 className="text-2xl font-bold text-white mb-2 uppercase tracking-tight">Access Protocol</h3>
+                        <p className="text-slate-400 text-xs mb-8 font-black uppercase tracking-[0.2em] opacity-60">Provision New Identity</p>
 
                         <form onSubmit={handleCreateUser} className="space-y-5">
                             {error && (
-                                <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-2xl text-xs font-bold">
-                                    AUTH_ERROR: {error}
+                                <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center">
+                                    Auth_Protocol_Error: {error}
                                 </div>
                             )}
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest translate-x-1">Username</label>
-                                <input
-                                    className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none"
-                                    placeholder="Enter unique ID..."
-                                    value={newUsername}
-                                    onChange={e => setNewUsername(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest translate-x-1">Password</label>
-                                <input
-                                    type="password"
-                                    className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none"
-                                    placeholder="••••••••"
-                                    value={newPassword}
-                                    onChange={e => setNewPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest translate-x-1">Full Name</label>
-                                <input
-                                    className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none"
-                                    placeholder="Legal Identification..."
-                                    value={newFullName}
-                                    onChange={e => setNewFullName(e.target.value)}
-                                />
-                            </div>
+                            {[
+                                { label: 'Username', type: 'text', value: newUsername, set: setNewUsername, ph: 'ID_IDENTIFIER...' },
+                                { label: 'Password', type: 'password', value: newPassword, set: setNewPassword, ph: '••••••••' },
+                                { label: 'Legal Name', type: 'text', value: newFullName, set: setNewFullName, ph: 'Full Identity Name...' },
+                            ].map((field, i) => (
+                                <div key={i} className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{field.label}</label>
+                                    <input
+                                        type={field.type}
+                                        className="w-full bg-slate-900/60 border border-slate-700 text-white rounded-2xl px-5 py-4 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all outline-none text-sm"
+                                        placeholder={field.ph}
+                                        value={field.value}
+                                        onChange={e => field.set(e.target.value)}
+                                        required={field.label !== 'Legal Name'}
+                                    />
+                                </div>
+                            ))}
 
                             <div className="space-y-1 pt-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest translate-x-1">Clearance Level</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Clearance Tier</label>
                                 <div className="flex gap-3">
                                     {['operator', 'admin'].map(role => (
                                         <button
                                             key={role}
                                             type="button"
                                             onClick={() => setNewRole(role)}
-                                            className={`flex-1 py-3 rounded-2xl border text-xs font-black uppercase tracking-widest transition-all ${newRole === role
-                                                ? 'bg-indigo-600 border-indigo-500 text-white'
-                                                : 'bg-slate-900/50 border-slate-700 text-slate-500 hover:border-slate-600'
+                                            className={`flex-1 py-3.5 rounded-2xl border text-[10px] font-black uppercase tracking-[0.2em] transition-all ${newRole === role
+                                                ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/30'
+                                                : 'bg-slate-900/40 border-slate-700 text-slate-500 hover:border-slate-600'
                                                 }`}
                                         >
                                             {role}
@@ -250,9 +614,9 @@ const AdminPanel: React.FC = () => {
 
                             <button
                                 disabled={createLoading}
-                                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-indigo-600/20 mt-4 disabled:opacity-50"
+                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-black py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-indigo-600/20 mt-4 disabled:opacity-50 text-[10px] uppercase tracking-[0.3em]"
                             >
-                                {createLoading ? 'INITIALIZING...' : 'EXECUTE CREATION'}
+                                {createLoading ? 'Provisioning...' : 'Execute Creation'}
                             </button>
                         </form>
                     </div>

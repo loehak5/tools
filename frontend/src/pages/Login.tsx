@@ -23,8 +23,12 @@ const Login: React.FC = () => {
                 token: response.credential
             });
             const token = res.data.access_token;
-            await login(token);
-            navigate(from, { replace: true });
+            const userData = await login(token);
+            if (userData?.role === 'admin') {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate(from, { replace: true });
+            }
         } catch (err: any) {
             console.error("Google Login Error:", err);
             setError(err.response?.data?.detail || 'Google Login failed.');
@@ -90,10 +94,14 @@ const Login: React.FC = () => {
                 // 2. Exchange Central token for Local JWT
                 const resLocal = await api.post('/accounts/auth/sync', { token: dataSync.token });
                 const token = resLocal.data.access_token;
-
-                await login(token);
+                const userData = await login(token);
                 console.log('✅ Sync successful! Logging in...');
-                navigate(from, { replace: true });
+
+                if (userData?.role === 'admin') {
+                    navigate('/admin', { replace: true });
+                } else {
+                    navigate(from, { replace: true });
+                }
             } else {
                 throw new Error(dataSync.message || 'Sync failed');
             }
@@ -123,8 +131,13 @@ const Login: React.FC = () => {
             });
 
             const token = response.data.access_token;
-            await login(token);
-            navigate(from, { replace: true });
+            const userData = await login(token);
+
+            if (userData?.role === 'admin') {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate(from, { replace: true });
+            }
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
         } finally {

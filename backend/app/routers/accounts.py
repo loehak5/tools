@@ -281,6 +281,28 @@ async def create_new_user(
     await db.refresh(new_user)
     return new_user
 
+@router.patch("/users/{user_id}/status", response_model=UserResponse)
+async def toggle_user_status(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(check_role(["admin"]))
+):
+    """Toggle is_active status of a user (Ban/Unban)."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent self-ban
+    if user.id == admin.id:
+        raise HTTPException(status_code=400, detail="Cannot disable your own administrative account")
+        
+    user.is_active = not user.is_active
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
 @router.post("/", response_model=AccountResponse)
 @require_active_subscription
 async def create_account(

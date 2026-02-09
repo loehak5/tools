@@ -14,9 +14,9 @@ interface User {
 interface AuthContextType {
     user: User | null;
     loading: boolean;
-    login: (token: string) => Promise<void>;
+    login: (token: string) => Promise<User | null>;
     logout: () => void;
-    fetchUser: () => Promise<void>;
+    fetchUser: () => Promise<User | null>;
     isAuthenticated: boolean;
 }
 
@@ -32,10 +32,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await api.get('/accounts/auth/me');
             console.log('✅ User info received:', response.data);
             setUser(response.data);
+            return response.data;
         } catch (error) {
             console.error('❌ Failed to fetch user:', error);
             localStorage.removeItem('token');
             setUser(null);
+            return null;
         } finally {
             setLoading(false);
         }
@@ -55,8 +57,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('💾 Saving token to localStorage...');
         localStorage.setItem('token', token);
         console.log('📞 Fetching user info after login...');
-        await fetchUser();
-        console.log('✅ Login completed in AuthContext');
+        return await fetchUser();
     };
 
     const logout = () => {

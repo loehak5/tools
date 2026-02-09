@@ -251,21 +251,38 @@ async def get_dashboard_stats(
         expiry_date = sub.end_date.isoformat() if sub.end_date else None
         
     # Addons
-    async with db.begin_nested() if db.in_transaction() else db.begin():
-        stmt_addons = select(SubscriptionAddon).where(
-            SubscriptionAddon.user_id == current_user.id,
-            SubscriptionAddon.is_active == True,
-            SubscriptionAddon.end_date > datetime.now()
-        )
-        result_addons = await db.execute(stmt_addons)
-        addons = result_addons.scalars().all()
-        
         for addon in addons:
             if addon.addon_type == "quota":
                 if addon.sub_type == "account":
                     ig_limit += addon.quantity
                 elif addon.sub_type == "proxy":
                     proxy_limit += addon.quantity
+
+    # 9. Admin Specific Stats
+    admin_stats = {}
+    if current_user.role == "admin":
+        # Total Operators
+        stmt_ops = select(func.count(User.id)).where(User.role == "operator")
+        total_operators = (await db.execute(stmt_ops)).scalar_one()
+        
+        # Total System IG Accounts
+        stmt_sys_ig = select(func.count(Account.id))
+        total_sys_ig = (await db.execute(stmt_sys_ig)).scalar_one()
+        
+        # Monthly Revenue (Estimasi)
+        # Sum of plan prices for active subscriptions
+        stmt_rev_subs = select(func.sum(SubscriptionPlan.price_idr)).select_from(Subscription).join(SubscriptionPlan).where(Subscription.status == 'active')
+        rev_subs = (await db.execute(stmt_rev_subs)).scalar_one() or 0
+        
+        # Sum of addons prices (active)
+        stmt_rev_addons = select(func.sum(SubscriptionAddon.price_paid)).where(SubscriptionAddon.is_active == True)
+        rev_addons = (await db.execute(stmt_rev_addons)).scalar_one() or 0
+        
+        admin_stats = {
+            "total_operators": total_operators,
+            "total_sys_ig": total_sys_ig,
+            "monthly_revenue": float(rev_subs + rev_addons)
+        }
 
     stats_response = {
         "accounts": {
@@ -293,7 +310,8 @@ async def get_dashboard_stats(
         },
         "schedules": schedules,
         "activity_stats": activity_stats,
-        "period": period  # Return the period so frontend knows what was requested
+        "period": period,
+        "admin_stats": admin_stats
     }
     
     return stats_response
