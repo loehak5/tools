@@ -85,12 +85,14 @@ function calculate_addon_price($tier, $addon_type, $sub_type = null, $quantity =
 
     // Rule: Proxy Services (Static Residential)
     if ($addon_type === 'proxy') {
+        // Unit costs matched to landing page card prices:
+        // Shared: 150k / 15 IPs = 10k/IP
+        // Private: 450k / 20 IPs = 22.5k/IP
+        // Dedicated: 1.1M / 25 IPs = 44k/IP
         $unit_costs = [
-            'shared' => 7500.00,   // 15 IPs bundle = 150k -> 10k? Wait, prompt says 150k/15 = 10k, but unit cost says 7,500.
-            // Prompt 15 IPs = 150k (10k/IP). Prompt unit cost says 7,500/IP (112.5k per 15 IPs).
-            // I will use explicit bundle prices if quantity matches bundle, otherwise use unit cost.
-            'private' => 18000.00,
-            'dedicated' => 37000.00
+            'shared' => 10000.00,
+            'private' => 22500.00,
+            'dedicated' => 44000.00
         ];
 
         $price = ($unit_costs[$sub_type] ?? 0) * $quantity;
