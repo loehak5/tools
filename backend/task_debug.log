@@ -3997,3 +3997,17 @@ Traceback (most recent call last):
     if account.status == "active" and account.session:
                                       ^^^^^^^^^^^^^^^
 AttributeError: 'Account' object has no attribute 'session'
+Starting execution for Task 56
+Starting execution for Task 55
+Task 56 failed: 'Account' object has no attribute 'session'
+Traceback (most recent call last):
+  File "C:\Users\NAR\Documents\Project-instatool\instatools\backend\app\services\task_executor.py", line 107, in execute_task
+    if account.status == "active" and account.session:
+                                      ^^^^^^^^^^^^^^^
+AttributeError: 'Account' object has no attribute 'session'
+Task 55 failed: 'Account' object has no attribute 'session'
+Traceback (most recent call last):
+  File "C:\Users\NAR\Documents\Project-instatool\instatools\backend\app\services\task_executor.py", line 107, in execute_task
+    if account.status == "active" and account.session:
+                                      ^^^^^^^^^^^^^^^
+AttributeError: 'Account' object has no attribute 'session'
