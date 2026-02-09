@@ -11,7 +11,7 @@ if (strpos($request_uri, '/api/billing') !== false) {
     require_once __DIR__ . '/api/auth.php';
 } elseif (strpos($request_uri, '/logout') !== false) {
     session_destroy();
-    header('Location: /');
+    header('Location: http://localhost:5173');
     exit;
 } else {
     // Check Authentication

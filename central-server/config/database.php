@@ -17,7 +17,17 @@ if (!function_exists('load_env')) {
                 continue;
             $parts = explode('=', $line, 2);
             if (count($parts) === 2) {
-                putenv(trim($parts[0]) . "=" . trim($parts[1]));
+                $key = trim($parts[0]);
+                $val = trim($parts[1]);
+
+                // Populate $_ENV and $_SERVER for compatibility
+                $_ENV[$key] = $val;
+                $_SERVER[$key] = $val;
+
+                // Only use putenv if available
+                if (function_exists('putenv')) {
+                    putenv("$key=$val");
+                }
             }
         }
     }
@@ -29,14 +39,26 @@ class Database
 {
     private static $instance = null;
 
+    private static function get_env_var($key, $default = null)
+    {
+        // Try various sources for the environment variable
+        if (isset($_ENV[$key]))
+            return $_ENV[$key];
+        if (isset($_SERVER[$key]))
+            return $_SERVER[$key];
+
+        $val = function_exists('getenv') ? getenv($key) : false;
+        return $val !== false ? $val : $default;
+    }
+
     public static function getConnection()
     {
         if (self::$instance === null) {
-            $host = getenv('DB_HOST');
-            $db = getenv('DB_NAME');
-            $user = getenv('DB_USER');
-            $pass = getenv('DB_PASS');
-            $port = getenv('DB_PORT') ?: 3306;
+            $host = self::get_env_var('DB_HOST');
+            $db = self::get_env_var('DB_NAME');
+            $user = self::get_env_var('DB_USER');
+            $pass = self::get_env_var('DB_PASS');
+            $port = self::get_env_var('DB_PORT', 3306);
             $charset = 'utf8mb4';
 
             $dsn = "mysql:host=$host;dbname=$db;port=$port;charset=$charset";

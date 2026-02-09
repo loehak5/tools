@@ -1,10 +1,25 @@
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Calendar, Settings, Activity, BarChart3, FileText, LogOut, User, Shield, LifeBuoy } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Settings, Activity, BarChart3, FileText, LogOut, User, Shield, LifeBuoy, CreditCard, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 
 const Sidebar = () => {
     const { logout, user } = useAuth();
+    const [isInactive, setIsInactive] = useState(false);
+
+    useEffect(() => {
+        const checkStatus = async () => {
+            try {
+                const res = await api.get('/dashboard/stats');
+                setIsInactive(res.data.subscription.status !== 'active');
+            } catch (err) {
+                console.error("Failed to fetch sub status in sidebar", err);
+            }
+        };
+        if (user) checkStatus();
+    }, [user]);
 
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -31,23 +46,51 @@ const Sidebar = () => {
             </div>
 
             <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            clsx(
-                                "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group",
-                                isActive
-                                    ? "bg-indigo-600/10 text-indigo-400 font-medium"
-                                    : "text-gray-400 hover:bg-gray-800 hover:text-white"
-                            )
-                        }
-                    >
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.label}</span>
-                    </NavLink>
-                ))}
+                {navItems.map((item) => {
+                    // Lock everything except Dashboard if inactive
+                    const isLocked = isInactive && item.path !== '/';
+
+                    if (isLocked) {
+                        return (
+                            <div key={item.path} className="flex items-center justify-between px-4 py-3 rounded-xl text-gray-600 cursor-not-allowed opacity-50">
+                                <div className="flex items-center space-x-3">
+                                    <item.icon className="w-5 h-5" />
+                                    <span>{item.label}</span>
+                                </div>
+                                <Lock className="w-3 h-3" />
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={({ isActive }) =>
+                                clsx(
+                                    "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+                                    isActive
+                                        ? "bg-indigo-600/10 text-indigo-400 font-medium"
+                                        : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                                )
+                            }
+                        >
+                            <item.icon className="w-5 h-5" />
+                            <span>{item.label}</span>
+                        </NavLink>
+                    );
+                })}
+
+                {/* Always active Billing link to Central Server */}
+                <a
+                    href="http://instatools.web.id/billing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-xl text-emerald-400 hover:bg-emerald-500/10 transition-all duration-200"
+                >
+                    <CreditCard className="w-5 h-5" />
+                    <span>Billing & Topup</span>
+                </a>
             </nav>
 
             <div className="p-4 border-t border-gray-800 space-y-4">
@@ -75,8 +118,8 @@ const Sidebar = () => {
                 <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700/50">
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">System Status</p>
                     <div className="flex items-center space-x-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-                        <span className="text-[11px] text-gray-400">All Systems Operational</span>
+                        <span className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", isInactive ? "bg-red-500" : "bg-green-500")}></span>
+                        <span className="text-[11px] text-gray-400">{isInactive ? "Subscription Expired" : "All Systems Operational"}</span>
                     </div>
                 </div>
             </div>

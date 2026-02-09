@@ -501,17 +501,17 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="addon-category">
                     <h4>STABLE PROXIES</h4>
                     <div class="addon-list">
-                        <div class="addon-item">
+                        <div class="addon-item" onclick="buyAddon('proxy', 'shared', 15)">
                             <div class="addon-info"><span class="addon-label">Shared Bundle</span><span
                                     class="addon-price">150k</span></div>
                             <div class="addon-desc">15 Residential Static IPs</div>
                         </div>
-                        <div class="addon-item">
+                        <div class="addon-item" onclick="buyAddon('proxy', 'private', 20)">
                             <div class="addon-info"><span class="addon-label">Private Elite</span><span
                                     class="addon-price">450k</span></div>
                             <div class="addon-desc">20 Private Residential IPs</div>
                         </div>
-                        <div class="addon-item">
+                        <div class="addon-item" onclick="buyAddon('proxy', 'dedicated', 25)">
                             <div class="addon-info"><span class="addon-label">Dedicated VIP</span><span
                                     class="addon-price">1.1M</span></div>
                             <div class="addon-desc">25 Dedicated Data Center IPs</div>
@@ -522,14 +522,14 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="addon-category">
                     <h4>QUOTA TOP-UPS</h4>
                     <div class="addon-list">
-                        <div class="addon-item">
-                            <div class="addon-info"><span class="addon-label">Proxy Refill</span><span
-                                    class="addon-price">500<sup>/unit</sup></span></div>
+                        <div class="addon-item" onclick="buyAddon('quota', 'proxy', 100)">
+                            <div class="addon-info"><span class="addon-label">Proxy Refill (100u)</span><span
+                                    class="addon-price">50k</span></div>
                             <div class="addon-desc">500 requests per IP unit</div>
                         </div>
-                        <div class="addon-item">
-                            <div class="addon-info"><span class="addon-label">IG Account Quota</span><span
-                                    class="addon-price">1k<sup>/unit</sup></span></div>
+                        <div class="addon-item" onclick="buyAddon('quota', 'account', 100)">
+                            <div class="addon-info"><span class="addon-label">IG Account (100u)</span><span
+                                    class="addon-price">100k</span></div>
                             <div class="addon-desc">1,000 extra actions per account</div>
                         </div>
                     </div>
@@ -538,14 +538,9 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="addon-category">
                     <h4>SPECIAL FEATURES</h4>
                     <div class="addon-list">
-                        <div class="addon-item">
-                            <div class="addon-info"><span class="addon-label">Cross Threads (Basic)</span><span
-                                    class="addon-price">100k</span></div>
-                            <div class="addon-desc">Special promo for new Basic users</div>
-                        </div>
-                        <div class="addon-item">
-                            <div class="addon-info"><span class="addon-label">Cross Threads (Pro)</span><span
-                                    class="addon-price">200k</span></div>
+                        <div class="addon-item" onclick="buyAddon('cross_threads', null, 1)">
+                            <div class="addon-info"><span class="addon-label">Cross Threads (Promo)</span><span
+                                    class="addon-price">100k - 200k</span></div>
                             <div class="addon-desc">Advanced cross-posting modules</div>
                         </div>
                     </div>
@@ -555,9 +550,75 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 
     <script>
-        function buy(id) {
-            console.log("Purchasing:", id);
-            alert("Redirecting to Elite Secure Gateway for " + id.toUpperCase() + "...");
+        async function buy(id) {
+            console.log("Purchasing Plan:", id);
+
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            // Check if it's an upgrade or new purchase
+            // (Simple frontend check, backend also handles this)
+            const action = 'create_invoice';
+
+            const formData = new FormData();
+            formData.append('plan_id', id);
+
+            try {
+                const res = await fetch('/api/billing?action=' + action, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    window.location.href = data.data.invoice_url;
+                } else {
+                    alert("Error: " + (data.message || 'Gagal membuat invoice'));
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Gagal menghubungi server pembayar.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function buyAddon(type, subType, qty) {
+            console.log("Purchasing Addon:", type, subType, qty);
+
+            const item = event.currentTarget;
+            item.style.opacity = "0.5";
+            item.style.pointerEvents = "none";
+
+            const formData = new FormData();
+            formData.append('addon_type', type);
+            if (subType) formData.append('sub_type', subType);
+            formData.append('qty', qty);
+
+            try {
+                const res = await fetch('/api/billing?action=create_addon_invoice', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    window.location.href = data.data.invoice_url;
+                } else {
+                    alert("Error: " + (data.message || 'Gagal membuat invoice addon'));
+                    item.style.opacity = "1";
+                    item.style.pointerEvents = "auto";
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Gagal menghubungi server pembayar.");
+                item.style.opacity = "1";
+                item.style.pointerEvents = "auto";
+            }
         }
     </script>
 </body>

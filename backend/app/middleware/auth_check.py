@@ -74,9 +74,12 @@ async def has_feature(user: User, feature_name: str) -> bool:
     return feature_name in features
 
 async def stop_user_tasks(user_id: int):
-    """Stop ALL running automation tasks immediately upon expiration."""
+    """Stop ALL running automation tasks and release proxies immediately upon expiration."""
     from app.models.task import Task
+    from app.models.proxy import ProxyTemplate
+    
     async with AsyncSessionLocal() as db:
+        # 1. Stop all pending/running tasks
         stmt = select(Task).where(
             Task.user_id == user_id,
             Task.status.in_(["pending", "running"])
@@ -88,12 +91,21 @@ async def stop_user_tasks(user_id: int):
             task.status = "failed"
             task.error_message = "Subscription expired"
         
+        # 2. Release/Freeze Proxy assignments
+        proxy_stmt = select(ProxyTemplate).where(ProxyTemplate.user_id == user_id)
+        proxy_result = await db.execute(proxy_stmt)
+        proxies = proxy_result.scalars().all()
+        
+        for proxy in proxies:
+            proxy.user_id = None # Release the proxy from user
+            
         await db.commit()
 
 async def is_subscription_active(user: User) -> bool:
     """Check if user has any active subscription. If expired, triggers auto-stop."""
     sub = await get_user_subscription(user)
     if not sub:
+        # If user existed but sub vanished or expired, stop tasks
         await stop_user_tasks(user.id)
         return False
     return True

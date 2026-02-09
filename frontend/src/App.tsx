@@ -13,6 +13,7 @@ import AdminPanel from './pages/AdminPanel';
 import ProfileSettings from './pages/ProfileSettings';
 import ProtectedRoute from './components/ProtectedRoute';
 import SupportTickets from './pages/SupportTickets';
+import PaymentStatus from './pages/PaymentStatus';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -22,6 +23,8 @@ function App() {
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/sso-handshake" element={<SSORedirect />} />
+                    <Route path="/payment-success" element={<PaymentStatus type="success" />} />
+                    <Route path="/payment-failed" element={<PaymentStatus type="failed" />} />
 
                     <Route path="/" element={
                         <ProtectedRoute>
