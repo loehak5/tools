@@ -273,7 +273,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        window.location.href = '/';
+                        window.location.href = '/billing';
                     } else {
                         alert(data.message);
                     }
@@ -293,7 +293,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        window.location.href = '/';
+                        window.location.href = '/billing';
                     } else {
                         alert('Login gagal: ' + data.message);
                     }

@@ -192,7 +192,7 @@ switch ($action) {
             $_SESSION['user_id'] = $user_id;
             $_SESSION['username'] = $username;
             session_write_close();
-            header('Location: /');
+            header('Location: /billing');
             exit;
         } catch (Exception $e) {
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
