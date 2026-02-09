@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Calendar, Settings, Activity, BarChart3, FileText, LogOut, User, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Settings, Activity, BarChart3, FileText, LogOut, User, Shield, LifeBuoy } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,6 +14,7 @@ const Sidebar = () => {
         { icon: BarChart3, label: 'Monitoring', path: '/monitoring' },
         { icon: FileText, label: 'Reports', path: '/reports' },
         { icon: Settings, label: 'Proxy Settings', path: '/settings' },
+        { icon: LifeBuoy, label: 'Tiket Pengaduan', path: '/tickets' },
     ];
 
     if (user?.role === 'admin') {

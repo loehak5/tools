@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import accounts, tasks, proxies, dashboard, reporting
+from app.routers import accounts, tasks, proxies, dashboard, reporting, tickets
 from app.db.session import engine
 from app.models.base import Base
 
@@ -33,6 +33,7 @@ app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(proxies.router, prefix="/api/v1/proxies", tags=["proxies"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
 app.include_router(reporting.router, prefix="/api/v1/reporting", tags=["reporting"])
+app.include_router(tickets.router, prefix="/api/v1/tickets", tags=["tickets"])
 
 @app.on_event("startup")
 async def startup():
