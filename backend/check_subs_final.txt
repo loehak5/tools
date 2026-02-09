@@ -1,0 +1,19 @@
+--- USERS ---
+ID: 1 | Username: admin | Role: admin
+ID: 2 | Username: Bagong99 | Role: admin
+ID: 3 | Username: Raja_celeng | Role: operator
+
+--- SUBSCRIPTIONS ---
+User ID: 1 | Status: active | Ends: 2027-02-09 00:52:29+00:00 | Active: True
+User ID: 2 | Status: active | Ends: 2036-02-07 02:54:13+00:00 | Active: True
+
+--- ACCOUNTS OWNERSHIP ---
+User ID: 1 | Account Count: 99
+User ID: 2 | Account Count: 54
+
+--- DETAIL FIRST 5 ACCOUNTS ---
+ID: 64 | User ID: 1 | Username: CerivaffViaffHavanna | Status: active
+ID: 65 | User ID: 1 | Username: LerivaffViaffNerissa | Status: active
+ID: 66 | User ID: 1 | Username: NevionaffViaffKalista | Status: active
+ID: 67 | User ID: 1 | Username: IlviaffViaffElvira | Status: active
+ID: 68 | User ID: 1 | Username: RelviaffViaffZerafina | Status: challenge

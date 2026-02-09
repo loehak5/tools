@@ -146,6 +146,13 @@ const formatDateForInput = (date: Date): string => {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
+// Helper: Get timezone info (WIB/UTC+7)
+const getTimezoneInfo = (): string => {
+    const offset = -new Date().getTimezoneOffset() / 60;
+    const sign = offset >= 0 ? '+' : '-';
+    return `UTC${sign}${Math.abs(offset)}`;
+};
+
 const MenuCard = ({ option, onClick }: { option: MenuOption; onClick: () => void }) => {
     const Icon = option.icon;
     return (
@@ -366,7 +373,7 @@ const ExecutionModeSelector = ({
             {mode === 'schedule' && (
                 <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Schedule Time {isMultiAccount && <span className="text-gray-500">(same for all accounts)</span>}
+                        Schedule Time ({getTimezoneInfo()}) {isMultiAccount && <span className="text-gray-500">(same for all accounts)</span>}
                     </label>
                     <input
                         type="datetime-local"
@@ -375,6 +382,7 @@ const ExecutionModeSelector = ({
                         className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
                         required={mode === 'schedule'}
                     />
+                    <p className="mt-1 text-xs text-gray-500">Waktu akan dijadwalkan sesuai timezone lokal Anda</p>
                 </div>
             )}
 

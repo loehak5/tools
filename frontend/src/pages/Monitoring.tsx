@@ -13,12 +13,33 @@ interface ScheduledTask {
     status: string;
     params: Record<string, unknown>;
     created_at: string;
+    error_message?: string;
 }
 
 // Helper: Format date for datetime-local input
 const formatDateForInput = (date: Date): string => {
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// Helper: Format time display in local timezone (simple approach)
+const formatLocalTime = (utcString: string): string => {
+    console.log('[formatLocalTime] Input UTC:', utcString);
+    // FIX: Backend sends timestamps without 'Z' suffix - browser interprets as local time!
+    const utcStringWithZ = utcString.endsWith('Z') ? utcString : `${utcString}Z`;
+    const date = new Date(utcStringWithZ);
+    console.log('[formatLocalTime] Date object:', date);
+    console.log('[formatLocalTime] getHours():', date.getHours(), 'getUTCHours():', date.getUTCHours());
+
+    const day = date.getDate();
+    const month = date.toLocaleDateString('id-ID', { month: 'short' });
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    const result = `${day} ${month} ${year}, ${hours}.${minutes}`;
+    console.log('[formatLocalTime] Output:', result);
+    return result;
 };
 
 // Status Badge Component
@@ -585,18 +606,25 @@ const Monitoring = () => {
                                                     {getParamDisplay(task) || '(No details)'}
                                                 </p>
                                             </div>
+
+                                            {/* Error Message for Failed Tasks */}
+                                            {task.status === 'failed' && task.error_message && (
+                                                <div className="mt-2 bg-red-500/10 border border-red-500/20 rounded-lg p-2">
+                                                    <div className="flex items-start gap-1.5">
+                                                        <AlertCircle className="w-3 h-3 text-red-500 mt-0.5 shrink-0" />
+                                                        <p className="text-[10px] text-red-400 font-medium leading-tight">
+                                                            {task.error_message}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Footer: Date & Status */}
                                         <div className="flex items-center justify-between pt-2 border-t border-gray-800/50 mt-auto">
                                             <div className="flex items-center text-[10px] text-gray-500 font-medium">
                                                 <Clock className="w-3 h-3 mr-1.5 opacity-40" />
-                                                <span>{new Date(task.scheduled_at).toLocaleDateString(undefined, {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}</span>
+                                                <span title={`UTC: ${task.scheduled_at}`}>{formatLocalTime(task.scheduled_at)}</span>
                                             </div>
 
                                             <div className="flex items-center gap-2">
