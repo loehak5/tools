@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Users, Calendar, Settings, Activity, BarChart3, FileText, LogOut, User, Shield, LifeBuoy, CreditCard, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -47,8 +47,8 @@ const Sidebar = () => {
 
             <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
                 {navItems.map((item) => {
-                    // Lock everything except Dashboard if inactive
-                    const isLocked = isInactive && item.path !== '/';
+                    // Lock everything except Dashboard and Tickets if inactive
+                    const isLocked = isInactive && item.path !== '/' && item.path !== '/tickets';
 
                     if (isLocked) {
                         return (
