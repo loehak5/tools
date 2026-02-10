@@ -92,7 +92,7 @@ const Login: React.FC = () => {
             });
             (window as any).google?.accounts.id.renderButton(
                 document.getElementById("google-btn"),
-                { theme: "filled_blue", size: "large", width: "100%", text: "signin_with" }
+                { theme: "outline", size: "large", width: "100%", text: "continue_with", shape: "rectangular" }
             );
         };
         document.body.appendChild(script);
@@ -238,22 +238,26 @@ const Login: React.FC = () => {
                                 {loading ? 'Processing...' : 'Sign In'}
                             </button>
 
-                            <div className="relative flex items-center justify-center my-4">
-                                <div className="border-t border-slate-700 w-full"></div>
-                                <span className="bg-[#0f172a] px-3 text-slate-500 text-sm">OR</span>
-                                <div className="border-t border-slate-700 w-full"></div>
-                            </div>
+                            <div className="space-y-4 pt-4">
+                                <div className="relative flex items-center justify-center">
+                                    <div className="border-t border-slate-700/50 w-full"></div>
+                                    <span className="bg-[#1e293b] px-3 text-slate-500 text-[11px] font-medium uppercase tracking-wider absolute">Or continue with</span>
+                                </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div id="google-btn" className="w-full flex justify-center"></div>
-                                <button
-                                    type="button"
-                                    onClick={handleCentralRedirect}
-                                    className="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-4 rounded-2xl border border-slate-700 transition-all flex items-center justify-center space-x-2"
-                                >
-                                    <div className="w-5 h-5 bg-indigo-500 rounded flex items-center justify-center text-[8px] font-bold">IT</div>
-                                    <span className="text-sm">Central Login</span>
-                                </button>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {/* Google Button Container */}
+                                    <div id="google-btn" className="w-full h-[40px]"></div>
+
+                                    {/* Central Login button - Symmetric to Google */}
+                                    <button
+                                        type="button"
+                                        onClick={handleCentralRedirect}
+                                        className="w-full h-[40px] bg-white hover:bg-slate-50 text-[#3c4043] font-medium text-[14px] rounded border border-[#dadce0] transition-colors flex items-center justify-center space-x-2 shadow-sm"
+                                    >
+                                        <div className="w-5 h-5 bg-indigo-600 rounded-sm flex items-center justify-center text-[9px] font-black text-white">IT</div>
+                                        <span>Central Server</span>
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     )}
