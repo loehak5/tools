@@ -49,8 +49,6 @@ if ($data['status'] === 'PAID') {
     $parts = explode('-', $external_id);
     $prefix = $parts[0] ?? '';
 
-    file_put_contents(__DIR__ . '/xendit_callback.log', "[DEBUG] Parsing External ID: $external_id | Prefix: $prefix" . PHP_EOL, FILE_APPEND);
-
     try {
         $db = Database::getConnection();
 
@@ -83,7 +81,7 @@ if ($data['status'] === 'PAID') {
         } elseif ($prefix === 'ADD' && count($parts) >= 6) {
             $user_id = intval($parts[1]);
             $addon_type = $parts[2];
-            $sub_type = $parts[3]; // e.g., 'account', 'proxy', 'shared', 'private', 'dedicated', or 'none'
+            $sub_type = strtolower($parts[3]); // e.g., 'account', 'proxy', 'shared', 'private', 'dedicated', or 'none'
             $qty = intval($parts[4]);
             $paid_amount = $data['amount'];
 
@@ -102,8 +100,6 @@ if ($data['status'] === 'PAID') {
 
             $stmt = $db->prepare("INSERT INTO subscription_addons (user_id, addon_type, sub_type, quantity, price_paid, start_date, end_date, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)");
             $stmt->execute([$user_id, $addon_type, $sub_type, $qty, $paid_amount, $start_date, $end_date]);
-
-            file_put_contents(__DIR__ . '/xendit_callback.log', "[DEBUG] ADDON Activated: User $user_id, Type $addon_type, SubType $sub_type, Qty $qty" . PHP_EOL, FILE_APPEND);
         } else {
             file_put_contents(__DIR__ . '/xendit_callback.log', "[DEBUG] Error: Invalid external_id format or unsupported prefix '$prefix' for PAID status." . PHP_EOL, FILE_APPEND);
         }

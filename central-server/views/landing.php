@@ -837,10 +837,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                 btn.disabled = false;
             }
         }
-
         async function buyAddon(type, subType, qty) {
-            console.log("Purchasing Addon:", type, subType, qty);
-
             const item = event.currentTarget;
             item.style.opacity = "0.5";
             item.style.pointerEvents = "none";

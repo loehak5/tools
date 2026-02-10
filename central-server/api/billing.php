@@ -64,6 +64,7 @@ function calculate_addon_price($tier, $addon_type, $sub_type = null, $quantity =
 {
     $tier = strtolower($tier);
     $addon_type = strtolower($addon_type);
+    $sub_type = $sub_type ? strtolower($sub_type) : null;
 
     // Rule 1: Prematur & Starter have NO Add-ons allowed
     if (in_array($tier, ['prematur', 'starter'])) {
@@ -300,6 +301,7 @@ switch ($action) {
             // External ID: ADD-user_id-addon_type-sub_type-qty-timestamp
             $sub_type_str = $sub_type ?? 'none';
             $external_id = "ADD-" . $_SESSION['user_id'] . "-" . $addon_type . "-" . $sub_type_str . "-" . $qty . "-" . time();
+
             $email = $_SESSION['email'] ?? 'customer@example.com';
             $description = "Add-on: " . strtoupper($addon_type) . " ($qty units)";
 
