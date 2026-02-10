@@ -10,6 +10,7 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://instatools.web.id/about">
     <meta name="theme-color" content="#050a18">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
 
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap">

@@ -58,6 +58,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="https://instatools.web.id/billing">
     <meta name="theme-color" content="#030712">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
 
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;700&display=swap"

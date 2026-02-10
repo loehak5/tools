@@ -10,6 +10,7 @@
     <meta name="robots" content="noindex, nofollow">
     <link rel="canonical" href="https://instatools.web.id/login">
     <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">

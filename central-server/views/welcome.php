@@ -13,6 +13,7 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://instatools.web.id/">
     <meta name="theme-color" content="#050a18">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
