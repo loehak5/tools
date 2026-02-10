@@ -5,23 +5,40 @@ import api from '../api/client';
 const SSORedirect = () => {
     const [searchParams] = useSearchParams();
     const returnTo = searchParams.get('return_to');
+    const tokenFromUrl = searchParams.get('token');
 
     useEffect(() => {
         const performHandshake = async () => {
             try {
-                console.log('🔄 SSO: Attempting to fetch token...');
-                // 1. Fetch short-lived SSO token from backend
-                const res = await api.get('accounts/auth/sso-token');
-                const { sso_token } = res.data;
+                let ssoToken = tokenFromUrl;
 
-                // 2. Redirect back to Central Server with the token
-                if (returnTo) {
-                    console.log('✅ SSO: Token received, redirecting back to Central Server...');
-                    const separator = returnTo.includes('?') ? '&' : '?';
-                    window.location.href = `${returnTo}${separator}token=${encodeURIComponent(sso_token)}`;
-                } else {
-                    console.warn('⚠️ SSO: No return_to param found.');
+                if (!ssoToken) {
+                    console.log('🔄 SSO: Attempting to fetch token from Central Server...');
+                    // 1. Fetch short-lived SSO token from backend (silent handshake)
+                    const res = await api.get('accounts/auth/sso-token');
+                    ssoToken = res.data.sso_token;
+
+                    if (returnTo && ssoToken) {
+                        console.log('✅ SSO: Token received, redirecting back to Central Server...');
+                        const separator = returnTo.includes('?') ? '&' : '?';
+                        window.location.href = `${returnTo}${separator}token=${encodeURIComponent(ssoToken)}`;
+                        return;
+                    }
+                }
+
+                if (ssoToken) {
+                    console.log('🔄 SSO: Syncing session with Local Backend...');
+                    // 3. Exchange SSO Token for Local JWT
+                    const resLocal = await api.post('/accounts/auth/sync', { token: ssoToken });
+                    const accessToken = resLocal.data.access_token;
+
+                    // Save token and reload
+                    localStorage.setItem('token', accessToken);
+                    console.log('✅ SSO: Sync successful! Redirecting to Dashboard...');
                     window.location.href = '/';
+                } else {
+                    console.warn('⚠️ SSO: No token or return_to param found.');
+                    window.location.href = '/login';
                 }
             } catch (err: any) {
                 console.error('❌ SSO Handshake failed', err);
@@ -49,7 +66,7 @@ const SSORedirect = () => {
         };
 
         performHandshake();
-    }, [returnTo]);
+    }, [returnTo, tokenFromUrl]);
 
     return (
         <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">

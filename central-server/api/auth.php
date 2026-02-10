@@ -250,6 +250,46 @@ switch ($action) {
         }
         break;
 
+    case 'redirect_sso':
+        // Explicit SSO redirection for Client App
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /login?return_to=sso');
+            exit;
+        }
+
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT username, email, full_name, avatar FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['user_id']]);
+            $user = $stmt->fetch();
+
+            if (!$user) {
+                header('Location: /logout');
+                exit;
+            }
+
+            $secret = "your-fallback-secret-key-change-it-in-prod";
+            $payload = [
+                'u' => $user['username'],
+                'e' => $user['email'] ?? '',
+                'n' => $user['full_name'] ?? '',
+                'a' => $user['avatar'] ?? '',
+                't' => time()
+            ];
+            $json_payload = json_encode($payload);
+            $signature = hash_hmac('sha256', $json_payload, $secret);
+            $token = base64_encode($json_payload) . ":" . $signature;
+
+            // Redirect back to Client App
+            $client_url = "http://localhost:5173/sso-handshake"; // Default to localhost for now, could be dynamic
+            header("Location: $client_url?token=" . urlencode($token));
+            exit;
+        } catch (Exception $e) {
+            header('Location: /?error=sso_failed');
+            exit;
+        }
+        break;
+
     default:
         echo json_encode(['status' => 'error', 'message' => 'Invalid action']);
         break;

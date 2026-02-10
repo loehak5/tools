@@ -13,6 +13,11 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Determine Central Server URL
+    const CENTRAL_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:8001'
+        : 'https://instatools.web.id';
+
     const from = (location.state as any)?.from?.pathname || '/';
 
     const checkSubscriptionAndNavigate = async (user: any) => {
@@ -63,7 +68,7 @@ const Login: React.FC = () => {
         const checkCentralSession = async () => {
             try {
                 // Check if user is logged in at the Central Server
-                const res = await fetch('http://localhost:8001/api/auth.php?action=check', {
+                const res = await fetch(`${CENTRAL_URL}/api/auth.php?action=check`, {
                     credentials: 'include'
                 });
                 const data = await res.json();
@@ -107,7 +112,7 @@ const Login: React.FC = () => {
         try {
             console.log('🔄 Syncing session with Central Server...');
             // 1. Get temporary sync token from Central
-            const resSync = await fetch('http://localhost:8001/api/auth.php?action=sync', {
+            const resSync = await fetch(`${CENTRAL_URL}/api/auth.php?action=sync`, {
                 credentials: 'include'
             });
             const dataSync = await resSync.json();
@@ -130,6 +135,10 @@ const Login: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCentralRedirect = () => {
+        window.location.href = `${CENTRAL_URL}/api/auth.php?action=redirect_sso`;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -192,53 +201,69 @@ const Login: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {error && (
-                                <div className="bg-red-500/10 border border-red-500/50 text-red-100 p-4 rounded-xl text-sm animate-shake text-center">
-                                    {error}
-                                </div>
-                            )}
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300 ml-1">Username</label>
-                                <input
-                                    type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    className="w-full bg-[#0f172a]/50 border border-slate-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
-                                    placeholder="Enter your username"
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300 ml-1">Password</label>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-[#0f172a]/50 border border-slate-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
-                                    placeholder="••••••••"
-                                    required
-                                />
-                            </div>
-
+                        <div className="space-y-6">
                             <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center text-lg"
+                                onClick={handleCentralRedirect}
+                                className="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-4 rounded-2xl border border-slate-700 transition-all flex items-center justify-center space-x-3 mb-2"
                             >
-                                {loading ? 'Processing...' : 'Sign In'}
+                                <div className="w-6 h-6 bg-indigo-500 rounded-lg flex items-center justify-center text-[10px] font-bold">IT</div>
+                                <span>Login via Central Server</span>
                             </button>
 
-                            <div className="relative flex items-center justify-center my-4">
-                                <div className="border-t border-slate-700 w-full"></div>
-                                <span className="bg-[#0f172a] px-3 text-slate-500 text-sm">OR</span>
-                                <div className="border-t border-slate-700 w-full"></div>
+                            <div className="relative flex items-center justify-center my-6">
+                                <div className="border-t border-slate-800 w-full"></div>
+                                <span className="bg-[#1e293b] px-3 text-slate-500 text-xs">OR MANUAL LOGIN</span>
+                                <div className="border-t border-slate-800 w-full"></div>
                             </div>
 
-                            <div id="google-btn" className="w-full flex justify-center"></div>
-                        </form>
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                {error && (
+                                    <div className="bg-red-500/10 border border-red-500/50 text-red-100 p-4 rounded-xl text-sm animate-shake text-center">
+                                        {error}
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-300 ml-1">Username</label>
+                                    <input
+                                        type="text"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        className="w-full bg-[#0f172a]/50 border border-slate-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
+                                        placeholder="Enter your username"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-300 ml-1">Password</label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full bg-[#0f172a]/50 border border-slate-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
+                                        placeholder="••••••••"
+                                        required
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center text-lg"
+                                >
+                                    {loading ? 'Processing...' : 'Sign In'}
+                                </button>
+
+                                <div className="relative flex items-center justify-center my-4">
+                                    <div className="border-t border-slate-700 w-full"></div>
+                                    <span className="bg-[#0f172a] px-3 text-slate-500 text-sm">OR</span>
+                                    <div className="border-t border-slate-700 w-full"></div>
+                                </div>
+
+                                <div id="google-btn" className="w-full flex justify-center"></div>
+                            </form>
+                        </div>
                     )}
                 </div>
 
