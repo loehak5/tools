@@ -671,9 +671,8 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
-        &copy; 2026 InstaTools. All rights reserved.
+        &copy; 2026 PT APPNESIA DIGITAL LABS. All rights reserved.
     </footer>
 </body>
 

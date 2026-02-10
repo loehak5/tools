@@ -1161,6 +1161,10 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
         // Run on load
         applyUpgradeDiscounts();
     </script>
+    <footer
+        style="text-align: center; padding: 40px 24px; border-top: 1px solid var(--card-border); color: var(--text-dim); font-size: 0.8rem;">
+        &copy; 2026 PT APPNESIA DIGITAL LABS. All rights reserved.
+    </footer>
 </body>
 
 </html>

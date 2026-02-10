@@ -227,7 +227,7 @@
                 data-text="signin_with" data-width="320"></div>
         </div>
 
-        <p class="footer-text">Secure Access Gateway v1.0</p>
+        <p class="footer-text">&copy; 2026 PT APPNESIA DIGITAL LABS. All rights reserved.</p>
     </div>
 
     <script>
