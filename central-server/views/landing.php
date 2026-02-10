@@ -380,7 +380,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             <div class="user-status">
                 <span>Account Control Center</span>
                 <span style="opacity: 0.3">|</span>
-                <a href="/logout" class="logout-link">Exit Console</a>
+                <a href="/api/auth.php?action=redirect_sso" class="logout-link">Exit Console</a>
             </div>
         </nav>
 

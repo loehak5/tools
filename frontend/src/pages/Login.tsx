@@ -13,10 +13,8 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Determine Central Server URL
-    const CENTRAL_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:8001'
-        : 'https://instatools.web.id';
+    // Central Server URL (Live)
+    const CENTRAL_URL = 'https://instatools.web.id';
 
     const from = (location.state as any)?.from?.pathname || '/';
 
@@ -201,69 +199,63 @@ const Login: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            <button
-                                onClick={handleCentralRedirect}
-                                className="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-4 rounded-2xl border border-slate-700 transition-all flex items-center justify-center space-x-3 mb-2"
-                            >
-                                <div className="w-6 h-6 bg-indigo-500 rounded-lg flex items-center justify-center text-[10px] font-bold">IT</div>
-                                <span>Login via Central Server</span>
-                            </button>
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {error && (
+                                <div className="bg-red-500/10 border border-red-500/50 text-red-100 p-4 rounded-xl text-sm animate-shake text-center">
+                                    {error}
+                                </div>
+                            )}
 
-                            <div className="relative flex items-center justify-center my-6">
-                                <div className="border-t border-slate-800 w-full"></div>
-                                <span className="bg-[#1e293b] px-3 text-slate-500 text-xs">OR MANUAL LOGIN</span>
-                                <div className="border-t border-slate-800 w-full"></div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-300 ml-1">Username</label>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="w-full bg-[#0f172a]/50 border border-slate-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
+                                    placeholder="Enter your username"
+                                    required
+                                />
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                {error && (
-                                    <div className="bg-red-500/10 border border-red-500/50 text-red-100 p-4 rounded-xl text-sm animate-shake text-center">
-                                        {error}
-                                    </div>
-                                )}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-300 ml-1">Password</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-[#0f172a]/50 border border-slate-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300 ml-1">Username</label>
-                                    <input
-                                        type="text"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        className="w-full bg-[#0f172a]/50 border border-slate-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
-                                        placeholder="Enter your username"
-                                        required
-                                    />
-                                </div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center text-lg"
+                            >
+                                {loading ? 'Processing...' : 'Sign In'}
+                            </button>
 
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-300 ml-1">Password</label>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full bg-[#0f172a]/50 border border-slate-700 text-white px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600"
-                                        placeholder="••••••••"
-                                        required
-                                    />
-                                </div>
+                            <div className="relative flex items-center justify-center my-4">
+                                <div className="border-t border-slate-700 w-full"></div>
+                                <span className="bg-[#0f172a] px-3 text-slate-500 text-sm">OR</span>
+                                <div className="border-t border-slate-700 w-full"></div>
+                            </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center text-lg"
-                                >
-                                    {loading ? 'Processing...' : 'Sign In'}
-                                </button>
-
-                                <div className="relative flex items-center justify-center my-4">
-                                    <div className="border-t border-slate-700 w-full"></div>
-                                    <span className="bg-[#0f172a] px-3 text-slate-500 text-sm">OR</span>
-                                    <div className="border-t border-slate-700 w-full"></div>
-                                </div>
-
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div id="google-btn" className="w-full flex justify-center"></div>
-                            </form>
-                        </div>
+                                <button
+                                    type="button"
+                                    onClick={handleCentralRedirect}
+                                    className="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-4 rounded-2xl border border-slate-700 transition-all flex items-center justify-center space-x-2"
+                                >
+                                    <div className="w-5 h-5 bg-indigo-500 rounded flex items-center justify-center text-[8px] font-bold">IT</div>
+                                    <span className="text-sm">Central Login</span>
+                                </button>
+                            </div>
+                        </form>
                     )}
                 </div>
 
@@ -283,7 +275,7 @@ const Login: React.FC = () => {
                 }
                 .animate-shake { animation: shake 0.2s linear infinite; animation-iteration-count: 2; }
             `}} />
-        </div>
+        </div >
     );
 };
 
