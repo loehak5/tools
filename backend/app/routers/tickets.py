@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
+from sqlalchemy.orm import selectinload
 from typing import List
+from datetime import datetime
 from app.db.session import AsyncSessionLocal
 from app.routers.deps import get_current_user
 from app.models.user import User
@@ -40,7 +42,7 @@ async def create_ticket(
     
     # Reload with messages
     result = await db.execute(
-        select(Ticket).where(Ticket.id == ticket.id)
+        select(Ticket).where(Ticket.id == ticket.id).options(selectinload(Ticket.messages))
     )
     return result.scalar_one()
 
@@ -64,7 +66,7 @@ async def get_ticket(
     current_user: User = Depends(get_current_user)
 ):
     result = await db.execute(
-        select(Ticket).where(Ticket.id == ticket_id)
+        select(Ticket).where(Ticket.id == ticket_id).options(selectinload(Ticket.messages))
     )
     ticket = result.scalar_one_or_none()
     
@@ -104,11 +106,12 @@ async def add_message(
     
     # Update ticket timestamp
     ticket.updated_at = datetime.utcnow()
-    # If admin replies, status might change to pending
+    # If admin replies, status becomes answered
     if current_user.role == "admin":
-        ticket.status = TicketStatus.PENDING
+        ticket.status = TicketStatus.ANSWERED
     else:
-        ticket.status = TicketStatus.OPEN
+        # If user replies, status becomes customer-reply (even if it was open)
+        ticket.status = TicketStatus.CUSTOMER_REPLY
 
     await db.commit()
     await db.refresh(message)
@@ -125,7 +128,7 @@ async def update_ticket(
         raise HTTPException(status_code=403, detail="Only admins can update ticket status")
     
     result = await db.execute(
-        select(Ticket).where(Ticket.id == ticket_id)
+        select(Ticket).where(Ticket.id == ticket_id).options(selectinload(Ticket.messages))
     )
     ticket = result.scalar_one_or_none()
     

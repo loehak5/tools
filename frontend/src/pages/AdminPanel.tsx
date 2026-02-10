@@ -5,6 +5,7 @@ import {
     Search, Filter, Send, Loader2, ArrowLeft, Ban, Unlock, Package, Upload, Eye, X
 } from 'lucide-react';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 
 interface UserData {
@@ -41,6 +42,7 @@ interface Ticket {
 }
 
 const AdminPanel: React.FC = () => {
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'tickets' | 'proxy-orders'>('overview');
     const [stats, setStats] = useState<AdminStats | null>(null);
     const [users, setUsers] = useState<UserData[]>([]);
@@ -104,6 +106,35 @@ const AdminPanel: React.FC = () => {
         fetchData();
     }, []);
 
+    // Polling for Ticket List and Stats (every 15 seconds)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchData();
+        }, 15000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Polling for Active Ticket Detail (every 5 seconds)
+    useEffect(() => {
+        if (!activeTicket) return;
+
+        const interval = setInterval(() => {
+            // Only poll if not currently sending a reply
+            if (!sendingReply) {
+                api.get(`/tickets/${activeTicket.id}`)
+                    .then(res => {
+                        // Only update if messages length or status changed
+                        if (res.data.messages.length !== activeTicket.messages.length || res.data.status !== activeTicket.status) {
+                            setActiveTicket(res.data);
+                        }
+                    })
+                    .catch(e => console.error("Admin polling error", e));
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [activeTicket, sendingReply]);
+
     useEffect(() => {
         if (activeTab === 'proxy-orders') {
             fetchProxyOrders();
@@ -151,11 +182,11 @@ const AdminPanel: React.FC = () => {
             const res = await api.post(`/tickets/${activeTicket.id}/messages`, {
                 message: replyMessage
             });
-            // Append message locally
+            // Append message locally and update status
             setActiveTicket({
                 ...activeTicket,
                 messages: [...activeTicket.messages, res.data],
-                status: 'pending' // Admin reply sets it to pending
+                status: 'answered'
             });
             setReplyMessage('');
             fetchData(); // Refresh list
@@ -166,11 +197,23 @@ const AdminPanel: React.FC = () => {
         }
     };
 
+    const fetchTicketDetails = async (id: number) => {
+        console.log('Admin fetching details for ticket:', id);
+        try {
+            const res = await api.get(`/tickets/${id}`);
+            if (!res.data) throw new Error('Data null');
+            setActiveTicket(res.data);
+        } catch (err: any) {
+            console.error('Failed to fetch ticket details', err);
+            alert('Admin Error: ' + (err.response?.data?.detail || err.message));
+        }
+    };
+
     const handleUpdateTicket = async (ticketId: number, status: string) => {
         try {
             await api.patch(`/tickets/${ticketId}`, { status });
             if (activeTicket?.id === ticketId) {
-                setActiveTicket({ ...activeTicket, status });
+                await fetchTicketDetails(ticketId);
             }
             fetchData();
         } catch (err) {
@@ -254,9 +297,9 @@ const AdminPanel: React.FC = () => {
 
     const StatusBadge = ({ status }: { status: string }) => {
         const colors: any = {
-            'open': 'bg-green-500/10 text-green-400 border-green-500/20',
-            'pending': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-            'resolved': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+            'open': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+            'answered': 'bg-green-500/10 text-green-400 border-green-500/20',
+            'customer-reply': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
             'closed': 'bg-slate-500/10 text-slate-400 border-slate-500/20'
         };
         return (
@@ -372,7 +415,7 @@ const AdminPanel: React.FC = () => {
                                 <LifeBuoy className="w-5 h-5 text-amber-500" />
                             </div>
                             <div className="space-y-4">
-                                {tickets.filter(t => t.status === 'open').slice(0, 3).map(ticket => (
+                                {tickets.filter(t => t.status === 'open' || t.status === 'customer-reply').slice(0, 3).map(ticket => (
                                     <div key={ticket.id} className="flex items-center justify-between p-4 bg-slate-800/40 rounded-2xl border border-slate-700/30">
                                         <div className="flex items-center gap-3">
                                             <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
@@ -381,7 +424,7 @@ const AdminPanel: React.FC = () => {
                                         <button
                                             onClick={() => {
                                                 setActiveTab('tickets');
-                                                setActiveTicket(ticket);
+                                                fetchTicketDetails(ticket.id);
                                             }}
                                             className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase"
                                         >
@@ -540,7 +583,7 @@ const AdminPanel: React.FC = () => {
                                     {tickets.map(ticket => (
                                         <button
                                             key={ticket.id}
-                                            onClick={() => setActiveTicket(ticket)}
+                                            onClick={() => fetchTicketDetails(ticket.id)}
                                             className={`w-full p-6 text-left transition-all hover:bg-slate-800/30 group relative ${activeTicket?.id === ticket.id ? 'bg-indigo-600/10 border-l-4 border-l-indigo-500' : ''}`}
                                         >
                                             <div className="flex justify-between items-start mb-2">
@@ -550,7 +593,7 @@ const AdminPanel: React.FC = () => {
                                             <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-widest">
                                                 <div className="flex items-center gap-1">
                                                     <User className="w-3 h-3" />
-                                                    <span>UID_{ticket.user_id}</span>
+                                                    <span>UID_{ticket.user_id || 'N/A'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="w-3 h-3" />
@@ -558,7 +601,9 @@ const AdminPanel: React.FC = () => {
                                                 </div>
                                             </div>
                                             <p className="mt-3 text-slate-400 text-xs line-clamp-1 opacity-70">
-                                                {ticket.messages[ticket.messages.length - 1]?.message}
+                                                {ticket.messages && ticket.messages.length > 0
+                                                    ? ticket.messages[ticket.messages.length - 1]?.message
+                                                    : 'No messages yet'}
                                             </p>
                                         </button>
                                     ))}
@@ -591,14 +636,16 @@ const AdminPanel: React.FC = () => {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleUpdateTicket(activeTicket.id, 'resolved')}
-                                            className="p-2.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-lg shadow-green-500/5"
+                                            disabled={activeTicket.status === 'closed'}
+                                            className="p-2.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-lg shadow-green-500/5 disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="Mark Resolved"
                                         >
                                             <CheckCircle2 className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={() => handleUpdateTicket(activeTicket.id, 'closed')}
-                                            className="p-2.5 bg-slate-800 text-slate-400 border border-slate-700 rounded-xl hover:text-white transition-all"
+                                            disabled={activeTicket.status === 'closed'}
+                                            className="p-2.5 bg-slate-800 text-slate-400 border border-slate-700 rounded-xl hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="Close Ticket"
                                         >
                                             <XCircle className="w-5 h-5" />
@@ -608,7 +655,7 @@ const AdminPanel: React.FC = () => {
 
                                 <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.03),transparent)]">
                                     {activeTicket.messages.map((msg, i) => {
-                                        const isMe = msg.user_id === 1; // Simplification for current setup
+                                        const isMe = user && msg.user_id === user.id;
                                         return (
                                             <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                 <div className={`max-w-[85%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
@@ -628,20 +675,27 @@ const AdminPanel: React.FC = () => {
                                 </div>
 
                                 <div className="p-6 bg-slate-800/30 border-t border-slate-700/50">
-                                    <form onSubmit={handleSendReply} className="flex gap-3">
-                                        <input
-                                            value={replyMessage}
-                                            onChange={(e) => setReplyMessage(e.target.value)}
-                                            placeholder="Transmit message to user..."
-                                            className="flex-1 bg-slate-900/60 border border-slate-700 text-white rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                                        />
-                                        <button
-                                            disabled={sendingReply || !replyMessage.trim()}
-                                            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white p-4 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/20"
-                                        >
-                                            {sendingReply ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                                        </button>
-                                    </form>
+                                    {activeTicket.status === 'closed' ? (
+                                        <div className="flex items-center justify-center p-4 bg-slate-800/50 rounded-2xl border border-slate-700/50 text-slate-500 font-bold text-[10px] uppercase tracking-widest text-center italic">
+                                            <Clock className="w-4 h-4 mr-2" />
+                                            Tiket ini sudah ditutup. Anda tidak dapat mengirim pesan lagi.
+                                        </div>
+                                    ) : (
+                                        <form onSubmit={handleSendReply} className="flex gap-3">
+                                            <input
+                                                value={replyMessage}
+                                                onChange={(e) => setReplyMessage(e.target.value)}
+                                                placeholder="Transmit message to user..."
+                                                className="flex-1 bg-slate-900/60 border border-slate-700 text-white rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                            />
+                                            <button
+                                                disabled={sendingReply || !replyMessage.trim()}
+                                                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white p-4 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/20"
+                                            >
+                                                {sendingReply ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                            </button>
+                                        </form>
+                                    )}
                                 </div>
                             </>
                         ) : (

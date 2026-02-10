@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { LifeBuoy, Plus, MessageSquare, Clock, CheckCircle2, Send, ArrowLeft, Loader2, User, Search, Filter } from 'lucide-react';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 
-type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed';
+type TicketStatus = 'open' | 'answered' | 'customer-reply' | 'closed';
 type TicketPriority = 'low' | 'medium' | 'high';
 
 interface TicketMessage {
@@ -15,6 +16,7 @@ interface TicketMessage {
 
 interface Ticket {
     id: number;
+    user_id: number;
     subject: string;
     status: TicketStatus;
     priority: TicketPriority;
@@ -25,6 +27,7 @@ interface Ticket {
 
 interface TicketList {
     id: number;
+    user_id: number;
     subject: string;
     status: TicketStatus;
     priority: TicketPriority;
@@ -33,6 +36,7 @@ interface TicketList {
 }
 
 const SupportTickets = () => {
+    const { user } = useAuth();
     const [tickets, setTickets] = useState<TicketList[]>([]);
     const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
     const [loading, setLoading] = useState(true);
@@ -45,7 +49,35 @@ const SupportTickets = () => {
 
     useEffect(() => {
         fetchTickets();
-    }, []);
+    }, [statusFilter]);
+
+    // Polling for Ticket List (every 15 seconds)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchTickets();
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [statusFilter]);
+
+    // Polling for Active Ticket Detail (every 5 seconds)
+    useEffect(() => {
+        if (!activeTicket) return;
+
+        const interval = setInterval(() => {
+            // Only poll if not currently submitting a reply
+            if (!submitting) {
+                api.get(`/tickets/${activeTicket.id}`)
+                    .then(res => {
+                        if (res.data.messages.length !== activeTicket.messages.length || res.data.status !== activeTicket.status) {
+                            setActiveTicket(res.data);
+                        }
+                    })
+                    .catch(e => console.error("Polling error", e));
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [activeTicket, submitting]);
 
     const fetchTickets = async () => {
         try {
@@ -62,9 +94,11 @@ const SupportTickets = () => {
         setLoading(true);
         try {
             const response = await api.get(`/tickets/${id}`);
+            if (!response.data) throw new Error('Kosong dari server');
             setActiveTicket(response.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch ticket details:', error);
+            alert('Error: ' + (error.response?.data?.detail || error.message));
         } finally {
             setLoading(false);
         }
@@ -103,8 +137,8 @@ const SupportTickets = () => {
     const getStatusColor = (status: TicketStatus) => {
         switch (status) {
             case 'open': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-            case 'pending': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-            case 'resolved': return 'bg-green-500/10 text-green-400 border-green-500/20';
+            case 'answered': return 'bg-green-500/10 text-green-400 border-green-500/20';
+            case 'customer-reply': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
             case 'closed': return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
             default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
         }
@@ -159,7 +193,7 @@ const SupportTickets = () => {
                     {/* Messages Area */}
                     <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.02),transparent)]">
                         {activeTicket.messages.map((msg) => {
-                            const isMe = msg.user_id !== 1; // Simplification: admin is usually user_id 1 in this context setup or check role
+                            const isMe = user && msg.user_id === user.id;
                             return (
                                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[80%] space-y-2`}>
@@ -179,8 +213,13 @@ const SupportTickets = () => {
                     </div>
 
                     {/* Input Area */}
-                    {activeTicket.status !== 'closed' && (
-                        <div className="p-6 border-t border-gray-800 bg-gray-900/30">
+                    <div className="p-6 border-t border-gray-800 bg-gray-900/30">
+                        {activeTicket.status === 'closed' ? (
+                            <div className="flex items-center justify-center p-4 bg-gray-800/10 rounded-2xl border border-gray-700/20 text-gray-500 font-bold text-xs uppercase tracking-widest text-center">
+                                <Clock className="w-4 h-4 mr-2" />
+                                Tiket ini sudah ditutup. Anda tidak dapat mengirim pesan lagi.
+                            </div>
+                        ) : (
                             <form onSubmit={handleSendReply} className="relative">
                                 <textarea
                                     value={replyMessage}
@@ -196,8 +235,8 @@ const SupportTickets = () => {
                                     {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
                                 </button>
                             </form>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
         );
@@ -229,8 +268,8 @@ const SupportTickets = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                     { label: 'Total Tiket', value: tickets.length, icon: MessageSquare, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-                    { label: 'Tiket Aktif', value: tickets.filter(t => t.status === 'open' || t.status === 'pending').length, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-                    { label: 'Terselesaikan', value: tickets.filter(t => t.status === 'resolved').length, icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/10' },
+                    { label: 'Perlu Balasan', value: tickets.filter(t => t.status === 'open' || t.status === 'customer-reply').length, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                    { label: 'Terselesaikan', value: tickets.filter(t => t.status === 'closed').length, icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/10' },
                 ].map((stat, i) => (
                     <div key={i} className="bg-gray-950/40 border border-gray-800/60 p-5 rounded-3xl flex items-center space-x-4">
                         <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
@@ -265,8 +304,8 @@ const SupportTickets = () => {
                     >
                         <option value="all">Semua Status</option>
                         <option value="open">Open</option>
-                        <option value="pending">Pending</option>
-                        <option value="resolved">Resolved</option>
+                        <option value="answered">Answered</option>
+                        <option value="customer-reply">Customer Reply</option>
                         <option value="closed">Closed</option>
                     </select>
                 </div>

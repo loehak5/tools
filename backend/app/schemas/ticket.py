@@ -42,6 +42,7 @@ class Ticket(TicketBase):
 
 class TicketList(BaseModel):
     id: int
+    user_id: int
     subject: str
     status: TicketStatus
     priority: TicketPriority

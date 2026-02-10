@@ -79,6 +79,11 @@ async def startup():
                     await conn.execute(text("ALTER TABLE proxy_templates ADD COLUMN user_id INTEGER, ADD CONSTRAINT fk_proxy_user FOREIGN KEY (user_id) REFERENCES users (id)"))
                     print("✅ Migration: Added user_id to proxy_templates table")
 
+                # Sync ticket statuses (Data Migration)
+                await conn.execute(text("UPDATE tickets SET status = 'answered' WHERE status = 'pending'"))
+                await conn.execute(text("UPDATE tickets SET status = 'closed' WHERE status = 'resolved'"))
+                print("✅ Migration: Updated ticket statuses (pending->answered, resolved->closed)")
+
         except Exception as e:
             print(f"DB Init/Migration failed, retrying... Error: {e}")
             raise e

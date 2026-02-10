@@ -6,9 +6,12 @@ import enum
 
 class TicketStatus(str, enum.Enum):
     OPEN = "open"
+    ANSWERED = "answered"
+    CUSTOMER_REPLY = "customer-reply"
+    CLOSED = "closed"
+    # Legacy compatibility
     PENDING = "pending"
     RESOLVED = "resolved"
-    CLOSED = "closed"
 
 class TicketPriority(str, enum.Enum):
     LOW = "low"
