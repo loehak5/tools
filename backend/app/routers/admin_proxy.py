@@ -39,7 +39,7 @@ class ProxyOrderResponse(BaseModel):
     id: int
     user_id: int
     username: str
-    email: str
+    email: Optional[str]  # Can be None
     addon_type: str
     sub_type: Optional[str]
     quantity: int
