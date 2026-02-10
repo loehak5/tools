@@ -29,11 +29,12 @@ const Sidebar = () => {
         { icon: BarChart3, label: 'Monitoring', path: '/monitoring' },
         { icon: FileText, label: 'Reports', path: '/reports' },
         { icon: Settings, label: 'Proxy Settings', path: '/settings' },
-        { icon: LifeBuoy, label: 'Tiket Pengaduan', path: '/tickets' },
     ];
 
     if (user?.role === 'admin') {
         navItems.splice(1, 0, { icon: Shield, label: 'Admin Panel', path: '/admin' });
+    } else {
+        navItems.push({ icon: LifeBuoy, label: 'Tiket Pengaduan', path: '/tickets' });
     }
 
     return (

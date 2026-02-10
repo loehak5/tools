@@ -31,6 +31,7 @@ async def _get_subscription_query(db: AsyncSession, user: User) -> Subscription:
             Subscription.status == "active",
             Subscription.end_date > now
         )
+        .order_by(Subscription.end_date.desc())
     )
     result = await db.execute(stmt)
     return result.scalars().first()
