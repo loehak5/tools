@@ -59,6 +59,13 @@ async def startup():
                     await conn.execute(text("ALTER TABLE users ADD COLUMN is_password_set BOOLEAN DEFAULT FALSE"))
                     print("✅ Migration: Added is_password_set to users table")
                 
+                # Backfill: mark existing users who already have a password
+                result = await conn.execute(text(
+                    "UPDATE users SET is_password_set = TRUE WHERE hashed_password IS NOT NULL AND hashed_password != '' AND (is_password_set = FALSE OR is_password_set IS NULL)"
+                ))
+                if result.rowcount > 0:
+                    print(f"✅ Backfill: Set is_password_set=TRUE for {result.rowcount} existing user(s)")
+                
                 # Sync accounts table (defensive check)
                 accounts_cols = await conn.run_sync(lambda connection: get_table_columns(connection, "accounts"))
                 if "last_error" not in accounts_cols:
