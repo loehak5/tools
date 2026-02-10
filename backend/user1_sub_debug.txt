@@ -1,4 +1,0 @@
-plan_id: premium
-status: active
-start: 2026-02-09 00:52:29
-end: 2027-02-09 00:52:29
