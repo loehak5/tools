@@ -268,6 +268,10 @@ const Login: React.FC = () => {
                     <span className="text-slate-600 text-xs uppercase tracking-widest font-bold">Secure Access</span>
                     <div className="h-[1px] bg-slate-800 flex-grow"></div>
                 </div>
+
+                <p className="mt-8 text-center text-slate-500 text-xs font-medium">
+                    &copy; 2026 PT APPNESIA DIGITAL LABS. All rights reserved.
+                </p>
             </div>
 
             <style dangerouslySetInnerHTML={{
