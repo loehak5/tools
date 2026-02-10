@@ -144,6 +144,11 @@ function calculate_upgrade_cost($current_plan_price, $current_plan_duration, $re
     if ($current_plan_duration <= 0)
         return $new_plan_price;
 
+    // Rule: No discount if more than 50% of duration has passed
+    if ($remaining_days < ($current_plan_duration / 2)) {
+        return $new_plan_price;
+    }
+
     // 1. Daily Value: current_plan_price / current_plan_duration_days
     $daily_value = $current_plan_price / $current_plan_duration;
 

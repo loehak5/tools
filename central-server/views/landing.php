@@ -839,7 +839,14 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             btn.innerText = "Processing...";
             btn.disabled = true;
 
-            const action = 'create_invoice';
+            // Determine action: 'create_upgrade_invoice' for upgrades, 'create_invoice' for new/renew
+            let action = 'create_invoice';
+            const newPrice = PLAN_PRICES[id] || 0;
+            const curPrice = CURRENT_SUB ? CURRENT_SUB.price : 0;
+
+            if (CURRENT_SUB && id !== CURRENT_SUB.plan_id && newPrice > curPrice) {
+                action = 'create_upgrade_invoice';
+            }
 
             const formData = new FormData();
             formData.append('plan_id', id);
