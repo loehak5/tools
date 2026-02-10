@@ -15,6 +15,7 @@ engine = create_async_engine(
     poolclass=NullPool if is_mysql else None,  # Use NullPool for MySQL to avoid connection issues
     pool_pre_ping=not is_mysql if not is_mysql else True,  # Always pre-ping for MySQL
     pool_recycle=3600 if is_mysql else None,  # Recycle MySQL connections every hour
+    connect_args={"init_command": "SET time_zone='+07:00'"} if is_mysql else {},
 )
 
 AsyncSessionLocal = sessionmaker(

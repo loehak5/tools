@@ -10,6 +10,7 @@ from app.models.subscription import Subscription, SubscriptionPlan
 import json
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.tz_utils import now_jakarta
 
 async def get_user_subscription(user: User, db: AsyncSession = None) -> Subscription:
     """Get user's active subscription with plan details."""
@@ -20,7 +21,7 @@ async def get_user_subscription(user: User, db: AsyncSession = None) -> Subscrip
         return await _get_subscription_query(session, user)
 
 async def _get_subscription_query(db: AsyncSession, user: User) -> Subscription:
-    now = datetime.now(timezone.utc)
+    now = now_jakarta()
     stmt = (
         select(Subscription)
         .options(selectinload(Subscription.plan))

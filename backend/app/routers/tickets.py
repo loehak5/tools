@@ -8,6 +8,7 @@ from app.db.session import AsyncSessionLocal
 from app.routers.deps import get_current_user
 from app.models.user import User
 from app.models.ticket import Ticket, TicketMessage, TicketStatus
+from app.core.tz_utils import now_jakarta
 from app.schemas import ticket as schemas
 
 router = APIRouter()
@@ -105,7 +106,7 @@ async def add_message(
     db.add(message)
     
     # Update ticket timestamp
-    ticket.updated_at = datetime.utcnow()
+    ticket.updated_at = now_jakarta()
     # If admin replies, status becomes answered
     if current_user.role == "admin":
         ticket.status = TicketStatus.ANSWERED
@@ -140,7 +141,7 @@ async def update_ticket(
     if ticket_update.priority:
         ticket.priority = ticket_update.priority
         
-    ticket.updated_at = datetime.utcnow()
+    ticket.updated_at = now_jakarta()
     await db.commit()
     await db.refresh(ticket)
     return ticket

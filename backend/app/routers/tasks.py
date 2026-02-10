@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional, Dict
 from datetime import datetime, timezone
+from app.core.tz_utils import now_jakarta
 import os
 import shutil
 
@@ -194,7 +195,7 @@ async def create_post_task(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid datetime format")
     
-    filename = f"{account_id}_{int(datetime.now().timestamp())}_{image.filename}"
+    filename = f"{account_id}_{int(now_jakarta().timestamp())}_{image.filename}"
     file_path = os.path.join(settings.MEDIA_PATH, filename)
     
     with open(file_path, "wb") as buffer:
@@ -253,7 +254,7 @@ async def create_reels_task(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid datetime format")
     
-    filename = f"reels_{account_id}_{int(datetime.now().timestamp())}_{video.filename}"
+    filename = f"reels_{account_id}_{int(now_jakarta().timestamp())}_{video.filename}"
     file_path = os.path.join(settings.MEDIA_PATH, filename)
     
     with open(file_path, "wb") as buffer:
@@ -306,7 +307,7 @@ async def create_story_task(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid datetime format")
     
-    filename = f"story_{account_id}_{int(datetime.now().timestamp())}_{media.filename}"
+    filename = f"story_{account_id}_{int(now_jakarta().timestamp())}_{media.filename}"
     if not os.path.exists(settings.MEDIA_PATH):
         os.makedirs(settings.MEDIA_PATH, exist_ok=True)
         
@@ -725,7 +726,7 @@ async def bulk_retry_tasks(
             task.status = "pending"
             task.error_message = None
             task.executed_at = None
-            task.scheduled_at = datetime.now(timezone.utc)
+            task.scheduled_at = now_jakarta()
             
             background_tasks.add_task(execute_task_now, task.id)
             retried_count += 1

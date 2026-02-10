@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from datetime import datetime, date, timedelta
 from typing import List, Dict, Any
+from app.core.tz_utils import now_jakarta
 
 from app.db.session import get_db
 from app.models.account import Account
@@ -27,17 +28,19 @@ async def get_dashboard_stats(
     if period not in ["today", "yesterday", "7days"]:
         period = "today"
     
-    # Determine time range based on period
-    now = datetime.now()
+    # Determine time range based on period (Asia/Jakarta)
+    now = now_jakarta()
+    today_jakarta = now.date()
+    
     if period == "today":
-        period_start = datetime.combine(date.today(), datetime.min.time())
+        period_start = datetime.combine(today_jakarta, datetime.min.time()).replace(tzinfo=now.tzinfo)
         period_end = now
     elif period == "yesterday":
-        yesterday = date.today() - timedelta(days=1)
-        period_start = datetime.combine(yesterday, datetime.min.time())
-        period_end = datetime.combine(yesterday, datetime.max.time())
+        yesterday_jakarta = today_jakarta - timedelta(days=1)
+        period_start = datetime.combine(yesterday_jakarta, datetime.min.time()).replace(tzinfo=now.tzinfo)
+        period_end = datetime.combine(yesterday_jakarta, datetime.max.time()).replace(tzinfo=now.tzinfo)
     else:  # 7days
-        period_start = datetime.combine(date.today() - timedelta(days=6), datetime.min.time())
+        period_start = datetime.combine(today_jakarta - timedelta(days=6), datetime.min.time()).replace(tzinfo=now.tzinfo)
         period_end = now
     
     # 1. Account Stats (unchanged - still shows overall stats)
@@ -139,7 +142,7 @@ async def get_dashboard_stats(
         
         # Initialize all days in the period (last 7 days)
         for i in range(7):
-            day = date.today() - timedelta(days=6-i)  # Start from oldest
+            day = today_jakarta - timedelta(days=6-i)  # Start from oldest
             day_key = day.strftime("%Y-%m-%d")
             daily_trends[day_key] = {
                 "completed": 0, 
@@ -268,7 +271,8 @@ async def get_dashboard_stats(
     # --- EXPIRY ALERT LOGIC ---
     expiry_alert = None
     if sub and sub.end_date:
-        now_tz = datetime.now(sub.end_date.tzinfo)
+        now_tz = now_jakarta()
+        # sub.end_date should be aware if it has tzinfo
         remaining = sub.end_date - now_tz
         rem_seconds = remaining.total_seconds()
         rem_days = rem_seconds / (24 * 3600)

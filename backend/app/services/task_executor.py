@@ -5,6 +5,7 @@ from app.models.account import Account, Fingerprint
 from app.services.instagram_service import InstagramService
 from sqlalchemy import select
 from datetime import datetime
+from app.core.tz_utils import now_jakarta
 import os
 from instagrapi.exceptions import LoginRequired
 from pydantic import ValidationError
@@ -92,7 +93,7 @@ async def execute_task(task_id: int):
             if batch and batch.status == "pending":
                 batch.status = "running"
                 if not batch.started_at:
-                    batch.started_at = datetime.utcnow()
+                    batch.started_at = now_jakarta()
                     
         await session.commit()
         
@@ -324,12 +325,12 @@ async def execute_task(task_id: int):
                     raise e
             
             task.status = "completed"
-            task.executed_at = datetime.utcnow()
+            task.executed_at = now_jakarta()
             
         except Exception as e:
             task.status = "failed"
             task.error_message = str(e)
-            task.executed_at = datetime.utcnow()
+            task.executed_at = now_jakarta()
             with open("task_debug.log", "a") as f:
                 f.write(f"Task {task_id} failed: {e}\n")
                 import traceback
@@ -361,6 +362,6 @@ async def execute_task(task_id: int):
                     
                     if remaining == 0:
                         batch.status = "completed"
-                        batch.completed_at = datetime.utcnow()
+                        batch.completed_at = now_jakarta()
                     
                     await update_session.commit()

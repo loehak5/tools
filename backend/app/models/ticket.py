@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as Sq
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.models.base import Base
+from app.core.tz_utils import now_jakarta
 import enum
 
 class TicketStatus(str, enum.Enum):
@@ -26,8 +27,8 @@ class Ticket(Base):
     subject = Column(String(255), index=True)
     status = Column(String(20), default=TicketStatus.OPEN)
     priority = Column(String(20), default=TicketPriority.MEDIUM)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=now_jakarta)
+    updated_at = Column(DateTime, default=now_jakarta, onupdate=now_jakarta)
 
     user = relationship("User", backref="tickets")
     messages = relationship("TicketMessage", back_populates="ticket", cascade="all, delete-orphan")
@@ -39,7 +40,7 @@ class TicketMessage(Base):
     ticket_id = Column(Integer, ForeignKey("tickets.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     message = Column(String(1000))
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=now_jakarta)
 
     ticket = relationship("Ticket", back_populates="messages")
     user = relationship("User")

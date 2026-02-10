@@ -1,0 +1,1433 @@
+INFO:     Started server process [38562]
+INFO:     Waiting for application startup.
+2026-02-11 00:22:34,372 INFO sqlalchemy.engine.Engine SELECT DATABASE()
+2026-02-11 00:22:34,373 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,383 INFO sqlalchemy.engine.Engine SELECT @@sql_mode
+2026-02-11 00:22:34,383 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,394 INFO sqlalchemy.engine.Engine SELECT @@lower_case_table_names
+2026-02-11 00:22:34,394 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,411 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:22:34,416 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`users`
+2026-02-11 00:22:34,416 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,424 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`fingerprints`
+2026-02-11 00:22:34,424 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,432 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`accounts`
+2026-02-11 00:22:34,435 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,447 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`tasks`
+2026-02-11 00:22:34,447 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,462 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`task_batches`
+2026-02-11 00:22:34,462 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,490 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`proxy_templates`
+2026-02-11 00:22:34,491 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,496 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`subscription_plans`
+2026-02-11 00:22:34,496 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,500 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`subscriptions`
+2026-02-11 00:22:34,500 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,506 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`subscription_addons`
+2026-02-11 00:22:34,506 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,514 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`proxy_assignments`
+2026-02-11 00:22:34,514 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,526 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`tickets`
+2026-02-11 00:22:34,526 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,531 INFO sqlalchemy.engine.Engine DESCRIBE `insta-manager`.`ticket_messages`
+2026-02-11 00:22:34,532 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,555 INFO sqlalchemy.engine.Engine SHOW CREATE TABLE `users`
+2026-02-11 00:22:34,555 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,561 INFO sqlalchemy.engine.Engine UPDATE users SET is_password_set = TRUE WHERE hashed_password IS NOT NULL AND hashed_password != '' AND (is_password_set = FALSE OR is_password_set IS NULL)
+2026-02-11 00:22:34,561 INFO sqlalchemy.engine.Engine [generated in 0.00034s] ()
+2026-02-11 00:22:34,569 INFO sqlalchemy.engine.Engine SHOW CREATE TABLE `accounts`
+2026-02-11 00:22:34,569 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,584 INFO sqlalchemy.engine.Engine SHOW CREATE TABLE `proxy_templates`
+2026-02-11 00:22:34,586 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-02-11 00:22:34,597 INFO sqlalchemy.engine.Engine UPDATE tickets SET status = 'answered' WHERE status = 'pending'
+2026-02-11 00:22:34,597 INFO sqlalchemy.engine.Engine [generated in 0.00073s] ()
+2026-02-11 00:22:34,603 INFO sqlalchemy.engine.Engine UPDATE tickets SET status = 'closed' WHERE status = 'resolved'
+2026-02-11 00:22:34,603 INFO sqlalchemy.engine.Engine [generated in 0.00011s] ()
+✅ Migration: Updated ticket statuses (pending->answered, resolved->closed)
+2026-02-11 00:22:34,607 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+🔍 Incoming: GET /api/v1/tickets
+✅ Response: GET /api/v1/tickets -> 307
+INFO:     127.0.0.1:49534 - "GET /api/v1/tickets HTTP/1.1" 307 Temporary Redirect
+🔍 Incoming: GET /api/v1/tickets/
+✅ Response: GET /api/v1/tickets/ -> 401
+INFO:     127.0.0.1:49534 - "GET /api/v1/tickets/ HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49566 - "OPTIONS /api/v1/accounts/auth/google HTTP/1.1" 200 OK
+🔍 Incoming: POST /api/v1/accounts/auth/google
+2026-02-11 00:23:01,456 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:01,481 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.google_id = %s OR users.email = %s
+2026-02-11 00:23:01,482 INFO sqlalchemy.engine.Engine [generated in 0.00057s] ('104879972716164294665', 'gurinonyoman@gmail.com')
+2026-02-11 00:23:01,492 INFO sqlalchemy.engine.Engine COMMIT
+2026-02-11 00:23:01,541 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:01,543 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.id = %s
+2026-02-11 00:23:01,543 INFO sqlalchemy.engine.Engine [generated in 0.00018s] (7,)
+2026-02-11 00:23:01,557 INFO sqlalchemy.engine.Engine UPDATE users SET last_jti=%s WHERE users.id = %s
+2026-02-11 00:23:01,557 INFO sqlalchemy.engine.Engine [generated in 0.00023s] ('4b3fb765-3dfa-43cd-8b94-fa4ccfbc98bc', 7)
+2026-02-11 00:23:01,562 INFO sqlalchemy.engine.Engine COMMIT
+✅ Response: POST /api/v1/accounts/auth/google -> 200
+INFO:     127.0.0.1:49566 - "POST /api/v1/accounts/auth/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49566 - "OPTIONS /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+🔍 Incoming: GET /api/v1/accounts/auth/me
+2026-02-11 00:23:01,616 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:01,617 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:01,617 INFO sqlalchemy.engine.Engine [generated in 0.00019s] ('gurinonyoman',)
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49566 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:23:01,623 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:49566 - "OPTIONS /api/v1/dashboard/stats HTTP/1.1" 200 OK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:23:01,666 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:01,666 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:01,666 INFO sqlalchemy.engine.Engine [cached since 0.04883s ago] ('gurinonyoman',)
+2026-02-11 00:23:01,674 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:23:01,674 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (7,)
+2026-02-11 00:23:01,679 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:23:01,679 INFO sqlalchemy.engine.Engine [generated in 0.00017s] ('active', 7)
+2026-02-11 00:23:01,684 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:23:01,684 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:23:01,689 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:01,689 INFO sqlalchemy.engine.Engine [generated in 0.00016s] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 1, 673184, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:01,694 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:01,694 INFO sqlalchemy.engine.Engine [generated in 0.00011s] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 1, 673184, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:01,698 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:23:01,698 INFO sqlalchemy.engine.Engine [generated in 0.00007s] (7,)
+2026-02-11 00:23:01,703 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:23:01,703 INFO sqlalchemy.engine.Engine [generated in 0.00010s] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 1, 673184, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:01,711 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:23:01,711 INFO sqlalchemy.engine.Engine [generated in 0.00027s] ('pending', 'running', 7, 10)
+2026-02-11 00:23:01,718 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:23:01,718 INFO sqlalchemy.engine.Engine [generated in 0.00013s] (7,)
+2026-02-11 00:23:01,724 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:01,724 INFO sqlalchemy.engine.Engine [generated in 0.00016s] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 1, 673184, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:01,732 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:23:01,732 INFO sqlalchemy.engine.Engine [generated in 0.00021s] (7, 'active', datetime.datetime(2026, 2, 11, 0, 23, 1, 729780, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49566 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-02-11 00:23:01,736 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /health
+✅ Response: GET /health -> 200
+INFO:     127.0.0.1:49578 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49566 - "OPTIONS /api/v1/accounts/auth/sso-token HTTP/1.1" 200 OK
+🔍 Incoming: GET /api/v1/accounts/auth/me
+🔍 Incoming: GET /api/v1/accounts/auth/sso-token
+2026-02-11 00:23:04,562 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:04,562 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:04,562 INFO sqlalchemy.engine.Engine [cached since 2.945s ago] ('gurinonyoman',)
+2026-02-11 00:23:04,562 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:04,562 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:04,562 INFO sqlalchemy.engine.Engine [cached since 2.945s ago] ('gurinonyoman',)
+✅ Response: GET /api/v1/accounts/auth/sso-token -> 200
+INFO:     127.0.0.1:49566 - "GET /api/v1/accounts/auth/sso-token HTTP/1.1" 200 OK
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49590 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:23:04,570 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-02-11 00:23:04,570 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:49590 - "OPTIONS /api/v1/accounts/auth/sync HTTP/1.1" 200 OK
+🔍 Incoming: GET /api/v1/accounts/auth/me
+🔍 Incoming: POST /api/v1/accounts/auth/sync
+2026-02-11 00:23:06,964 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:06,965 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:06,965 INFO sqlalchemy.engine.Engine [cached since 5.348s ago] ('gurinonyoman',)
+2026-02-11 00:23:06,966 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:06,966 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:06,966 INFO sqlalchemy.engine.Engine [cached since 5.349s ago] ('gurinonyoman',)
+2026-02-11 00:23:06,972 INFO sqlalchemy.engine.Engine COMMIT
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49566 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:23:06,975 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-02-11 00:23:07,022 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:07,023 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.id = %s
+2026-02-11 00:23:07,023 INFO sqlalchemy.engine.Engine [cached since 5.48s ago] (7,)
+2026-02-11 00:23:07,030 INFO sqlalchemy.engine.Engine UPDATE users SET last_jti=%s WHERE users.id = %s
+2026-02-11 00:23:07,031 INFO sqlalchemy.engine.Engine [cached since 5.474s ago] ('f34160fc-f558-49d1-b2ea-7614837fb770', 7)
+2026-02-11 00:23:07,035 INFO sqlalchemy.engine.Engine COMMIT
+✅ Response: POST /api/v1/accounts/auth/sync -> 200
+INFO:     127.0.0.1:49590 - "POST /api/v1/accounts/auth/sync HTTP/1.1" 200 OK
+🔍 Incoming: GET /api/v1/accounts/auth/me
+2026-02-11 00:23:07,141 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:07,141 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:07,141 INFO sqlalchemy.engine.Engine [cached since 5.524s ago] ('gurinonyoman',)
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49590 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:23:07,147 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+INFO:     127.0.0.1:49566 - "OPTIONS /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:23:07,278 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:07,279 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:07,279 INFO sqlalchemy.engine.Engine [cached since 5.662s ago] ('gurinonyoman',)
+2026-02-11 00:23:07,286 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:23:07,287 INFO sqlalchemy.engine.Engine [cached since 5.612s ago] (7,)
+2026-02-11 00:23:07,287 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:07,287 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:07,287 INFO sqlalchemy.engine.Engine [cached since 5.67s ago] ('gurinonyoman',)
+2026-02-11 00:23:07,294 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:23:07,294 INFO sqlalchemy.engine.Engine [cached since 5.615s ago] ('active', 7)
+2026-02-11 00:23:07,294 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:23:07,294 INFO sqlalchemy.engine.Engine [cached since 5.62s ago] (7,)
+2026-02-11 00:23:07,299 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:23:07,299 INFO sqlalchemy.engine.Engine [cached since 5.615s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:23:07,299 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:23:07,299 INFO sqlalchemy.engine.Engine [cached since 5.621s ago] ('active', 7)
+2026-02-11 00:23:07,304 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:23:07,304 INFO sqlalchemy.engine.Engine [cached since 5.62s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:23:07,304 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:07,304 INFO sqlalchemy.engine.Engine [cached since 5.615s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 7, 286649, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:07,308 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:07,309 INFO sqlalchemy.engine.Engine [cached since 5.62s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 7, 294734, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:07,309 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:07,309 INFO sqlalchemy.engine.Engine [cached since 5.616s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 7, 286649, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:07,314 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:07,314 INFO sqlalchemy.engine.Engine [cached since 5.62s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 7, 294734, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:07,314 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:23:07,314 INFO sqlalchemy.engine.Engine [cached since 5.616s ago] (7,)
+2026-02-11 00:23:07,319 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:23:07,319 INFO sqlalchemy.engine.Engine [cached since 5.621s ago] (7,)
+2026-02-11 00:23:07,319 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:23:07,319 INFO sqlalchemy.engine.Engine [cached since 5.617s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 7, 286649, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:07,325 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:23:07,325 INFO sqlalchemy.engine.Engine [cached since 5.613s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:23:07,325 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:23:07,325 INFO sqlalchemy.engine.Engine [cached since 5.622s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 7, 294734, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:07,329 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:23:07,329 INFO sqlalchemy.engine.Engine [cached since 5.618s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:23:07,330 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:23:07,330 INFO sqlalchemy.engine.Engine [cached since 5.612s ago] (7,)
+2026-02-11 00:23:07,341 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:07,341 INFO sqlalchemy.engine.Engine [cached since 5.617s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 7, 286649, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:07,342 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:23:07,342 INFO sqlalchemy.engine.Engine [cached since 5.624s ago] (7,)
+2026-02-11 00:23:07,346 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:23:07,346 INFO sqlalchemy.engine.Engine [cached since 5.615s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 23, 7, 346548, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+2026-02-11 00:23:07,347 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:07,347 INFO sqlalchemy.engine.Engine [cached since 5.623s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 7, 294734, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:07,352 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:23:07,352 INFO sqlalchemy.engine.Engine [cached since 5.621s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 23, 7, 352097, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49590 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-02-11 00:23:07,352 INFO sqlalchemy.engine.Engine ROLLBACK
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49566 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:23:07,358 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:23:17,219 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:17,221 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:17,221 INFO sqlalchemy.engine.Engine [cached since 15.6s ago] ('gurinonyoman',)
+2026-02-11 00:23:17,228 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:23:17,228 INFO sqlalchemy.engine.Engine [cached since 15.55s ago] (7,)
+2026-02-11 00:23:17,234 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:23:17,234 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] ('active', 7)
+2026-02-11 00:23:17,241 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:23:17,241 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:23:17,247 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:17,247 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 17, 227643, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:17,253 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:17,253 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 17, 227643, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:17,258 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:23:17,258 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] (7,)
+2026-02-11 00:23:17,262 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:23:17,262 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 17, 227643, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:17,267 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:23:17,268 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:23:17,275 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:23:17,275 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] (7,)
+2026-02-11 00:23:17,281 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:17,281 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 17, 227643, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:17,288 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:23:17,288 INFO sqlalchemy.engine.Engine [cached since 15.56s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 23, 17, 287664, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49630 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:23:17,295 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:23:27,230 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:27,231 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:27,231 INFO sqlalchemy.engine.Engine [cached since 25.61s ago] ('gurinonyoman',)
+2026-02-11 00:23:27,240 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:23:27,240 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] (7,)
+2026-02-11 00:23:27,245 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:23:27,245 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] ('active', 7)
+2026-02-11 00:23:27,250 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:23:27,250 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:23:27,254 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:27,254 INFO sqlalchemy.engine.Engine [cached since 25.56s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 27, 239720, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:27,258 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:27,258 INFO sqlalchemy.engine.Engine [cached since 25.56s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 27, 239720, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:27,263 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:23:27,263 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] (7,)
+2026-02-11 00:23:27,270 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:23:27,270 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 27, 239720, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:27,277 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:23:27,277 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:23:27,290 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:23:27,290 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] (7,)
+2026-02-11 00:23:27,296 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:27,296 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 27, 239720, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:27,303 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:23:27,304 INFO sqlalchemy.engine.Engine [cached since 25.57s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 23, 27, 302727, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49648 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:23:27,311 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:23:37,217 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:37,217 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:37,217 INFO sqlalchemy.engine.Engine [cached since 35.6s ago] ('gurinonyoman',)
+2026-02-11 00:23:37,223 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:23:37,224 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] (7,)
+2026-02-11 00:23:37,229 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:23:37,229 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] ('active', 7)
+2026-02-11 00:23:37,234 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:23:37,234 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:23:37,239 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:37,240 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 37, 223079, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:37,244 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:37,245 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 37, 223079, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:37,249 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:23:37,249 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] (7,)
+2026-02-11 00:23:37,254 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:23:37,254 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 37, 223079, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:37,259 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:23:37,259 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:23:37,264 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:23:37,264 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] (7,)
+2026-02-11 00:23:37,269 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:37,269 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 37, 223079, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:37,278 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:23:37,278 INFO sqlalchemy.engine.Engine [cached since 35.55s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 23, 37, 277946, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49667 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:23:37,284 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:23:47,220 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:47,221 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:47,221 INFO sqlalchemy.engine.Engine [cached since 45.6s ago] ('gurinonyoman',)
+2026-02-11 00:23:47,227 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:23:47,227 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] (7,)
+2026-02-11 00:23:47,232 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:23:47,232 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] ('active', 7)
+2026-02-11 00:23:47,236 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:23:47,236 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:23:47,240 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:47,241 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 47, 227140, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:47,246 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:47,246 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 47, 227140, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:47,249 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:23:47,250 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] (7,)
+2026-02-11 00:23:47,256 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:23:47,256 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 47, 227140, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:47,261 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:23:47,261 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:23:47,266 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:23:47,266 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] (7,)
+2026-02-11 00:23:47,271 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:47,271 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 47, 227140, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:47,277 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:23:47,277 INFO sqlalchemy.engine.Engine [cached since 45.55s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 23, 47, 277327, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49685 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:23:47,283 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:23:57,217 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:23:57,219 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:23:57,219 INFO sqlalchemy.engine.Engine [cached since 55.6s ago] ('gurinonyoman',)
+2026-02-11 00:23:57,225 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:23:57,225 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] (7,)
+2026-02-11 00:23:57,230 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:23:57,230 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] ('active', 7)
+2026-02-11 00:23:57,234 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:23:57,235 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:23:57,239 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:57,240 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 57, 224680, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:57,245 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:57,245 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 57, 224680, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:57,250 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:23:57,250 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] (7,)
+2026-02-11 00:23:57,255 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:23:57,255 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 57, 224680, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:57,260 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:23:57,260 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:23:57,267 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:23:57,267 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] (7,)
+2026-02-11 00:23:57,271 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:23:57,271 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 23, 57, 224680, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:23:57,277 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:23:57,278 INFO sqlalchemy.engine.Engine [cached since 55.55s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 23, 57, 277401, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49700 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:23:57,285 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/accounts/auth/me
+2026-02-11 00:24:00,375 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:00,376 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:00,376 INFO sqlalchemy.engine.Engine [cached since 58.76s ago] ('gurinonyoman',)
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49700 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:24:00,390 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:00,461 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:00,461 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:00,461 INFO sqlalchemy.engine.Engine [cached since 58.84s ago] ('gurinonyoman',)
+2026-02-11 00:24:00,462 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:00,462 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:00,462 INFO sqlalchemy.engine.Engine [cached since 58.84s ago] ('gurinonyoman',)
+2026-02-11 00:24:00,469 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:00,469 INFO sqlalchemy.engine.Engine [cached since 58.79s ago] (7,)
+2026-02-11 00:24:00,469 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:00,469 INFO sqlalchemy.engine.Engine [cached since 58.79s ago] (7,)
+2026-02-11 00:24:00,475 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:00,475 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('active', 7)
+2026-02-11 00:24:00,476 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:00,476 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('active', 7)
+2026-02-11 00:24:00,481 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:00,481 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:00,481 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:00,481 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:00,486 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:00,486 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 0, 468796, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:00,486 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:00,486 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 0, 469289, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:00,492 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:00,492 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 0, 469289, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:00,492 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:00,492 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 0, 468796, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:00,497 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:00,497 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (7,)
+2026-02-11 00:24:00,498 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:00,498 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (7,)
+2026-02-11 00:24:00,502 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:00,502 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 0, 468796, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:00,503 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:00,503 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 0, 469289, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:00,509 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:00,509 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:00,509 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:00,510 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:00,515 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:00,516 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (7,)
+2026-02-11 00:24:00,517 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:00,517 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (7,)
+2026-02-11 00:24:00,520 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:00,520 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 0, 468796, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:00,520 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:00,520 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 0, 469289, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:00,529 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:00,529 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 0, 529076, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+2026-02-11 00:24:00,529 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:00,529 INFO sqlalchemy.engine.Engine [cached since 58.8s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 0, 529804, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49700 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-02-11 00:24:00,535 INFO sqlalchemy.engine.Engine ROLLBACK
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49715 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:24:00,536 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/accounts/auth/me
+2026-02-11 00:24:01,448 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:01,449 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:01,449 INFO sqlalchemy.engine.Engine [cached since 59.83s ago] ('gurinonyoman',)
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49715 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:24:01,455 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:01,510 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:01,510 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:01,510 INFO sqlalchemy.engine.Engine [cached since 59.89s ago] ('gurinonyoman',)
+2026-02-11 00:24:01,511 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:01,511 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:01,511 INFO sqlalchemy.engine.Engine [cached since 59.89s ago] ('gurinonyoman',)
+2026-02-11 00:24:01,516 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:01,517 INFO sqlalchemy.engine.Engine [cached since 59.84s ago] (7,)
+2026-02-11 00:24:01,518 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:01,519 INFO sqlalchemy.engine.Engine [cached since 59.84s ago] (7,)
+2026-02-11 00:24:01,521 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:01,521 INFO sqlalchemy.engine.Engine [cached since 59.84s ago] ('active', 7)
+2026-02-11 00:24:01,522 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:01,522 INFO sqlalchemy.engine.Engine [cached since 59.84s ago] ('active', 7)
+2026-02-11 00:24:01,529 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:01,529 INFO sqlalchemy.engine.Engine [cached since 59.84s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:01,530 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:01,530 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:01,535 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:01,535 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 1, 516030, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:01,536 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:01,536 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 1, 518457, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:01,542 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:01,542 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 1, 516030, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:01,543 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:01,543 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 1, 518457, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:01,546 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:01,546 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (7,)
+2026-02-11 00:24:01,547 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:01,548 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (7,)
+2026-02-11 00:24:01,551 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:01,551 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 1, 516030, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:01,552 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:01,552 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 1, 518457, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:01,557 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:01,557 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:01,558 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:01,558 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:01,563 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:01,563 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (7,)
+2026-02-11 00:24:01,565 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:01,565 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (7,)
+2026-02-11 00:24:01,569 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:01,570 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 1, 516030, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:01,571 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:01,571 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 1, 518457, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:01,577 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:01,577 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 1, 577278, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+2026-02-11 00:24:01,579 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:01,579 INFO sqlalchemy.engine.Engine [cached since 59.85s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 1, 578556, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49700 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49715 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-02-11 00:24:01,585 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-02-11 00:24:01,586 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/accounts/auth/me
+2026-02-11 00:24:01,985 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:01,985 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:01,986 INFO sqlalchemy.engine.Engine [cached since 60.37s ago] ('gurinonyoman',)
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49715 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:24:01,992 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:02,041 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,042 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,042 INFO sqlalchemy.engine.Engine [cached since 60.42s ago] ('gurinonyoman',)
+2026-02-11 00:24:02,042 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,042 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,042 INFO sqlalchemy.engine.Engine [cached since 60.42s ago] ('gurinonyoman',)
+2026-02-11 00:24:02,047 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:02,047 INFO sqlalchemy.engine.Engine [cached since 60.37s ago] (7,)
+2026-02-11 00:24:02,049 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:02,049 INFO sqlalchemy.engine.Engine [cached since 60.37s ago] (7,)
+2026-02-11 00:24:02,053 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:02,054 INFO sqlalchemy.engine.Engine [cached since 60.37s ago] ('active', 7)
+2026-02-11 00:24:02,055 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:02,055 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] ('active', 7)
+2026-02-11 00:24:02,060 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:02,060 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:02,061 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:02,061 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:02,066 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,066 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 46964, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,067 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,067 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 48926, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,073 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,073 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 46964, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,074 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,074 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 48926, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,081 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:02,081 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] (7,)
+2026-02-11 00:24:02,082 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:02,082 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] (7,)
+2026-02-11 00:24:02,087 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:02,087 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 46964, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,088 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:02,088 INFO sqlalchemy.engine.Engine [cached since 60.39s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 48926, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,093 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:02,093 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:02,095 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:02,095 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:02,099 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:02,099 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] (7,)
+2026-02-11 00:24:02,105 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:02,105 INFO sqlalchemy.engine.Engine [cached since 60.39s ago] (7,)
+2026-02-11 00:24:02,107 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,108 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 46964, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,110 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,111 INFO sqlalchemy.engine.Engine [cached since 60.39s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 48926, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,115 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:02,115 INFO sqlalchemy.engine.Engine [cached since 60.38s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 2, 114320, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+2026-02-11 00:24:02,117 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:02,117 INFO sqlalchemy.engine.Engine [cached since 60.39s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 2, 116851, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+2026-02-11 00:24:02,119 INFO sqlalchemy.engine.Engine ROLLBACK
+✅ Response: GET /api/v1/dashboard/stats -> 200
+2026-02-11 00:24:02,122 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/accounts/auth/me
+2026-02-11 00:24:02,161 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,161 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,161 INFO sqlalchemy.engine.Engine [cached since 60.54s ago] ('gurinonyoman',)
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49730 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:24:02,170 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:02,218 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,219 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,219 INFO sqlalchemy.engine.Engine [cached since 60.6s ago] ('gurinonyoman',)
+2026-02-11 00:24:02,219 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,219 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,219 INFO sqlalchemy.engine.Engine [cached since 60.6s ago] ('gurinonyoman',)
+2026-02-11 00:24:02,228 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:02,228 INFO sqlalchemy.engine.Engine [cached since 60.55s ago] (7,)
+2026-02-11 00:24:02,229 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:02,230 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (7,)
+2026-02-11 00:24:02,233 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:02,233 INFO sqlalchemy.engine.Engine [cached since 60.55s ago] ('active', 7)
+2026-02-11 00:24:02,234 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:02,234 INFO sqlalchemy.engine.Engine [cached since 60.55s ago] ('active', 7)
+2026-02-11 00:24:02,238 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:02,238 INFO sqlalchemy.engine.Engine [cached since 60.55s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:02,240 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:02,240 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:02,243 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,243 INFO sqlalchemy.engine.Engine [cached since 60.55s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 227994, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,244 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,244 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 229461, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,249 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,249 INFO sqlalchemy.engine.Engine [cached since 60.55s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 227994, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,251 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,251 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 229461, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,254 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:02,254 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (7,)
+2026-02-11 00:24:02,255 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:02,255 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (7,)
+2026-02-11 00:24:02,260 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:02,260 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 227994, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,262 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:02,262 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 229461, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,265 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:02,265 INFO sqlalchemy.engine.Engine [cached since 60.55s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:02,266 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:02,267 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:02,274 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:02,274 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (7,)
+2026-02-11 00:24:02,276 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:02,276 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (7,)
+2026-02-11 00:24:02,283 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,283 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 227994, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,284 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,284 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 229461, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+🔍 Incoming: GET /api/v1/accounts/auth/me
+2026-02-11 00:24:02,291 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:02,291 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 2, 290846, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+2026-02-11 00:24:02,293 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:02,293 INFO sqlalchemy.engine.Engine [cached since 60.56s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 2, 292801, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+2026-02-11 00:24:02,296 INFO sqlalchemy.engine.Engine ROLLBACK
+✅ Response: GET /api/v1/dashboard/stats -> 200
+2026-02-11 00:24:02,300 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-02-11 00:24:02,323 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,323 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,323 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] ('gurinonyoman',)
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49739 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:24:02,330 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:02,378 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,379 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,379 INFO sqlalchemy.engine.Engine [cached since 60.76s ago] ('gurinonyoman',)
+2026-02-11 00:24:02,379 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,379 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,379 INFO sqlalchemy.engine.Engine [cached since 60.76s ago] ('gurinonyoman',)
+2026-02-11 00:24:02,384 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:02,385 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] (7,)
+2026-02-11 00:24:02,386 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:02,386 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] (7,)
+2026-02-11 00:24:02,389 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:02,389 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] ('active', 7)
+2026-02-11 00:24:02,391 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:02,391 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] ('active', 7)
+2026-02-11 00:24:02,395 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:02,395 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:02,397 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:02,397 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:02,400 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,400 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 384178, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,402 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,402 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 386075, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,406 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,406 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 384178, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,407 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,407 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 386075, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+🔍 Incoming: GET /api/v1/accounts/auth/me
+2026-02-11 00:24:02,413 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:02,413 INFO sqlalchemy.engine.Engine [cached since 60.71s ago] (7,)
+2026-02-11 00:24:02,414 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:02,414 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] (7,)
+2026-02-11 00:24:02,421 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:02,421 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 384178, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,422 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:02,422 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 386075, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,427 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:02,427 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:02,429 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:02,429 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:02,435 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:02,435 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] (7,)
+2026-02-11 00:24:02,441 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:02,442 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] (7,)
+2026-02-11 00:24:02,443 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,443 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 384178, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,447 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,447 INFO sqlalchemy.engine.Engine [cached since 60.72s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 386075, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,468 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:02,468 INFO sqlalchemy.engine.Engine [cached since 60.74s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 2, 468071, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+2026-02-11 00:24:02,470 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:02,470 INFO sqlalchemy.engine.Engine [cached since 60.74s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 2, 469836, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+2026-02-11 00:24:02,474 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,474 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,474 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] ('gurinonyoman',)
+✅ Response: GET /api/v1/dashboard/stats -> 200
+2026-02-11 00:24:02,475 INFO sqlalchemy.engine.Engine ROLLBACK
+✅ Response: GET /api/v1/dashboard/stats -> 200
+2026-02-11 00:24:02,476 INFO sqlalchemy.engine.Engine ROLLBACK
+✅ Response: GET /api/v1/accounts/auth/me -> 200
+INFO:     127.0.0.1:49747 - "GET /api/v1/accounts/auth/me HTTP/1.1" 200 OK
+2026-02-11 00:24:02,481 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:02,524 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,525 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,525 INFO sqlalchemy.engine.Engine [cached since 60.91s ago] ('gurinonyoman',)
+2026-02-11 00:24:02,528 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:02,529 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:02,529 INFO sqlalchemy.engine.Engine [cached since 60.91s ago] ('gurinonyoman',)
+2026-02-11 00:24:02,530 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:02,531 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] (7,)
+2026-02-11 00:24:02,534 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:02,534 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] (7,)
+2026-02-11 00:24:02,535 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:02,535 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] ('active', 7)
+2026-02-11 00:24:02,538 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:02,538 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] ('active', 7)
+2026-02-11 00:24:02,538 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:02,538 INFO sqlalchemy.engine.Engine [cached since 60.85s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:02,544 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:02,544 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:02,545 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,545 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 530459, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,548 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,548 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 533577, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,549 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,549 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 530459, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,555 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,555 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 533577, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,556 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:02,556 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] (7,)
+2026-02-11 00:24:02,560 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:02,560 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] (7,)
+2026-02-11 00:24:02,561 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:02,562 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 530459, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,565 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:02,565 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 533577, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,567 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:02,567 INFO sqlalchemy.engine.Engine [cached since 60.86s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:02,579 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:02,579 INFO sqlalchemy.engine.Engine [cached since 60.87s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:02,590 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:02,590 INFO sqlalchemy.engine.Engine [cached since 60.87s ago] (7,)
+2026-02-11 00:24:02,591 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:02,591 INFO sqlalchemy.engine.Engine [cached since 60.87s ago] (7,)
+2026-02-11 00:24:02,595 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,596 INFO sqlalchemy.engine.Engine [cached since 60.87s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 530459, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,597 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:02,597 INFO sqlalchemy.engine.Engine [cached since 60.87s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 2, 533577, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:02,601 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:02,601 INFO sqlalchemy.engine.Engine [cached since 60.87s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 2, 600926, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+2026-02-11 00:24:02,603 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:02,603 INFO sqlalchemy.engine.Engine [cached since 60.87s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 2, 602634, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49747 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-02-11 00:24:02,610 INFO sqlalchemy.engine.Engine ROLLBACK
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49750 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:24:02,611 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:12,531 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:12,532 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:12,532 INFO sqlalchemy.engine.Engine [cached since 70.92s ago] ('gurinonyoman',)
+2026-02-11 00:24:12,539 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:12,539 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] (7,)
+2026-02-11 00:24:12,545 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:12,545 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] ('active', 7)
+2026-02-11 00:24:12,551 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:12,551 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:12,557 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:12,557 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 12, 538371, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:12,563 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:12,563 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 12, 538371, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:12,569 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:12,569 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] (7,)
+2026-02-11 00:24:12,576 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:12,576 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 12, 538371, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:12,582 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:12,582 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:12,590 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:12,590 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] (7,)
+2026-02-11 00:24:12,598 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:12,599 INFO sqlalchemy.engine.Engine [cached since 70.87s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 12, 538371, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:12,614 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:12,614 INFO sqlalchemy.engine.Engine [cached since 70.88s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 12, 613259, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49773 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:24:12,622 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:22,556 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:22,557 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:22,557 INFO sqlalchemy.engine.Engine [cached since 80.94s ago] ('gurinonyoman',)
+2026-02-11 00:24:22,564 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:22,564 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] (7,)
+2026-02-11 00:24:22,571 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:22,571 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] ('active', 7)
+2026-02-11 00:24:22,576 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:22,577 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:22,582 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:22,582 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 22, 562910, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:22,588 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:22,588 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 22, 562910, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:22,593 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:22,593 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] (7,)
+2026-02-11 00:24:22,599 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:22,599 INFO sqlalchemy.engine.Engine [cached since 80.9s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 22, 562910, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:22,604 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:22,605 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:22,611 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:22,611 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] (7,)
+2026-02-11 00:24:22,618 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:22,618 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 22, 562910, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:22,625 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:22,625 INFO sqlalchemy.engine.Engine [cached since 80.89s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 22, 624569, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49790 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:24:22,632 INFO sqlalchemy.engine.Engine ROLLBACK
+🔍 Incoming: GET /api/v1/dashboard/stats
+2026-02-11 00:24:32,531 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 00:24:32,531 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.hashed_password, users.full_name, users.avatar, users.email, users.google_id, users.role, users.is_active, users.is_password_set, users.last_jti 
+FROM users 
+WHERE users.username = %s
+2026-02-11 00:24:32,531 INFO sqlalchemy.engine.Engine [cached since 90.91s ago] ('gurinonyoman',)
+2026-02-11 00:24:32,543 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s
+2026-02-11 00:24:32,543 INFO sqlalchemy.engine.Engine [cached since 90.87s ago] (7,)
+2026-02-11 00:24:32,549 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status = %s AND accounts.user_id = %s
+2026-02-11 00:24:32,549 INFO sqlalchemy.engine.Engine [cached since 90.87s ago] ('active', 7)
+2026-02-11 00:24:32,556 INFO sqlalchemy.engine.Engine SELECT count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.status IN (%s, %s, %s) AND accounts.user_id = %s
+2026-02-11 00:24:32,556 INFO sqlalchemy.engine.Engine [cached since 90.87s ago] ('failed', 'challenge', 'banned', 7)
+2026-02-11 00:24:32,562 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.created_at >= %s AND tasks.created_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:32,562 INFO sqlalchemy.engine.Engine [cached since 90.87s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 32, 542827, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:32,568 INFO sqlalchemy.engine.Engine SELECT count(tasks.id) AS count_1 
+FROM tasks 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:32,568 INFO sqlalchemy.engine.Engine [cached since 90.87s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 32, 542827, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:32,573 INFO sqlalchemy.engine.Engine SELECT count(proxy_templates.id) AS count_1 
+FROM proxy_templates 
+WHERE proxy_templates.user_id = %s
+2026-02-11 00:24:32,573 INFO sqlalchemy.engine.Engine [cached since 90.88s ago] (7,)
+2026-02-11 00:24:32,578 INFO sqlalchemy.engine.Engine SELECT tasks.executed_at, tasks.status 
+FROM tasks 
+WHERE tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.executed_at IS NOT NULL AND tasks.user_id = %s
+2026-02-11 00:24:32,578 INFO sqlalchemy.engine.Engine [cached since 90.88s ago] (datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 32, 542827, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:32,584 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status IN (%s, %s) AND tasks.user_id = %s ORDER BY tasks.scheduled_at ASC 
+ LIMIT %s
+2026-02-11 00:24:32,584 INFO sqlalchemy.engine.Engine [cached since 90.87s ago] ('pending', 'running', 7, 10)
+2026-02-11 00:24:32,596 INFO sqlalchemy.engine.Engine SELECT accounts.status, count(accounts.id) AS count_1 
+FROM accounts 
+WHERE accounts.user_id = %s GROUP BY accounts.status
+2026-02-11 00:24:32,596 INFO sqlalchemy.engine.Engine [cached since 90.88s ago] (7,)
+2026-02-11 00:24:32,601 INFO sqlalchemy.engine.Engine SELECT tasks.id, tasks.account_id, tasks.batch_id, tasks.task_type, tasks.params, tasks.scheduled_at, tasks.executed_at, tasks.status, tasks.error_message, tasks.user_id, tasks.created_at, accounts_1.id AS id_1, accounts_1.username, accounts_1.password_encrypted, accounts_1.seed_2fa, accounts_1.proxy, accounts_1.login_method, accounts_1.cookies, accounts_1.last_login_state, accounts_1.fingerprint_id, accounts_1.is_active, accounts_1.is_checker, accounts_1.status AS status_1, accounts_1.last_error, accounts_1.threads_profile_id, accounts_1.has_threads, accounts_1.user_id AS user_id_1, accounts_1.created_at AS created_at_1, accounts_1.last_login 
+FROM tasks LEFT OUTER JOIN accounts AS accounts_1 ON accounts_1.id = tasks.account_id 
+WHERE tasks.status = %s AND tasks.executed_at >= %s AND tasks.executed_at <= %s AND tasks.user_id = %s
+2026-02-11 00:24:32,601 INFO sqlalchemy.engine.Engine [cached since 90.88s ago] ('completed', datetime.datetime(2026, 2, 11, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), datetime.datetime(2026, 2, 11, 0, 24, 32, 542827, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')), 7)
+2026-02-11 00:24:32,611 INFO sqlalchemy.engine.Engine SELECT subscriptions.id, subscriptions.user_id, subscriptions.plan_id, subscriptions.start_date, subscriptions.end_date, subscriptions.status 
+FROM subscriptions INNER JOIN subscription_plans ON subscription_plans.id = subscriptions.plan_id 
+WHERE subscriptions.user_id = %s AND subscriptions.status = %s AND subscriptions.end_date > %s
+2026-02-11 00:24:32,611 INFO sqlalchemy.engine.Engine [cached since 90.88s ago] (7, 'active', datetime.datetime(2026, 2, 11, 0, 24, 32, 609547, tzinfo=zoneinfo.ZoneInfo(key='Asia/Jakarta')))
+✅ Response: GET /api/v1/dashboard/stats -> 200
+INFO:     127.0.0.1:49809 - "GET /api/v1/dashboard/stats?period=today HTTP/1.1" 200 OK
+2026-02-11 00:24:32,618 INFO sqlalchemy.engine.Engine ROLLBACK
