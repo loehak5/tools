@@ -297,8 +297,9 @@ switch ($action) {
                 break;
             }
 
-            // External ID: ADD-user_id-addon_type-qty-timestamp
-            $external_id = "ADD-" . $_SESSION['user_id'] . "-" . $addon_type . "-" . $qty . "-" . time();
+            // External ID: ADD-user_id-addon_type-sub_type-qty-timestamp
+            $sub_type_str = $sub_type ?? 'none';
+            $external_id = "ADD-" . $_SESSION['user_id'] . "-" . $addon_type . "-" . $sub_type_str . "-" . $qty . "-" . time();
             $email = $_SESSION['email'] ?? 'customer@example.com';
             $description = "Add-on: " . strtoupper($addon_type) . " ($qty units)";
 

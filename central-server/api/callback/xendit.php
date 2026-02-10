@@ -80,11 +80,17 @@ if ($data['status'] === 'PAID') {
             } else {
                 file_put_contents(__DIR__ . '/xendit_callback.log', "[DEBUG] Error: Plan $plan_id not found in database for $prefix transaction" . PHP_EOL, FILE_APPEND);
             }
-        } elseif ($prefix === 'ADD' && count($parts) >= 5) {
+        } elseif ($prefix === 'ADD' && count($parts) >= 6) {
             $user_id = intval($parts[1]);
             $addon_type = $parts[2];
-            $qty = intval($parts[3]);
+            $sub_type = $parts[3]; // e.g., 'account', 'proxy', 'shared', 'private', 'dedicated', or 'none'
+            $qty = intval($parts[4]);
             $paid_amount = $data['amount'];
+
+            // Normalize sub_type: if 'none', set to NULL
+            if ($sub_type === 'none') {
+                $sub_type = null;
+            }
 
             // Add-ons sync with the current active subscription's end date
             $stmt = $db->prepare("SELECT end_date FROM subscriptions WHERE user_id = ? AND status = 'active' ORDER BY end_date DESC LIMIT 1");
@@ -94,10 +100,10 @@ if ($data['status'] === 'PAID') {
             $start_date = date('Y-m-d H:i:s');
             $end_date = $sub ? $sub['end_date'] : date('Y-m-d H:i:s', strtotime("+30 days")); // Default to 30 days if no active sub
 
-            $stmt = $db->prepare("INSERT INTO subscription_addons (user_id, addon_type, quantity, price_paid, start_date, end_date, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)");
-            $stmt->execute([$user_id, $addon_type, $qty, $paid_amount, $start_date, $end_date]);
+            $stmt = $db->prepare("INSERT INTO subscription_addons (user_id, addon_type, sub_type, quantity, price_paid, start_date, end_date, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)");
+            $stmt->execute([$user_id, $addon_type, $sub_type, $qty, $paid_amount, $start_date, $end_date]);
 
-            file_put_contents(__DIR__ . '/xendit_callback.log', "[DEBUG] ADDON Activated: User $user_id, Type $addon_type, Qty $qty" . PHP_EOL, FILE_APPEND);
+            file_put_contents(__DIR__ . '/xendit_callback.log', "[DEBUG] ADDON Activated: User $user_id, Type $addon_type, SubType $sub_type, Qty $qty" . PHP_EOL, FILE_APPEND);
         } else {
             file_put_contents(__DIR__ . '/xendit_callback.log', "[DEBUG] Error: Invalid external_id format or unsupported prefix '$prefix' for PAID status." . PHP_EOL, FILE_APPEND);
         }
