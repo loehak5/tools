@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2, Plus, Search, X, Play, Globe, Server, Loader2, XCircle, Shuffle } from 'lucide-react';
+import { Trash2, Plus, Search, X, Play, Globe, Server, Loader2, XCircle, Shuffle, Copy, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/client';
 import TableSelect from '../components/common/TableSelect';
@@ -25,11 +25,21 @@ interface ProxyTemplate {
     created_at: string;
 }
 
+interface UserProxy {
+    id: number;
+    proxy_ip: string;
+    proxy_port: number;
+    proxy_username: string | null;
+    proxy_password: string | null;
+    assigned_at: string;
+}
+
 const ProxySettings = () => {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [templates, setTemplates] = useState<ProxyTemplate[]>([]);
+    const [myProxies, setMyProxies] = useState<UserProxy[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showTemplates, setShowTemplates] = useState(true);
+    const [activeTab, setActiveTab] = useState<'templates' | 'accounts' | 'my-proxies'>('templates');
 
     // Form state for new template
     const [newTemplate, setNewTemplate] = useState({
@@ -102,12 +112,14 @@ const ProxySettings = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [accountsRes, templatesRes] = await Promise.all([
+            const [accountsRes, templatesRes, myProxiesRes] = await Promise.all([
                 api.get('/accounts/'),
-                api.get('/proxies/')
+                api.get('/proxies/'),
+                api.get('/proxies/my-proxies')
             ]);
             setAccounts(accountsRes.data);
             setTemplates(templatesRes.data);
+            setMyProxies(myProxiesRes.data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -338,6 +350,10 @@ const ProxySettings = () => {
 
     const filteredTemplates = templates.filter(t =>
         t.name.toLowerCase().includes(proxySearch.toLowerCase())
+    );
+
+    const filteredMyProxies = myProxies.filter(p =>
+        p.proxy_ip.includes(proxySearch)
     );
 
     // Split data for 2-column view
@@ -571,8 +587,8 @@ const ProxySettings = () => {
                     {/* Tabs */}
                     <div className="flex bg-gray-800/50 p-1 rounded-xl">
                         <button
-                            onClick={() => { setShowTemplates(true); }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${showTemplates
+                            onClick={() => { setActiveTab('templates'); }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'templates'
                                 ? 'bg-indigo-600 text-white shadow-lg'
                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                                 }`}
@@ -581,8 +597,8 @@ const ProxySettings = () => {
                             Saved Templates
                         </button>
                         <button
-                            onClick={() => { setShowTemplates(false); }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${!showTemplates
+                            onClick={() => { setActiveTab('accounts'); }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'accounts'
                                 ? 'bg-indigo-600 text-white shadow-lg'
                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                                 }`}
@@ -590,11 +606,21 @@ const ProxySettings = () => {
                             <Globe className="w-4 h-4" />
                             Account Proxies
                         </button>
+                        <button
+                            onClick={() => { setActiveTab('my-proxies'); }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'my-proxies'
+                                ? 'bg-indigo-600 text-white shadow-lg'
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                                }`}
+                        >
+                            <ShieldCheck className="w-4 h-4" />
+                            My Proxies
+                        </button>
                     </div>
 
                     {/* Actions & Filters */}
                     <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
-                        {showTemplates ? (
+                        {activeTab === 'templates' ? (
                             <>
                                 <div className="relative">
                                     <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -616,7 +642,7 @@ const ProxySettings = () => {
                                     </button>
                                 )}
                             </>
-                        ) : (
+                        ) : activeTab === 'accounts' ? (
                             <>
                                 <div className="relative">
                                     <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -643,6 +669,17 @@ const ProxySettings = () => {
                                     <span className="hidden sm:inline">Random Distribute</span>
                                 </button>
                             </>
+                        ) : (
+                            <div className="relative">
+                                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search by IP..."
+                                    className="bg-gray-800 border-gray-700 border rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 w-full sm:w-64"
+                                    value={proxySearch}
+                                    onChange={e => setProxySearch(e.target.value)}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>
@@ -650,7 +687,7 @@ const ProxySettings = () => {
                 {/* Content Area */}
                 <div className="relative min-h-[400px]">
                     <AnimatePresence mode="wait">
-                        {showTemplates ? (
+                        {activeTab === 'templates' ? (
                             <motion.div
                                 key="templates"
                                 initial={{ opacity: 0 }}
@@ -698,7 +735,7 @@ const ProxySettings = () => {
                                     </table>
                                 </div>
                             </motion.div>
-                        ) : (
+                        ) : activeTab === 'accounts' ? (
                             <motion.div
                                 key="accounts"
                                 initial={{ opacity: 0 }}
@@ -745,6 +782,69 @@ const ProxySettings = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="my-proxies"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="p-1"
+                            >
+                                <table className="w-full text-left text-sm border-separate border-spacing-0">
+                                    <thead className="text-gray-400">
+                                        <tr>
+                                            <th className="sticky top-[72px] z-30 bg-gray-900 px-4 py-3 font-medium w-12 text-xs uppercase tracking-wider border-b border-gray-800">ID</th>
+                                            <th className="sticky top-[72px] z-30 bg-gray-900 px-4 py-3 font-medium text-xs uppercase tracking-wider border-b border-gray-800">Proxy IP</th>
+                                            <th className="sticky top-[72px] z-30 bg-gray-900 px-4 py-3 font-medium text-xs uppercase tracking-wider border-b border-gray-800">Port</th>
+                                            <th className="sticky top-[72px] z-30 bg-gray-900 px-4 py-3 font-medium text-xs uppercase tracking-wider border-b border-gray-800">Credentials</th>
+                                            <th className="sticky top-[72px] z-30 bg-gray-900 px-4 py-3 font-medium text-xs uppercase tracking-wider border-b border-gray-800">Assigned</th>
+                                            <th className="sticky top-[72px] z-30 bg-gray-900 px-4 py-3 font-medium text-right text-xs uppercase tracking-wider border-b border-gray-800">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800">
+                                        {loading ? (
+                                            <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">Loading...</td></tr>
+                                        ) : filteredMyProxies.length === 0 ? (
+                                            <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">No assigned proxies found. Purchase residential proxy add-ons to see them here.</td></tr>
+                                        ) : filteredMyProxies.map(proxy => (
+                                            <tr key={proxy.id} className="hover:bg-gray-800/30 transition-colors">
+                                                <td className="px-4 py-3 text-gray-500">{proxy.id}</td>
+                                                <td className="px-4 py-3 font-medium text-white">{proxy.proxy_ip}</td>
+                                                <td className="px-4 py-3 text-gray-400 font-mono">{proxy.proxy_port}</td>
+                                                <td className="px-4 py-3 text-gray-400">
+                                                    {proxy.proxy_username ? (
+                                                        <span className="flex items-center gap-2">
+                                                            <span className="bg-gray-800 px-1.5 py-0.5 rounded text-xs">{proxy.proxy_username}</span>
+                                                            <span className="text-gray-600">:</span>
+                                                            <span className="bg-gray-800 px-1.5 py-0.5 rounded text-xs select-all">••••••</span>
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-600 italic text-xs">Public</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-500 text-xs">
+                                                    {new Date(proxy.assigned_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <button
+                                                        onClick={() => {
+                                                            const url = `http://${proxy.proxy_username ? `${proxy.proxy_username}:${proxy.proxy_password}@` : ''}${proxy.proxy_ip}:${proxy.proxy_port}`;
+                                                            navigator.clipboard.writeText(url);
+                                                            // toast or alert here if needed
+                                                        }}
+                                                        className="p-2 hover:bg-indigo-500/20 text-indigo-400 rounded-lg transition-colors group relative"
+                                                        title="Copy Proxy URL"
+                                                    >
+                                                        <Copy className="w-4 h-4" />
+                                                        <span className="absolute right-full mr-2 hidden group-hover:block bg-gray-900 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap">Copy URL</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </motion.div>
                         )}
                     </AnimatePresence>

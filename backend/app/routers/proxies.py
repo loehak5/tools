@@ -12,8 +12,9 @@ from app.models.account import Account
 from app.schemas.proxy import (
     ProxyTemplateCreate, ProxyTemplateResponse, AssignProxyRequest, 
     ProxyTestRequest, ProxyTestResponse, ProxyDistributionRequest,
-    ProxyBatchImportRequest
+    ProxyBatchImportRequest, ProxyAssignmentResponse
 )
+from app.models.subscription import ProxyAssignment
 import random
 from app.routers.deps import get_current_user, check_role
 from app.models.user import User
@@ -124,6 +125,16 @@ async def list_proxy_templates(
             "accounts_count": row.accounts_count
         })
     return templates
+
+@router.get("/my-proxies", response_model=List[ProxyAssignmentResponse])
+async def list_my_proxies(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """List static residential proxies assigned to the current user."""
+    stmt = select(ProxyAssignment).where(ProxyAssignment.user_id == current_user.id).order_by(ProxyAssignment.assigned_at.desc())
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
 @router.get("/{template_id}", response_model=ProxyTemplateResponse)
 async def get_proxy_template(

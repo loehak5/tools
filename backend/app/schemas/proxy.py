@@ -39,3 +39,14 @@ class ProxyDistributionRequest(BaseModel):
 
 class ProxyBatchImportRequest(BaseModel):
     raw_data: str  # The multi-line proxy list
+
+class ProxyAssignmentResponse(BaseModel):
+    id: int
+    proxy_ip: str
+    proxy_port: int
+    proxy_username: Optional[str] = None
+    proxy_password: Optional[str] = None
+    assigned_at: datetime
+
+    class Config:
+        from_attributes = True
