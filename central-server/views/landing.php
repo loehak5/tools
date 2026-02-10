@@ -9,7 +9,7 @@ require_once __DIR__ . '/../config/database.php';
 $db = Database::getConnection();
 
 // Fetch current active subscription
-$stmt = $db->prepare("SELECT s.*, p.price_idr, p.name as plan_name FROM subscriptions s JOIN subscription_plans p ON s.plan_id = p.id WHERE s.user_id = ? AND s.status = 'active' AND s.end_date > NOW() ORDER BY s.end_date DESC LIMIT 1");
+$stmt = $db->prepare("SELECT s.*, p.price_idr, p.duration_days, p.name as plan_name FROM subscriptions s JOIN subscription_plans p ON s.plan_id = p.id WHERE s.user_id = ? AND s.status = 'active' AND s.end_date > NOW() ORDER BY s.end_date DESC LIMIT 1");
 $stmt->execute([$_SESSION['user_id']]);
 $currentSub = $stmt->fetch();
 
@@ -215,7 +215,30 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             font-weight: 700;
             display: flex;
             align-items: baseline;
+            flex-wrap: wrap;
             gap: 4px;
+        }
+
+        .original-price {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            text-decoration: line-through;
+            opacity: 0.7;
+            margin-right: 8px;
+            display: none;
+            /* Hidden by default, shown via JS */
+        }
+
+        .discount-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            margin-left: 8px;
+            display: none;
+            /* Hidden by default */
         }
 
         .currency {
@@ -391,11 +414,16 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
 
         <div class="pricing-grid">
             <!-- Prematur -->
-            <div class="plan-card">
+            <div class="plan-card" data-plan-id="prematur">
                 <div class="plan-header">
                     <div class="plan-name">Premature</div>
-                    <div class="plan-price"><span class="currency">Rp</span>50.000<span class="plan-duration">/24
-                            JAM</span></div>
+                    <div class="plan-price">
+                        <span class="original-price"></span>
+                        <span class="currency">Rp</span>
+                        <span class="amount">50.000</span>
+                        <span class="plan-duration">/24 JAM</span>
+                        <span class="discount-badge">UPGRADE SAVINGS</span>
+                    </div>
                 </div>
                 <ul class="plan-features">
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -423,11 +451,16 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             </div>
 
             <!-- Starter -->
-            <div class="plan-card">
+            <div class="plan-card" data-plan-id="starter">
                 <div class="plan-header">
                     <div class="plan-name">Starter</div>
-                    <div class="plan-price"><span class="currency">Rp</span>60.000<span class="plan-duration">/7
-                            HARI</span></div>
+                    <div class="plan-price">
+                        <span class="original-price"></span>
+                        <span class="currency">Rp</span>
+                        <span class="amount">60.000</span>
+                        <span class="plan-duration">/7 HARI</span>
+                        <span class="discount-badge">UPGRADE SAVINGS</span>
+                    </div>
                 </div>
                 <ul class="plan-features">
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -447,11 +480,16 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             </div>
 
             <!-- Basic -->
-            <div class="plan-card">
+            <div class="plan-card" data-plan-id="basic">
                 <div class="plan-header">
                     <div class="plan-name">Basic</div>
-                    <div class="plan-price"><span class="currency">Rp</span>100.000<span class="plan-duration">/7
-                            HARI</span></div>
+                    <div class="plan-price">
+                        <span class="original-price"></span>
+                        <span class="currency">Rp</span>
+                        <span class="amount">100.000</span>
+                        <span class="plan-duration">/7 HARI</span>
+                        <span class="discount-badge">UPGRADE SAVINGS</span>
+                    </div>
                 </div>
                 <ul class="plan-features">
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -471,11 +509,16 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             </div>
 
             <!-- Pro -->
-            <div class="plan-card highlight">
+            <div class="plan-card highlight" data-plan-id="pro">
                 <div class="plan-header">
                     <div class="plan-name">Pro</div>
-                    <div class="plan-price"><span class="currency">Rp</span>300.000<span class="plan-duration">/30
-                            HARI</span></div>
+                    <div class="plan-price">
+                        <span class="original-price"></span>
+                        <span class="currency">Rp</span>
+                        <span class="amount">300.000</span>
+                        <span class="plan-duration">/30 HARI</span>
+                        <span class="discount-badge">UPGRADE SAVINGS</span>
+                    </div>
                 </div>
                 <ul class="plan-features">
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -499,11 +542,16 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             </div>
 
             <!-- Advanced -->
-            <div class="plan-card">
+            <div class="plan-card" data-plan-id="advanced">
                 <div class="plan-header">
                     <div class="plan-name">Advanced</div>
-                    <div class="plan-price"><span class="currency">Rp</span>650.000<span class="plan-duration">/30
-                            HARI</span></div>
+                    <div class="plan-price">
+                        <span class="original-price"></span>
+                        <span class="currency">Rp</span>
+                        <span class="amount">650.000</span>
+                        <span class="plan-duration">/30 HARI</span>
+                        <span class="discount-badge">UPGRADE SAVINGS</span>
+                    </div>
                 </div>
                 <ul class="plan-features">
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -531,11 +579,16 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             </div>
 
             <!-- Supreme -->
-            <div class="plan-card">
+            <div class="plan-card" data-plan-id="supreme">
                 <div class="plan-header">
                     <div class="plan-name">Supreme</div>
-                    <div class="plan-price"><span class="currency">Rp</span>1.8JT<span class="plan-duration">/60
-                            HARI</span></div>
+                    <div class="plan-price">
+                        <span class="original-price"></span>
+                        <span class="currency">Rp</span>
+                        <span class="amount">1.8JT</span>
+                        <span class="plan-duration">/60 HARI</span>
+                        <span class="discount-badge">UPGRADE SAVINGS</span>
+                    </div>
                 </div>
                 <ul class="plan-features">
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -766,6 +819,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             'plan_id' => $currentSub['plan_id'],
             'plan_name' => $currentSub['plan_name'],
             'price' => (float) $currentSub['price_idr'],
+            'start_date' => $currentSub['start_date'],
             'end_date' => $currentSub['end_date'],
         ] : null) ?>;
 
@@ -1044,6 +1098,68 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') closeModal();
         });
+        // ===== INITIALIZE UI =====
+        function applyUpgradeDiscounts() {
+            if (!CURRENT_SUB) return;
+
+            const now = new Date();
+            const startDate = new Date(CURRENT_SUB.start_date);
+            const endDate = new Date(CURRENT_SUB.end_date);
+
+            const remMs = endDate.getTime() - now.getTime();
+            const totalMs = endDate.getTime() - startDate.getTime();
+
+            const remDays = remMs / (1000 * 60 * 60 * 24);
+            const actualTotalDuration = totalMs / (1000 * 60 * 60 * 24);
+
+            // Halfway mark rule: No discount if < 50% duration left
+            if (remDays < (actualTotalDuration / 2)) {
+                console.log("Upgrade discount ineligible: Halfway mark passed.");
+                return;
+            }
+
+            const dailyValue = CURRENT_SUB.price / actualTotalDuration;
+            const remainingCredit = dailyValue * remDays;
+
+            document.querySelectorAll('.plan-card').forEach(card => {
+                const planId = card.getAttribute('data-plan-id');
+                const newPrice = PLAN_PRICES[planId];
+                const curPrice = CURRENT_SUB.price;
+
+                // Only show discount for upgrades (higher price)
+                if (newPrice > curPrice) {
+                    const discountedPrice = Math.max(0, Math.round(newPrice - remainingCredit));
+
+                    const originalPriceEl = card.querySelector('.original-price');
+                    const amountEl = card.querySelector('.amount');
+                    const badgeEl = card.querySelector('.discount-badge');
+
+                    if (originalPriceEl && amountEl) {
+                        // Supreme formatting special case
+                        let originalText = amountEl.textContent;
+                        originalPriceEl.textContent = originalText;
+                        originalPriceEl.style.display = 'block';
+
+                        // Format discounted price
+                        if (planId === 'supreme') {
+                            amountEl.textContent = (discountedPrice / 1000000).toFixed(1) + 'JT';
+                        } else {
+                            amountEl.textContent = discountedPrice.toLocaleString('id-ID');
+                        }
+
+                        if (badgeEl) {
+                            const savings = newPrice - discountedPrice;
+                            const percent = Math.round((savings / newPrice) * 100);
+                            badgeEl.textContent = `SAVE ${percent}%`;
+                            badgeEl.style.display = 'inline-block';
+                        }
+                    }
+                }
+            });
+        }
+
+        // Run on load
+        applyUpgradeDiscounts();
     </script>
 </body>
 

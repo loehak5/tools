@@ -139,18 +139,18 @@ function calculate_addon_price($tier, $addon_type, $sub_type = null, $quantity =
 /**
  * Algorithm for Prorated Discount Upgrade.
  */
-function calculate_upgrade_cost($current_plan_price, $current_plan_duration, $remaining_days, $new_plan_price)
+function calculate_upgrade_cost($current_plan_price, $actual_duration_days, $remaining_days, $new_plan_price)
 {
-    if ($current_plan_duration <= 0)
+    if ($actual_duration_days <= 0)
         return $new_plan_price;
 
     // Rule: No discount if more than 50% of duration has passed
-    if ($remaining_days < ($current_plan_duration / 2)) {
+    if ($remaining_days < ($actual_duration_days / 2)) {
         return $new_plan_price;
     }
 
-    // 1. Daily Value: current_plan_price / current_plan_duration_days
-    $daily_value = $current_plan_price / $current_plan_duration;
+    // 1. Daily Value: current_plan_price / actual_duration_days
+    $daily_value = $current_plan_price / $actual_duration_days;
 
     // 2. Remaining Credit: daily_value * remaining_days
     $remaining_credit = $daily_value * $remaining_days;
@@ -235,7 +235,8 @@ switch ($action) {
 
             // If it's an explicit upgrade request or price is higher, we can use UPG logic
             if ($action === 'create_upgrade_invoice' && $current_sub && (float) $new_plan['price_idr'] > (float) $current_sub['price_idr']) {
-                $cost = calculate_upgrade_cost($current_sub['price_idr'], $current_sub['duration_days'], $rem_days, $new_plan['price_idr']);
+                $actual_duration_days = (strtotime($current_sub['end_date']) - strtotime($current_sub['start_date'])) / 86400;
+                $cost = calculate_upgrade_cost($current_sub['price_idr'], $actual_duration_days, $rem_days, $new_plan['price_idr']);
                 $prefix = "UPG";
             }
 
