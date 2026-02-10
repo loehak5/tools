@@ -393,7 +393,7 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
             <!-- Prematur -->
             <div class="plan-card">
                 <div class="plan-header">
-                    <div class="plan-name">Prematur</div>
+                    <div class="plan-name">Premature</div>
                     <div class="plan-price"><span class="currency">Rp</span>50.000<span class="plan-duration">/24
                             JAM</span></div>
                 </div>
@@ -405,7 +405,11 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                        </svg> Full Features</li>
+                        </svg> follow / like / post / reels / story</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Cross Threads Post</li>
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
@@ -457,11 +461,11 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                        </svg> Story Support</li>
+                        </svg> Post / Like / Reels / Story</li>
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                        </svg> Addon Support</li>
+                        </svg> Special Add-on</li>
                 </ul>
                 <button class="purchase-btn" onclick="buy('basic')">Choose Basic</button>
             </div>
@@ -481,11 +485,15 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                        </svg> Full Bot Features</li>
+                        </svg> Follow / Post / Like / Reels / Story</li>
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> 15 Proxy Slots</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Add-on Support</li>
                 </ul>
                 <button class="purchase-btn" onclick="buy('pro')">Go Pro</button>
             </div>
@@ -505,11 +513,19 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Follow / Post / Like / Reels / Story / View</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> Cross Threads Post</li>
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> 30 Proxy Slots</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Add-on Support</li>
                 </ul>
                 <button class="purchase-btn" onclick="buy('advanced')">Unlock Advanced</button>
             </div>
@@ -529,7 +545,19 @@ function isPlanRestricted($newPlanId, $newPlanPrice, $currentSub)
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Follow / Post / Like / Reels / Story / View</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Cross Threads Post</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                         </svg> UNLIMITED Proxies</li>
+                    <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                        </svg> Add-on Support</li>
                     <li><svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
