@@ -49,6 +49,15 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(subject=user.username)
+    
+    # Save jti for single session enforcement
+    from jose import jwt
+    from app.core.security import SECRET_KEY, ALGORITHM
+    payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+    user.last_jti = payload.get("jti")
+    db.add(user)
+    await db.commit()
+    
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/auth/google", response_model=Token)
@@ -125,6 +134,15 @@ async def login_google(
         access_token = create_access_token(
             subject=user.username, expires_delta=access_token_expires
         )
+        
+        # Save jti for single session enforcement
+        from jose import jwt
+        from app.core.security import SECRET_KEY, ALGORITHM
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user.last_jti = payload.get("jti")
+        db.add(user)
+        await db.commit()
+        
         return {"access_token": access_token, "token_type": "bearer"}
 
     except ValueError as e:
@@ -247,6 +265,15 @@ async def sync_login(
     await db.refresh(user)
     
     access_token = create_access_token(subject=user.username)
+    
+    # Save jti for single session enforcement
+    from jose import jwt
+    from app.core.security import SECRET_KEY, ALGORITHM
+    payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+    user.last_jti = payload.get("jti")
+    db.add(user)
+    await db.commit()
+    
     return {"access_token": access_token, "token_type": "bearer"}
 
 

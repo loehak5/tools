@@ -35,6 +35,16 @@ async def get_current_user(
     
     if user is None:
         raise credentials_exception
+        
+    # Single Session Enforcement
+    if user.role != "admin":
+        jti: str = payload.get("jti")
+        if not jti or jti != user.last_jti:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Sesi Anda telah berakhir karena login di perangkat lain.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return user

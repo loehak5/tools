@@ -14,3 +14,4 @@ class User(Base):
     role = Column(String(20), default="operator")  # roles: admin, operator
     is_active = Column(Boolean, default=True)
     is_password_set = Column(Boolean, default=False)
+    last_jti = Column(String(36), nullable=True)
