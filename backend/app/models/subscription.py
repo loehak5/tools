@@ -52,5 +52,24 @@ class SubscriptionAddon(Base):
     start_date = Column(DateTime(timezone=True), nullable=False)
     end_date = Column(DateTime(timezone=True), nullable=False)
     is_active = Column(Boolean, default=True)
+    fulfilled_at = Column(DateTime(timezone=True))  # When admin fulfilled proxy order
     
     user = relationship("User")
+    proxy_assignments = relationship("ProxyAssignment", back_populates="addon")
+
+class ProxyAssignment(Base):
+    __tablename__ = "proxy_assignments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    addon_id = Column(Integer, ForeignKey("subscription_addons.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    proxy_ip = Column(String(255), nullable=False)
+    proxy_port = Column(Integer, default=80)
+    proxy_username = Column(String(100))
+    proxy_password = Column(String(255))
+    assigned_by = Column(Integer, ForeignKey("users.id"), nullable=False)  # Admin user_id
+    assigned_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    user = relationship("User", foreign_keys=[user_id])
+    admin = relationship("User", foreign_keys=[assigned_by])
+    addon = relationship("SubscriptionAddon", back_populates="proxy_assignments")

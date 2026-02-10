@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     UserPlus, Shield, User, Activity, MoreVertical, CheckCircle, XCircle,
     Users, Instagram, DollarSign, LifeBuoy, MessageSquare, Clock, CheckCircle2,
-    Search, Filter, Send, Loader2, ArrowLeft, Ban, Unlock
+    Search, Filter, Send, Loader2, ArrowLeft, Ban, Unlock, Package, Upload, Eye, X
 } from 'lucide-react';
 import api from '../api/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -41,7 +41,7 @@ interface Ticket {
 }
 
 const AdminPanel: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'tickets'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'tickets' | 'proxy-orders'>('overview');
     const [stats, setStats] = useState<AdminStats | null>(null);
     const [users, setUsers] = useState<UserData[]>([]);
     const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -61,6 +61,18 @@ const AdminPanel: React.FC = () => {
     const [createLoading, setCreateLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Proxy Orders State
+    const [proxyOrders, setProxyOrders] = useState<any[]>([]);
+    const [proxyFilter, setProxyFilter] = useState<'all' | 'pending' | 'fulfilled'>('all');
+    const [proxySearchQuery, setProxySearchQuery] = useState('');
+    const [showAssignProxyModal, setShowAssignProxyModal] = useState(false);
+    const [showViewProxyModal, setShowViewProxyModal] = useState(false);
+    const [activeProxyOrder, setActiveProxyOrder] = useState<any>(null);
+    const [proxyInputs, setProxyInputs] = useState<any[]>([]);
+    const [csvText, setCsvText] = useState('');
+    const [proxySubmitting, setProxySubmitting] = useState(false);
+    const [viewProxyAssignments, setViewProxyAssignments] = useState<any[]>([]);
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -79,9 +91,24 @@ const AdminPanel: React.FC = () => {
         }
     };
 
+    const fetchProxyOrders = async () => {
+        try {
+            const res = await api.get(`/admin/proxy-orders?status=${proxyFilter}`);
+            setProxyOrders(res.data);
+        } catch (err) {
+            console.error('Failed to fetch proxy orders', err);
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        if (activeTab === 'proxy-orders') {
+            fetchProxyOrders();
+        }
+    }, [activeTab, proxyFilter]);
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -151,6 +178,80 @@ const AdminPanel: React.FC = () => {
         }
     };
 
+    // Proxy Orders Handlers
+    const filteredProxyOrders = proxyOrders.filter(order =>
+        order.username.toLowerCase().includes(proxySearchQuery.toLowerCase()) ||
+        order.email.toLowerCase().includes(proxySearchQuery.toLowerCase())
+    );
+
+    const openAssignProxyModal = (order: any) => {
+        setActiveProxyOrder(order);
+        const inputs = Array(order.quantity).fill(null).map(() => ({
+            ip: '', port: 80, username: '', password: ''
+        }));
+        setProxyInputs(inputs);
+        setCsvText('');
+        setShowAssignProxyModal(true);
+    };
+
+    const handleProxyInputChange = (index: number, field: string, value: any) => {
+        const updated = [...proxyInputs];
+        updated[index] = { ...updated[index], [field]: value };
+        setProxyInputs(updated);
+    };
+
+    const importProxyFromCSV = () => {
+        const lines = csvText.trim().split('\n');
+        lines.forEach((line, index) => {
+            if (index >= proxyInputs.length) return;
+            const parts = line.trim().split(':');
+            if (parts.length >= 1) {
+                handleProxyInputChange(index, 'ip', parts[0] || '');
+                handleProxyInputChange(index, 'port', parseInt(parts[1]) || 80);
+                handleProxyInputChange(index, 'username', parts[2] || '');
+                handleProxyInputChange(index, 'password', parts[3] || '');
+            }
+        });
+        setCsvText('');
+    };
+
+    const handleSubmitProxies = async () => {
+        if (!activeProxyOrder) return;
+        const hasEmpty = proxyInputs.some(p => !p.ip.trim());
+        if (hasEmpty) {
+            alert('All IP addresses are required!');
+            return;
+        }
+        try {
+            setProxySubmitting(true);
+            const proxies = proxyInputs.map(p => ({
+                ip: p.ip.trim(),
+                port: p.port,
+                username: p.username.trim() || null,
+                password: p.password.trim() || null
+            }));
+            await api.post(`/admin/proxy-orders/${activeProxyOrder.id}/assign`, { proxies });
+            alert('Proxies assigned successfully!');
+            setShowAssignProxyModal(false);
+            fetchProxyOrders();
+        } catch (err: any) {
+            alert(err.response?.data?.detail || 'Failed to assign proxies');
+        } finally {
+            setProxySubmitting(false);
+        }
+    };
+
+    const viewAssignedProxies = async (order: any) => {
+        try {
+            const res = await api.get(`/admin/proxy-orders/${order.id}/assignments`);
+            setViewProxyAssignments(res.data);
+            setActiveProxyOrder(order);
+            setShowViewProxyModal(true);
+        } catch (err) {
+            console.error('Failed to fetch assignments', err);
+        }
+    };
+
     const StatusBadge = ({ status }: { status: string }) => {
         const colors: any = {
             'open': 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -179,6 +280,7 @@ const AdminPanel: React.FC = () => {
                             { id: 'overview', label: 'Overview', icon: Activity },
                             { id: 'users', label: 'Users', icon: Users },
                             { id: 'tickets', label: 'Tickets', icon: LifeBuoy },
+                            { id: 'proxy-orders', label: 'Proxy Orders', icon: Package },
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -187,8 +289,8 @@ const AdminPanel: React.FC = () => {
                                     setActiveTicket(null);
                                 }}
                                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-700/30'
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                    : 'text-slate-400 hover:text-white hover:bg-slate-700/30'
                                     }`}
                             >
                                 <tab.icon className="w-4 h-4" />
@@ -360,8 +462,8 @@ const AdminPanel: React.FC = () => {
                                             </td>
                                             <td className="px-8 py-5">
                                                 <div className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${user.role === 'admin'
-                                                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-[0_0_15px_-5px_rgba(168,85,247,0.4)]'
-                                                        : 'bg-indigo-500/5 text-indigo-400/70 border-indigo-500/20'
+                                                    ? 'bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-[0_0_15px_-5px_rgba(168,85,247,0.4)]'
+                                                    : 'bg-indigo-500/5 text-indigo-400/70 border-indigo-500/20'
                                                     }`}>
                                                     <Shield className="w-3 h-3 mr-1.5" />
                                                     {user.role}
@@ -388,8 +490,8 @@ const AdminPanel: React.FC = () => {
                                                         <button
                                                             onClick={() => handleToggleUserStatus(user.id)}
                                                             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${user.is_active
-                                                                    ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 text-white'
-                                                                    : 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500 text-white'
+                                                                ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 text-white'
+                                                                : 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500 text-white'
                                                                 }`}
                                                         >
                                                             {user.is_active ? <Ban className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -511,8 +613,8 @@ const AdminPanel: React.FC = () => {
                                             <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                 <div className={`max-w-[85%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
                                                     <div className={`px-5 py-3 rounded-[1.5rem] shadow-sm relative group ${isMe
-                                                            ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none'
-                                                            : 'bg-slate-800/80 text-slate-200 border border-slate-700/50 rounded-tl-none'
+                                                        ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none'
+                                                        : 'bg-slate-800/80 text-slate-200 border border-slate-700/50 rounded-tl-none'
                                                         }`}>
                                                         <p className="text-sm leading-relaxed">{msg.message}</p>
                                                         <div className={`absolute -bottom-5 ${isMe ? 'right-1' : 'left-1'} text-[8px] font-black text-slate-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity`}>
@@ -551,6 +653,287 @@ const AdminPanel: React.FC = () => {
                                 <p className="text-slate-400 text-sm max-w-[240px]">Select an active transmission on the left to review intelligence or send instructions.</p>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Proxy Orders Section */}
+            {activeTab === 'proxy-orders' && (
+                <div className="space-y-8">
+                    {/* Filters & Search */}
+                    <div className="bg-[#1e293b]/40 backdrop-blur-md border border-slate-700/50 rounded-[2rem] p-6">
+                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                            <div className="flex gap-2">
+                                {['all', 'pending', 'fulfilled'].map(filter => (
+                                    <button
+                                        key={filter}
+                                        onClick={() => setProxyFilter(filter as any)}
+                                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${proxyFilter === filter
+                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                            : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+                                            }`}
+                                    >
+                                        {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="relative w-full sm:w-80">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input
+                                    value={proxySearchQuery}
+                                    onChange={(e) => setProxySearchQuery(e.target.value)}
+                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    placeholder="Search by username or email..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Orders Table */}
+                    <div className="bg-[#1e293b]/40 backdrop-blur-md border border-slate-700/50 rounded-[2.5rem] overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead>
+                                    <tr className="bg-slate-800/30 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                                        <th className="px-8 py-5">ID</th>
+                                        <th className="px-8 py-5">User</th>
+                                        <th className="px-8 py-5">Type</th>
+                                        <th className="px-8 py-5">Quantity</th>
+                                        <th className="px-8 py-5">Price</th>
+                                        <th className="px-8 py-5">Purchase Date</th>
+                                        <th className="px-8 py-5">Status</th>
+                                        <th className="px-8 py-5">Progress</th>
+                                        <th className="px-8 py-5 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-700/30">
+                                    {loading ? (
+                                        [1, 2, 3].map(i => (
+                                            <tr key={i} className="animate-pulse">
+                                                <td colSpan={9} className="px-8 py-6">
+                                                    <div className="h-10 bg-slate-700/30 rounded-xl w-full"></div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : filteredProxyOrders.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={9} className="px-8 py-12 text-center text-slate-500">
+                                                No orders found
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredProxyOrders.map(order => (
+                                            <tr key={order.id} className="hover:bg-indigo-500/5 transition-colors">
+                                                <td className="px-8 py-5">
+                                                    <span className="text-white font-mono font-bold">#{order.id}</span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div>
+                                                        <p className="text-white font-bold">{order.username}</p>
+                                                        <p className="text-slate-500 text-xs">{order.email}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className="text-slate-300 capitalize">{order.sub_type || 'N/A'}</span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className="text-white font-bold">{order.quantity}</span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className="text-white font-mono text-sm">
+                                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(order.price_paid)}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className="text-slate-400 text-sm">
+                                                        {new Date(order.start_date).toLocaleDateString('id-ID')}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${order.fulfilled_at
+                                                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                                        }`}>
+                                                        {order.fulfilled_at ? 'Fulfilled' : 'Pending'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className="text-slate-300 font-mono text-sm">
+                                                        {order.assigned_count} / {order.quantity}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    {order.fulfilled_at ? (
+                                                        <button
+                                                            onClick={() => viewAssignedProxies(order)}
+                                                            className="flex items-center gap-2 ml-auto px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold uppercase hover:bg-slate-700 transition-all"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                            View Proxies
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => openAssignProxyModal(order)}
+                                                            className="flex items-center gap-2 ml-auto px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20"
+                                                        >
+                                                            <Package className="w-4 h-4" />
+                                                            Assign Proxies
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Assign Proxies Modal */}
+            {showAssignProxyModal && activeProxyOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xl bg-slate-950/60 animate-in fade-in zoom-in duration-300">
+                    <div className="bg-[#1e293b] border border-slate-700/50 w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                        <div className="p-8 border-b border-slate-700/50 flex justify-between items-start">
+                            <div>
+                                <h3 className="text-2xl font-bold text-white">Assign Proxies</h3>
+                                <p className="text-slate-400 text-sm mt-2">
+                                    User: <span className="font-bold text-white">{activeProxyOrder.username}</span> |
+                                    Type: <span className="font-bold text-white capitalize">{activeProxyOrder.sub_type}</span> |
+                                    Quantity: <span className="font-bold text-white">{activeProxyOrder.quantity} proxies</span>
+                                </p>
+                            </div>
+                            <button onClick={() => setShowAssignProxyModal(false)} className="text-slate-500 hover:text-white">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-8 bg-blue-500/5 border-b border-slate-700/50">
+                            <h4 className="text-sm font-bold text-blue-400 mb-2 flex items-center gap-2">
+                                <Upload className="w-4 h-4" />
+                                Quick Import from CSV
+                            </h4>
+                            <p className="text-xs text-slate-500 mb-3">
+                                Format: <code className="bg-slate-800 px-2 py-1 rounded">ip:port:username:password</code> (one per line)
+                            </p>
+                            <textarea
+                                value={csvText}
+                                onChange={(e) => setCsvText(e.target.value)}
+                                rows={4}
+                                className="w-full bg-slate-900/60 border border-slate-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono"
+                                placeholder="192.168.1.1:8080:user1:pass1&#10;192.168.1.2:8080:user2:pass2"
+                            />
+                            <button onClick={importProxyFromCSV} className="mt-3 px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-700 transition-all">
+                                Import CSV
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar">
+                            <h4 className="text-sm font-bold text-white mb-4">Proxy IP Assignments</h4>
+                            {proxyInputs.map((proxy, index) => (
+                                <div key={index} className="grid grid-cols-4 gap-3 p-4 bg-slate-800/30 rounded-xl">
+                                    <input
+                                        type="text"
+                                        value={proxy.ip}
+                                        onChange={(e) => handleProxyInputChange(index, 'ip', e.target.value)}
+                                        placeholder={`IP Address ${index + 1}`}
+                                        className="bg-slate-900/60 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    />
+                                    <input
+                                        type="number"
+                                        value={proxy.port}
+                                        onChange={(e) => handleProxyInputChange(index, 'port', parseInt(e.target.value) || 80)}
+                                        placeholder="Port"
+                                        className="bg-slate-900/60 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={proxy.username}
+                                        onChange={(e) => handleProxyInputChange(index, 'username', e.target.value)}
+                                        placeholder="Username (optional)"
+                                        className="bg-slate-900/60 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={proxy.password}
+                                        onChange={(e) => handleProxyInputChange(index, 'password', e.target.value)}
+                                        placeholder="Password (optional)"
+                                        className="bg-slate-900/60 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="p-8 border-t border-slate-700/50 flex justify-end gap-4">
+                            <button
+                                onClick={() => setShowAssignProxyModal(false)}
+                                className="px-6 py-3 bg-slate-800 text-slate-300 rounded-xl font-bold hover:bg-slate-700 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSubmitProxies}
+                                disabled={proxySubmitting}
+                                className="px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-500 transition-all shadow-lg shadow-green-600/20 disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {proxySubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+                                Submit Proxies
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* View Assignments Modal */}
+            {showViewProxyModal && activeProxyOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xl bg-slate-950/60 animate-in fade-in zoom-in duration-300">
+                    <div className="bg-[#1e293b] border border-slate-700/50 w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                        <div className="p-8 border-b border-slate-700/50 flex justify-between items-start">
+                            <div>
+                                <h3 className="text-2xl font-bold text-white">Assigned Proxies</h3>
+                                <p className="text-slate-400 text-sm mt-2">
+                                    User: <span className="font-bold text-white">{activeProxyOrder.username}</span> |
+                                    {viewProxyAssignments.length} proxies
+                                </p>
+                            </div>
+                            <button onClick={() => setShowViewProxyModal(false)} className="text-slate-500 hover:text-white">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-8 space-y-3 custom-scrollbar">
+                            {viewProxyAssignments.map((assignment) => (
+                                <div key={assignment.id} className="grid grid-cols-4 gap-3 p-4 bg-slate-800/30 rounded-xl">
+                                    <div>
+                                        <p className="text-xs text-slate-500 mb-1">IP Address</p>
+                                        <p className="text-white font-mono text-sm">{assignment.proxy_ip}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500 mb-1">Port</p>
+                                        <p className="text-white font-mono text-sm">{assignment.proxy_port}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500 mb-1">Username</p>
+                                        <p className="text-white font-mono text-sm">{assignment.proxy_username || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500 mb-1">Password</p>
+                                        <p className="text-white font-mono text-sm">{assignment.proxy_password || '-'}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="p-8 border-t border-slate-700/50 flex justify-end">
+                            <button
+                                onClick={() => setShowViewProxyModal(false)}
+                                className="px-6 py-3 bg-slate-800 text-slate-300 rounded-xl font-bold hover:bg-slate-700 transition-all"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
