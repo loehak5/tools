@@ -51,6 +51,10 @@ switch (true) {
         require_once __DIR__ . '/views/docs.php';
         break;
 
+    case $request_uri === '/about':
+        require_once __DIR__ . '/views/about.php';
+        break;
+
     case $request_uri === '/':
         require_once __DIR__ . '/views/welcome.php';
         break;

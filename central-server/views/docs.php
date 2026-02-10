@@ -515,6 +515,7 @@
         <a href="/" class="nav-logo">InstaTools</a>
         <div class="nav-links">
             <a href="/" class="nav-link-ghost">Home</a>
+            <a href="/about" class="nav-link-ghost">About</a>
             <a href="/login" class="nav-link-ghost">Login</a>
             <a href="/billing" class="nav-link-primary">Get Started</a>
         </div>
