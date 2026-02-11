@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+
+frontend/package-lock.json
+frontend/node_modules/.package-lock.json
+frontend/node_modules/.vite/deps/_metadata.json
+<<<<<<< HEAD
+frontend/node_modules/.vite/deps/recharts.js
+=======
+frontend/node_modules/.vite/deps/recharts.js
+>>>>>>> 2fdd4c9cf9203928592fb26dcde8180bff357b00
+scripts/maintenance.log
